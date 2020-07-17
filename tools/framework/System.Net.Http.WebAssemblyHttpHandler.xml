@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.Net.Http.WebAssemblyHttpHandler</name>
+    </assembly>
+    <members>
+        <member name="T:System.Net.Http.WebAssemblyHttpHandler">
+            <summary>
+            <see cref="T:System.Net.Http.WebAssemblyHttpHandler" /> is a specialty message handler based on the
+            Fetch API for use in WebAssembly environments.
+            </summary>
+            <remarks>See https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API</remarks>
+        </member>
+        <member name="P:System.Net.Http.WebAssemblyHttpHandler.StreamingSupported">
+            <summary>
+            Gets whether the current Browser supports streaming responses
+            </summary>
+        </member>
+    </members>
+</doc>
