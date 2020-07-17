@@ -1,0 +1,8 @@
+STORAGE: NONE
+RESTRICTION: == netstandard2.1
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (4.6.2)
+  remote: https://vrvis.myget.org/F/aardvark_public/api/v3/index.json
+    Mono.WebAssembly.Sdk (0.2.3)
+    WebAssembly.Bindings (0.2.3)

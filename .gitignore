@@ -1,0 +1,5 @@
+/.paket/Paket.Restore.targets
+obj/
+paket-files
+/bin
+.vs

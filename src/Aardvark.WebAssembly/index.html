@@ -1,0 +1,31 @@
+<script>
+window.Module = {};
+window.Module.onRuntimeInitialized = () => {
+   const config = {
+       vfsPrefix: "managed",
+       deployPrefix: "managed",
+       enableDebugging: 0
+   };
+   const assemblies = [
+       'Aardvark.WebAssembly.dll',
+       'FSharp.Core.dll',
+       'mscorlib.dll',
+       'WebAssembly.Bindings.dll',
+       'System.dll',
+       'netstandard.dll',
+       'System.Memory.dll'
+   ];
+   MONO.mono_load_runtime_and_bcl(
+       config.vfsPrefix,
+       config.deployPrefix,
+       config.enableDebugging,
+       assemblies,
+       () => {
+          Module.mono_bindings_init("[WebAssembly.Bindings]WebAssembly.Runtime");
+          const main = Module.mono_bind_static_method("[Aardvark.WebAssembly] Bla:main");
+          main([]);
+       }
+   )
+};
+</script>
+<script async src="dotnet.js"></script>
