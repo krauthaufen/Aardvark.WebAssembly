@@ -1,10 +1,12 @@
 framework: netstandard2.1
 source https://api.nuget.org/v3/index.json
 source https://vrvis.myget.org/F/aardvark_public/api/v3/index.json
+copy_local: true
 storage: none
 
-
-nuget FSharp.Core           >= 4.6.2 lowest_matching: true
+nuget FSharp.Core           >= 4.7.0
 nuget Mono.WebAssembly.Sdk  ~> 0.2.3
 nuget WebAssembly.Bindings  ~> 0.2.3
+
+nuget FSharp.Data.Adaptive  ~> 1.0.0
 

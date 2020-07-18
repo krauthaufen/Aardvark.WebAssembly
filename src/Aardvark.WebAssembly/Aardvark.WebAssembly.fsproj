@@ -4,6 +4,7 @@
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.1</TargetFramework>
     <PostBuildEvent>call "$(MSBuildThisFileDirectory)package.bat" "$(Configuration)"</PostBuildEvent>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\..\bin\Debug\</OutputPath>
@@ -12,11 +13,11 @@
     <OutputPath>..\..\bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="paket.references" />
     <None Include="package.bat" />
     <Content Include="index.html" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

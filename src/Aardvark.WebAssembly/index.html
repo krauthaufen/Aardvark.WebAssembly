@@ -6,14 +6,27 @@ window.Module.onRuntimeInitialized = () => {
        deployPrefix: "managed",
        enableDebugging: 0
    };
-   const assemblies = [
-       'Aardvark.WebAssembly.dll',
-       'FSharp.Core.dll',
-       'mscorlib.dll',
-       'WebAssembly.Bindings.dll',
-       'System.dll',
-       'netstandard.dll',
-       'System.Memory.dll'
+    const assemblies = [
+        'mscorlib.dll',
+        'System.dll',
+        'netstandard.dll',
+        'FSharp.Core.dll',
+        'WebAssembly.Bindings.dll',
+        'System.Memory.dll',
+        'System.Runtime.dll',
+        'System.Reflection.dll',
+        'System.Threading.dll', 
+        'System.Reflection.Emit.Lightweight.dll',
+        'System.Reflection.Emit.ILGeneration.dll',
+        'System.Runtime.Extensions.dll',
+        'System.Buffers.dll',
+        'System.Core.dll',
+        'System.IO.dll',
+        'System.Numerics.dll',
+        'System.Console.dll',
+        'System.Globalization.dll',
+        'Aardvark.WebAssembly.dll',
+        'FSharp.Data.Adaptive.dll'
    ];
    MONO.mono_load_runtime_and_bcl(
        config.vfsPrefix,

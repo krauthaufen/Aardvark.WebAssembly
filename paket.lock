@@ -1,8 +1,13 @@
 STORAGE: NONE
+COPY-LOCAL: TRUE
 RESTRICTION: == netstandard2.1
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    FSharp.Core (4.6.2)
+    FSharp.Core (4.7.2)
+    FSharp.Data.Adaptive (1.0)
+      FSharp.Core (>= 4.6.2)
+      System.Reflection.Emit.Lightweight (>= 4.6)
+    System.Reflection.Emit.Lightweight (4.7)
   remote: https://vrvis.myget.org/F/aardvark_public/api/v3/index.json
     Mono.WebAssembly.Sdk (0.2.3)
     WebAssembly.Bindings (0.2.3)
