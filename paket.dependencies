@@ -30,3 +30,4 @@ nuget Paket.Core                     ~> 5.247.4
 nuget Argu                           ~> 5.5.0
 nuget System.IO.Compression.ZipFile  ~> 4.3.0
 nuget fake-cli                       ~> 5.20.2
+nuget Suave                          ~> 2.5.6

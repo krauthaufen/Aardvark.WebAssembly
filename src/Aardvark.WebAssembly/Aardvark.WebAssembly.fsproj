@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PostBuildEvent>call "$(MSBuildThisFileDirectory)package.bat" "$(Configuration)"</PostBuildEvent>
+    <!--<PostBuildEvent>call "$(MSBuildThisFileDirectory)package.bat" "$(Configuration)"</PostBuildEvent>-->
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup>

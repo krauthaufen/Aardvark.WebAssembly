@@ -263,6 +263,8 @@ NUGET
     runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography.OpenSsl (4.3.3)
     runtime.ubuntu.18.04-x64.runtime.native.System.Security.Cryptography.OpenSsl (4.3.3)
     SourceLink.Fake (1.1)
+    Suave (2.5.6)
+      FSharp.Core (>= 4.3.4)
     System.Buffers (4.5.1)
     System.CodeDom (4.7)
     System.Collections (4.3)

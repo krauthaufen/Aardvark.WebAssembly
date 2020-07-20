@@ -30,7 +30,7 @@ type JsObj(r : JSObject) =
 
     member x.Item
         with get(name : string) = r.GetObjectProperty(name)
-        and set (name : string) (value : obj) = r.SetObjectProperty(name, value)
+        and set (name : string) (value : obj) = r.SetObjectProperty(name, unbox value)
 
     member private x.Dispose(disposing : bool) =
         if disposing then GC.SuppressFinalize x
@@ -46,7 +46,7 @@ let inline (?) (o : JsObj) (name : string) : 'a =
 
 let inline (?<-) (o : JsObj) (name : string) (value : 'a) =
     match value :> obj with
-    | :? JsObj as v -> o.[name] <- v
+    | :? JsObj as v -> o.[name] <- v.Reference
     | _ -> o.[name] <- value
 
 type ShaderType =
@@ -199,16 +199,16 @@ type WebGLRenderingContext(ref : JSObject) =
     member x.BindTexture(target : TextureTarget, texture : WebGLTexture) =
         if isNull texture then ref.Invoke("bindTexture", int target, null) |> ignore
         else ref.Invoke("bindTexture", int target, texture.Reference) |> ignore
-
+    
     /// The WebGLRenderingContext.blendColor() method of the WebGL API is used to set the source and destination blending factors.
     member x.BlendColor(r : float, g : float, b : float, a : float) =
         ref.Invoke("blendColor", r, g, b, a) |> ignore
-
+       
     /// The WebGLRenderingContext.blendEquation() method of the WebGL API is used to set both the RGB blend equation and alpha blend equation to a single equation.
     /// The blend equation determines how a new pixel is combined with a pixel already in the WebGLFramebuffer.
     member x.BlendEquation(mode : BlendEquation) =
         ref.Invoke("blendEquation", int mode) |> ignore
-
+     
     /// The WebGLRenderingContext.blendEquationSeparate() method of the WebGL API is used to set the RGB blend equation and alpha blend equation separately.
     /// The blend equation determines how a new pixel is combined with a pixel already in the WebGLFramebuffer.
     member x.BlendEquation(rgb : BlendEquation, alpha : BlendEquation) =
@@ -298,8 +298,6 @@ type WebGLRenderingContext(ref : JSObject) =
     member x.Clear(flags : ClearBuffers) =
         ref.Invoke("clear", int flags) |> ignore
 
-
-
 type CSSStyleDeclaration(r : JSObject) =
     inherit JsObj(r)
 
@@ -316,22 +314,21 @@ type CSSStyleDeclaration(r : JSObject) =
         with get() : string = r.GetObjectProperty("background-color") |> unbox<string>
         and set (v : string) = r.SetObjectProperty("background-color", v)
 
-
 type HTMLElement(r : JSObject) =
     inherit JsObj(r)
 
-
     
+     
     /// Is a DOMString representing the id of the element.
     member x.Id
         with get() = r.GetObjectProperty("id") |> unbox<string>
         and set (id : string) = r.SetObjectProperty("id", id)
-
+     
     /// Is a DOMString representing the class of the element.
     member x.Class
         with get() = r.GetObjectProperty("className") |> unbox<string>
         and set (id : string) = r.SetObjectProperty("className", id)
-        
+         
     /// Returns a Number representing the inner height of the element.
     member x.ClientHeight = r.GetObjectProperty("clientHeight") |> unbox<float>
     /// Returns a Number representing the inner width of the element.
@@ -457,7 +454,7 @@ type HTMLDocument(r : JSObject) =
     member x.CreateElement(tagName : string) = r.Invoke("createElement", tagName) |> unbox<JSObject> |> HTMLElement
     
     member x.CreateCanvasElement() = r.Invoke("createElement", "canvas") |> unbox<JSObject> |> HTMLCanvasElement
-
+    
 
 type Console(r : JSObject) =
     inherit JsObj(r)
@@ -489,7 +486,7 @@ module RuntimValues =
 open FSharp.Data.Adaptive
 open System.Reflection.Emit
 open System.Reflection
-
+ 
 let testDynamicMethod() =
     Console.Begin "DynamicMethod"
     let m = DynamicMethod("bla", typeof<int>, [| typeof<int> |] )
@@ -516,15 +513,15 @@ let testAdaptive() =
     Console.End()
 
 let testArrayBuffer() =
-    Console.Begin "ArrayBuffer"
+    Console.Begin "ArrayBuffer" 
     let data = Array.init 1024 byte
     use a = Uint8Array.op_Implicit(Span data)
-
-    let print = Runtime.CompileFunction("return function(a) { console.log('js[0]', a[0], '=?=', 100); };")
+     
     let f = Runtime.CompileFunction("return function(a) { a[0] = 100; };")
     f.Call(null, a) |> ignore
-
+      
     Console.Log("f#[0]", a.[0], "=?=", 100)
+    let print = Runtime.CompileFunction("return function(a) { console.log('js[0]', a[0], '=?=', 100); };")
     print.Call(null, a) |> ignore
     Console.End()
 
@@ -538,24 +535,35 @@ let main _argv =
 
     Console.Log(V2d(1,2).ToString())
 
-    Aardvark.Base.Telemetry.ResetTelemetrySystem()
-    let p = Aardvark.Base.Telemetry.CpuTime()
     let c = Document.CreateCanvasElement()
     c.Id <- "bla"
     c.Style.BackgroundColor <- "red"
-    c.Width <- 400
-    c.Height <- 300
-    c.Class <- "hans sepp"
+    c.Width <- 800
+    c.Height <- 600
+    c.Class <- "hans hugo"
     Document.Body.AppendChild c
-    Console.Warn(p.ValueDouble)
     let gl = c.GetWebGLContext()
 
-    gl.ClearColor(0.0, 0.0, 0.0, 1.0)
+    gl.ClearColor(1.0, 1.0, 1.0, 1.0)
     gl.Clear ClearBuffers.Color
 
 
-    let pos = Float32Array.op_Implicit (Span [| 0.0f; 0.0f; 0.0f; 1.0f; 0.0f; 0.0f; 1.0f; 1.0f; 0.0f|])
-    let col = Uint8Array.op_Implicit (Span [|255uy; 0uy; 0uy; 255uy; 0uy; 255uy; 0uy; 255uy; 0uy; 0uy; 255uy; 255uy|])
+    let pos = 
+        Float32Array.op_Implicit (
+            Span [| 
+                -1.0f; -1.0f; 0.0f
+                1.0f; -1.0f; 0.0f
+                1.0f; 1.0f; 0.0f
+            |]
+        )
+    let col = 
+        Uint8Array.op_Implicit (
+            Span [|
+                255uy; 0uy; 0uy; 255uy
+                0uy; 255uy; 0uy; 255uy
+                0uy; 0uy; 255uy; 255uy
+            |]
+        )
 
     let pb = gl.CreateBuffer()
     gl.BindBuffer(BufferTarget.Array, pb)
