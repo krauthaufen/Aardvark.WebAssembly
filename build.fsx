@@ -688,7 +688,14 @@ module Watcher =
 
     
 
+let config =
+    Fake.DotNet.DotNet.BuildConfiguration.Debug
 
+let configName =
+    match config with
+    | Fake.DotNet.DotNet.BuildConfiguration.Release -> "Release"
+    | Fake.DotNet.DotNet.BuildConfiguration.Debug -> "Debug"
+    | Fake.DotNet.DotNet.BuildConfiguration.Custom n -> n
 
 Target.create "Restore" (fun _ ->
     Fake.DotNet.Paket.restore id
@@ -698,7 +705,7 @@ Target.create "Restore" (fun _ ->
 Target.create "Build" (fun _ ->
     "Aardvark.WebAssembly.sln" |> Fake.DotNet.DotNet.build (fun o ->
         { o with
-            Configuration = Fake.DotNet.DotNet.BuildConfiguration.Release
+            Configuration = config
             NoRestore = true
         }
     )
@@ -707,7 +714,7 @@ Target.create "Build" (fun _ ->
 Target.create "Packager" (fun _ ->
     Packager.packageProject {
         Project = Path.Combine("src", "Aardvark.WebAssembly", "Aardvark.WebAssembly.fsproj")
-        OutputPath = Path.Combine("bin", "Release", "netstandard2.0", "Aardvark.WebAssembly.dll")
+        OutputPath = Path.Combine("bin", configName, "netstandard2.0", "Aardvark.WebAssembly.dll")
         Output = Path.Combine("bin", "wasm")
         CopyMode = IfNewer
         Threads = true

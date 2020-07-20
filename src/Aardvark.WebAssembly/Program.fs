@@ -544,9 +544,8 @@ let main _argv =
     Document.Body.AppendChild c
     let gl = c.GetWebGLContext()
     
-    gl.ClearColor(1.0, 1.0, 1.0, 1.0)
+    gl.ClearColor(0.0, 0.0, 0.0, 1.0)
     gl.Clear ClearBuffers.Color
-    
     
     let pos = 
         Float32Array.op_Implicit (
@@ -554,14 +553,25 @@ let main _argv =
                 -1.0f; -1.0f; 0.0f
                 1.0f; -1.0f; 0.0f
                 1.0f; 1.0f; 0.0f
+
+                
+                -1.0f; -1.0f; 0.0f
+                1.0f; 1.0f; 0.0f
+                -0.5f; 0.5f; 0.0f
             |]
         )
+
     let col = 
         Uint8Array.op_Implicit (
             Span [|
                 255uy; 0uy; 0uy; 255uy
                 0uy; 255uy; 0uy; 255uy
                 0uy; 0uy; 255uy; 255uy
+                 
+                255uy; 0uy; 0uy; 255uy
+                0uy; 0uy; 255uy; 255uy
+                255uy; 255uy; 0uy; 255uy
+
             |]
         )
 
@@ -639,7 +649,7 @@ let main _argv =
     gl.VertexAttribPointer(1, 4, VertexAttribType.UnsignedByte, true, 4, 0)
     
 
-    gl.DrawArrays(PrimitiveTopology.Triangles, 0, 3)
+    gl.DrawArrays(PrimitiveTopology.Triangles, 0, 6)
 
     gl.UseProgram(null)
 
