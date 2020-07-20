@@ -159,7 +159,7 @@ module Server =
                 let t = document.createElement("div");
                 t.className="loaderoverlay";
                 t.innerText = "building";
-                t.style.fontFamily = "Consolas";
+                t.style.fontFamily = "Consolas, Courier New";
                 t.style.fontSize = "30pt";
                 t.style.color = "white";
                 t.style.position = "absolute";
@@ -184,7 +184,7 @@ module Server =
 
                 let log = document.createElement("div");
                 log.id = "log";
-                log.style.fontFamily = "Consolas";
+                log.style.fontFamily = "Consolas, Courier New";
                 log.style.fontSize = "10pt";
                 log.style.color = "green";
                 log.style.width = "100%";
@@ -278,7 +278,7 @@ module Server =
                 let session = 
                     match ctx.request.queryParam "session" with
                     | Choice1Of2 a -> a
-                    | Choice2Of2 a -> Guid.NewGuid() |> string
+                    | Choice2Of2 _ -> Guid.NewGuid() |> string
 
                 sockets.AddOrUpdate(session, (fun _ -> webSocket), (fun _ _ -> webSocket)) |> ignore
                 Trace.tracefn "%A connected" session
@@ -595,7 +595,7 @@ module Packager =
 module Watcher =
     open System.IO
     
-    let rec buildWatcher (callback : string -> unit) (directory : string) =
+    let buildWatcher (callback : string -> unit) (directory : string) =
         let w = new FileSystemWatcher(directory, "*")
         w.Renamed.Add (fun e -> callback e.FullPath)
         w.Changed.Add (fun e -> callback e.FullPath)
@@ -603,24 +603,68 @@ module Watcher =
         w.Deleted.Add (fun e -> callback e.FullPath)
         w.EnableRaisingEvents <- true
 
-        let sub = Directory.GetDirectories(directory)
-        if sub.Length = 0 then
-            w :> IDisposable
-        else
-            let sub = sub |> Array.map (buildWatcher callback)
-            { new IDisposable with
-                member x.Dispose() =
-                    w.Dispose()
-                    for s in sub do s.Dispose()
-            }
+        // let sub = Directory.GetDirectories(directory)
+        // if sub.Length = 0 then
+        w :> IDisposable
+        // else
+        //     let sub = sub |> Array.map (buildWatcher callback)
+        //     { new IDisposable with
+        //         member x.Dispose() =
+        //             w.Dispose()
+        //             for s in sub do s.Dispose()
+        //     }
 
 
         
     open System.Threading
 
+    // type RelativePaths =
+    //     | Empty
+    //     | Node of name : string * Map<string, RelativePaths>
+
+    // module RelativePath =
+    //     let ofFiles (basePath : string) (paths : seq<string>) =     
+    //         let basePath = Path.GetFullPath basePath
+
+    //         let mutable res = Empty
+
+    //         for p in paths do   
+    //             let p = Path.GetFullPath p
+
+    //             if p.StartsWith basePath then
+    //                 let rel = p.Substring(basePath.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+    //                 let comps = rel.Split [| Path.DirectorySeparatorChar; Path.AltDirectorySeparatorChar |]
+
+    //                 let rec insert (comps : list<string>) (r : RelativePaths) =
+    //                     match comps with
+    //                     | [] -> 
+    //                         [r]
+    //                     | [f] -> 
+    //                         match r with
+    //                         | Empty ->
+    //                             [ Node(f, Map.empty) ]
+    //                         | Node(a, b) ->
+    //                             if a = f then [Node(a,b)]
+    //                             else [Node(a,b); Node(f, Map.empty)]
+    //                     | f :: rest ->
+    //                         match r with
+    //                         | Empty -> [Node(f, insert rest Empty)]
+    //                         | Node(a,b) ->
+    //                             if a = f then [Node(a, insert rest b)]
+    //                             else [Node(a,b); Node(f, insert rest Empty)]
+
+
+    //                 Trace.tracefn "%s: %A" p comps
+    //             else
+    //                 Trace.traceErrorfn "bad path: %A" p
+
+
+
     let run (timeout : int) (callback : unit -> unit) (files : seq<string>) =
         let files = files |> Seq.map Path.GetFullPath
         let dirs = files |> Seq.map Path.getDirectory |> Set.ofSeq
+
+        //RelativePath.ofFiles "." files
 
         let rec readForSure (tries : int) (file : string) =
             if tries <= 0 then
@@ -696,9 +740,9 @@ module Watcher =
         }
 
     
-
+ 
 let config =
-    Fake.DotNet.DotNet.BuildConfiguration.Debug
+    Fake.DotNet.DotNet.BuildConfiguration.Release
 
 let configName =
     match config with
@@ -725,7 +769,7 @@ Target.create "Packager" (fun _ ->
         Project = Path.Combine("src", "Aardvark.WebAssembly", "Aardvark.WebAssembly.fsproj")
         OutputPath = Path.Combine("bin", configName, "netstandard2.0", "Aardvark.WebAssembly.dll")
         Output = Path.Combine("bin", "wasm")
-        CopyMode = IfNewer
+        CopyMode = Always
         Threads = true
         DynamicRuntime = true
         ZLib = true

@@ -543,7 +543,7 @@ let main _argv =
     c.Class <- "hans hugo"
     Document.Body.AppendChild c
     let gl = c.GetWebGLContext()
-    
+     
     gl.ClearColor(0.0, 0.0, 0.0, 1.0)
     gl.Clear ClearBuffers.Color
     
@@ -557,10 +557,12 @@ let main _argv =
                 
                 -1.0f; -1.0f; 0.0f
                 1.0f; 1.0f; 0.0f
-                -0.5f; 0.5f; 0.0f
+                -1.0f; 1.0f; 0.0f
             |]
         )
 
+    Console.Warn("asdsadasasdasd")
+     
     let col = 
         Uint8Array.op_Implicit (
             Span [|
@@ -619,7 +621,6 @@ let main _argv =
     if not (String.IsNullOrWhiteSpace log) then
         Console.Warn(log)
         
-
     let fs = gl.CreateShader(ShaderType.Fragment)
     gl.ShaderSource(fs, psc)
     gl.CompileShader(fs)
