@@ -1,3 +1,6 @@
+open System.Net
+
+
 #r "paket: groupref Build //"
 #r "netstandard"
 #r "System.Xml"
@@ -27,6 +30,8 @@ module Server =
     open Suave.Sockets
     open Suave.Sockets.Control
     open Suave.WebSocket
+    open Suave.CORS
+    open Suave.State.CookieStateStore
 
     let run (folder : string) =
 
@@ -124,10 +129,83 @@ module Server =
             </style>
 
             <script>
-            var ws = new WebSocket("ws://localhost:8080/ws");
-            ws.onopen = function() { console.warn("connected"); };
+
+            function uuidv4() {
+              return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+              });
+            }
+            if(!window.sessionid) window.sessionid = uuidv4();
+
+            var ws = new WebSocket("ws://" + window.location.host + "/ws?session=" + window.sessionid);
+            ws.onopen = function() { console.log("Hot Reload Enabled"); };
+
+            function showConsole() {
+                let e = document.createElement("div");
+                e.id = "overlay";
+                e.style.position = "fixed";
+                e.style.backgroundColor = "rgba(0,0,0,0.5)";
+                e.style.width = "100%";
+                e.style.height = "100%";
+                e.style.display = "flex";
+                e.style.flexDirection = "column";
+                e.style.justifyContent = "center";
+                e.style.alignItems = "center";
+                e.style.top = "0";
+                e.style.left = "0";
+                e.style.cursor = "text";
+
+                let t = document.createElement("div");
+                t.className="loaderoverlay";
+                t.innerText = "building";
+                t.style.fontFamily = "Consolas";
+                t.style.fontSize = "30pt";
+                t.style.color = "white";
+                t.style.position = "absolute";
+                t.style.right = "130px";
+                t.style.bottom = "30px";
+                t.style.userSelect = "none";
+                t.style.pointerEvents = "none";
+
+                e.appendChild(t);
+
+
+                let s = document.createElement("div");
+                s.className="loaderoverlay";
+                s.innerHTML = "<div class='lds-roller'><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>";
+                //s.style.marginBottom = "10px";
+                s.style.position = "absolute";
+                s.style.right = "30px";
+                s.style.bottom = "10px";
+                s.style.userSelect = "none";
+                s.style.pointerEvents = "none";
+                e.appendChild(s);
+
+                let log = document.createElement("div");
+                log.id = "log";
+                log.style.fontFamily = "Consolas";
+                log.style.fontSize = "10pt";
+                log.style.color = "green";
+                log.style.width = "100%";
+                log.style.height = "50%";
+                log.style.backgroundColor = "rgba(0,0,0,0.8)";
+                log.style.overflowX = "hidden";
+                log.style.overflowY = "auto";
+                log.style.wordWrap = "break-word"
+                log.style.flexGrow = "10";
+                e.appendChild(log);
+
+
+                document.body.appendChild(e);
+            }
+
+
+
             ws.onmessage = function(msg) { 
                 if(msg.data == "reload") {
+                    ws.onmessage = function() {};
+                    ws.close();
                     location.reload(true);
                 }
                 else if(msg.data == "failed") {
@@ -139,67 +217,12 @@ module Server =
                 else if(msg.data == "compile") {
                     const o = document.getElementById("overlay");
                     if(o) o.remove();
-
-
-                    let e = document.createElement("div");
-                    e.id = "overlay";
-                    e.style.position = "fixed";
-                    e.style.backgroundColor = "rgba(0,0,0,0.5)";
-                    e.style.width = "100%";
-                    e.style.height = "100%";
-                    e.style.display = "flex";
-                    e.style.flexDirection = "column";
-                    e.style.justifyContent = "center";
-                    e.style.alignItems = "center";
-                    e.style.top = "0";
-                    e.style.left = "0";
-                    e.style.cursor = "text";
-
-                    let t = document.createElement("div");
-                    t.className="loaderoverlay";
-                    t.innerText = "building";
-                    t.style.fontFamily = "Consolas";
-                    t.style.fontSize = "30pt";
-                    t.style.color = "white";
-                    t.style.position = "absolute";
-                    t.style.right = "130px";
-                    t.style.bottom = "30px";
-                    t.style.userSelect = "none";
-                    t.style.pointerEvents = "none";
-
-                    e.appendChild(t);
-
-
-                    let s = document.createElement("div");
-                    s.className="loaderoverlay";
-                    s.innerHTML = "<div class='lds-roller'><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>";
-                    //s.style.marginBottom = "10px";
-                    s.style.position = "absolute";
-                    s.style.right = "30px";
-                    s.style.bottom = "10px";
-                    s.style.userSelect = "none";
-                    s.style.pointerEvents = "none";
-                    e.appendChild(s);
-
-                    let log = document.createElement("div");
-                    log.id = "log";
-                    log.style.fontFamily = "Consolas";
-                    log.style.fontSize = "10pt";
-                    log.style.color = "green";
-                    log.style.width = "100%";
-                    log.style.height = "50%";
-                    log.style.backgroundColor = "rgba(0,0,0,0.8)";
-                    log.style.overflowX = "hidden";
-                    log.style.overflowY = "auto";
-                    log.style.wordWrap = "break-word"
-                    log.style.flexGrow = "10";
-                    e.appendChild(log);
-
-
-                    document.body.appendChild(e);
-
+                    showConsole();
                 }
                 else {
+                    const o = document.getElementById("overlay");
+                    if(!o) showConsole();
+
                     const log = document.getElementById("log");
                     if(log) {
                         const str = msg.data;
@@ -222,29 +245,43 @@ module Server =
             async {
                 let content = File.ReadAllText (Path.Combine(folder, "index.html")) 
                 let content = reloadScript + content
+
+
+
                 return! OK content ctx
             }
 
 
-        let sockets = System.Collections.Concurrent.ConcurrentDictionary<WebSocket, HttpContext>()
+        let sockets = System.Collections.Concurrent.ConcurrentDictionary<string, WebSocket>()
 
-
+        let lastCount = ref 0
         let send (message : string) =
             let byteResponse =
                 message
                 |> System.Text.Encoding.ASCII.GetBytes
                 |> ByteSegment
 
-            let all = sockets.Keys |> Seq.toArray
+            let all = sockets |> Seq.toArray
 
-            for webSocket in all do
+            if all.Length <> !lastCount then
+                lastCount := all.Length
+                Trace.traceErrorfn "%d sessions" all.Length
+
+            for KeyValue(session, webSocket) in all do
                 try webSocket.send Text byteResponse true |> Async.RunSynchronously |> ignore
-                with _ -> sockets.TryRemove webSocket |> ignore
+                with _ -> sockets.TryRemove session |> ignore
+
 
         let socket (webSocket : WebSocket) (ctx : HttpContext) =
-            socket {
-                sockets.GetOrAdd(webSocket, ctx) |> ignore
-                Trace.tracefn "connected"
+            socket {    
+                
+                let session = 
+                    match ctx.request.queryParam "session" with
+                    | Choice1Of2 a -> a
+                    | Choice2Of2 a -> Guid.NewGuid() |> string
+
+                sockets.AddOrUpdate(session, (fun _ -> webSocket), (fun _ _ -> webSocket)) |> ignore
+                Trace.tracefn "%A connected" session
 
 
                 let loop = ref true
@@ -253,19 +290,10 @@ module Server =
                     let! msg = webSocket.read()
 
                     match msg with
-                    | (Text, data, true) ->
-                        let str = UTF8.toString data
-                        let response = sprintf "response to %s" str
-                        let byteResponse =
-                            response
-                            |> System.Text.Encoding.ASCII.GetBytes
-                            |> ByteSegment
-                        do! webSocket.send Text byteResponse true
-
                     | (Close, _, _) ->
                         let emptyResponse = [||] |> ByteSegment
                         do! webSocket.send Close emptyResponse true
-                        sockets.TryRemove webSocket |> ignore
+                        sockets.TryRemove session |> ignore
                         loop := false
 
                     | _ -> ()
@@ -299,8 +327,10 @@ module Server =
 
         let cancel = new System.Threading.CancellationTokenSource()
 
+
         let config =
             { defaultConfig with
+                bindings = [ HttpBinding.create HTTP IPAddress.Any 8080us ] 
                 homeFolder = Some (Path.GetFullPath "./bin/wasm")
                 mimeTypesMap = defaultMimeTypesMap
             }
@@ -706,6 +736,9 @@ Target.create "Watch" (fun _ ->
 
     let watcher = 
         all |> Watcher.run 200 (fun () ->
+        
+            let o = Console.Out
+            let e = Console.Error
             try
                 use s = Console.OpenStandardOutput()
                 use w = new StreamWriter(s)
@@ -738,22 +771,19 @@ Target.create "Watch" (fun _ ->
                     }
 
 
-                let o = Console.Out
-                let e = Console.Error
                 Console.SetOut myWriter
                 Console.SetError myError
                 try
-                    try
-                        send "compile"
-                        Target.run 1 "Packager" []
-                        send "reload"
-                    with _ ->
-                        send "failed"
-                finally
-                    Console.SetOut o
-                    Console.SetError e
+                    send "compile"
+                    Target.run 1 "Packager" []
+                    send "reload"
+                with _ ->
+                    send "failed"
             with _ ->
                 ()
+
+            Console.SetOut o
+            Console.SetError e
         )
 
 

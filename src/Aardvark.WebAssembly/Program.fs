@@ -538,16 +538,16 @@ let main _argv =
     let c = Document.CreateCanvasElement()
     c.Id <- "bla"
     c.Style.BackgroundColor <- "red"
-    c.Width <- 800
+    c.Width <- 600
     c.Height <- 600
     c.Class <- "hans hugo"
     Document.Body.AppendChild c
     let gl = c.GetWebGLContext()
-
+    
     gl.ClearColor(1.0, 1.0, 1.0, 1.0)
     gl.Clear ClearBuffers.Color
-
-
+    
+    
     let pos = 
         Float32Array.op_Implicit (
             Span [| 
@@ -574,7 +574,6 @@ let main _argv =
     gl.BindBuffer(BufferTarget.Array, cb)
     gl.BufferData(BufferTarget.Array, col, BufferUsage.StaticDraw)
     gl.BindBuffer(BufferTarget.Array, null)
-
 
     let vsc =
         """#version 300 es
@@ -609,7 +608,7 @@ let main _argv =
     let log = gl.GetShaderInfoLog vs
     if not (String.IsNullOrWhiteSpace log) then
         Console.Warn(log)
-
+        
 
     let fs = gl.CreateShader(ShaderType.Fragment)
     gl.ShaderSource(fs, psc)
