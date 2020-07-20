@@ -357,6 +357,14 @@ module Server =
                 WorkingDir = "."
             } |> ignore
             
+        elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then
+            Process.shellExec {
+                Program = "open"
+                Args = []
+                CommandLine = "http://localhost:8080"
+                WorkingDir = "."
+            } |> ignore
+            
             ()
             
 

@@ -538,7 +538,7 @@ let main _argv =
     let c = Document.CreateCanvasElement()
     c.Id <- "bla"
     c.Style.BackgroundColor <- "red"
-    c.Width <- 600
+    c.Width <- 800
     c.Height <- 600
     c.Class <- "hans hugo"
     Document.Body.AppendChild c
