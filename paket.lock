@@ -1,13 +1,34 @@
 STORAGE: NONE
 COPY-LOCAL: TRUE
-RESTRICTION: == netstandard2.1
+RESTRICTION: == netstandard2.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
+    Aardvark.Base (5.0.14)
+      Aardvark.Base.Telemetry (5.0.14)
+      DevILSharp (>= 0.2.9 < 0.3)
+      System.Collections.Immutable (>= 1.7 < 2.0)
+      System.Reflection.Metadata (>= 1.8 < 2.0)
+    Aardvark.Base.Telemetry (5.0.14)
+    DevILSharp (0.2.9)
+      FSharp.Core (>= 4.6.2)
     FSharp.Core (4.7.2)
     FSharp.Data.Adaptive (1.0)
       FSharp.Core (>= 4.6.2)
       System.Reflection.Emit.Lightweight (>= 4.6)
+    System.Buffers (4.5.1)
+    System.Collections.Immutable (1.7.1)
+      System.Memory (>= 4.5.4)
+    System.Memory (4.5.4)
+      System.Buffers (>= 4.5.1)
+      System.Numerics.Vectors (>= 4.4)
+      System.Runtime.CompilerServices.Unsafe (>= 4.5.3)
+    System.Numerics.Vectors (4.5)
+    System.Reflection.Emit.ILGeneration (4.7)
     System.Reflection.Emit.Lightweight (4.7)
+      System.Reflection.Emit.ILGeneration (>= 4.7)
+    System.Reflection.Metadata (1.8.1)
+      System.Collections.Immutable (>= 1.7.1)
+    System.Runtime.CompilerServices.Unsafe (4.7.1)
   remote: https://vrvis.myget.org/F/aardvark_public/api/v3/index.json
     Mono.WebAssembly.Sdk (0.2.3)
     WebAssembly.Bindings (0.2.3)

@@ -1,4 +1,4 @@
-framework: netstandard2.1
+framework: netstandard2.0
 source https://api.nuget.org/v3/index.json
 source https://vrvis.myget.org/F/aardvark_public/api/v3/index.json
 copy_local: true
@@ -9,4 +9,5 @@ nuget Mono.WebAssembly.Sdk  ~> 0.2.3
 nuget WebAssembly.Bindings  ~> 0.2.3
 
 nuget FSharp.Data.Adaptive  ~> 1.0.0
-
+nuget Aardvark.Base.Telemetry ~> 5.0.14
+nuget Aardvark.Base ~> 5.0.14

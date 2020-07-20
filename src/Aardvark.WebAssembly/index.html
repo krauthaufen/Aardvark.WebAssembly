@@ -24,9 +24,20 @@ window.Module.onRuntimeInitialized = () => {
         'System.IO.dll',
         'System.Numerics.dll',
         'System.Console.dll',
+        'System.Numerics.Vectors.dll',
         'System.Globalization.dll',
         'Aardvark.WebAssembly.dll',
-        'FSharp.Data.Adaptive.dll'
+        'FSharp.Data.Adaptive.dll',
+        'Aardvark.Base.Telemetry.dll',
+        'System.IO.Compression.dll',
+        'System.Runtime.CompilerServices.Unsafe.dll',
+        'System.Runtime.InteropServices.dll',
+        'System.Collections.dll',
+        'System.Collections.Concurrent.dll',
+        'System.ComponentModel.Composition.dll',
+        'System.Collections.Immutable.dll',
+        'DevILSharp.dll',
+        'Aardvark.Base.dll'
    ];
    MONO.mono_load_runtime_and_bcl(
        config.vfsPrefix,

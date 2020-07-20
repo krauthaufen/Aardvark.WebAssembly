@@ -486,22 +486,22 @@ module RuntimValues =
 
 
 
-//open FSharp.Data.Adaptive
-//open System.Reflection.Emit
-//open System.Reflection
+open FSharp.Data.Adaptive
+open System.Reflection.Emit
+open System.Reflection
 
-//let testDynamicMethod() =
-//    Console.Begin "DynamicMethod"
-//    let m = DynamicMethod("bla", typeof<int>, [| typeof<int> |] )
-//    let il = m.GetILGenerator()
-//    il.Emit(OpCodes.Ldarg_0)
-//    il.Emit(OpCodes.Ldc_I4, 5)
-//    il.Emit(OpCodes.Add)
-//    il.Emit(OpCodes.Ret)
+let testDynamicMethod() =
+    Console.Begin "DynamicMethod"
+    let m = DynamicMethod("bla", typeof<int>, [| typeof<int> |] )
+    let il = m.GetILGenerator()
+    il.Emit(OpCodes.Ldarg_0)
+    il.Emit(OpCodes.Ldc_I4, 5)
+    il.Emit(OpCodes.Add)
+    il.Emit(OpCodes.Ret)
 
-//    let f = m.CreateDelegate(typeof<Func<int, int>>) |> unbox<Func<int, int>>
-//    Console.Log(15, "=?=", f.Invoke(10))
-//    Console.End()
+    let f = m.CreateDelegate(typeof<Func<int, int>>) |> unbox<Func<int, int>>
+    Console.Log("dyn", 15, "=?=", f.Invoke(10))
+    Console.End()
 
 open FSharp.Data.Adaptive
 
@@ -528,14 +528,18 @@ let testArrayBuffer() =
     print.Call(null, a) |> ignore
     Console.End()
 
+open Aardvark.Base
 
 [<EntryPoint>]
 let main _argv =
-    testAdaptive()
-    //testDynamicMethod()
+    testDynamicMethod()
     testArrayBuffer()
+    testAdaptive()
 
+    Console.Log(V2d(1,2).ToString())
 
+    Aardvark.Base.Telemetry.ResetTelemetrySystem()
+    let p = Aardvark.Base.Telemetry.CpuTime()
     let c = Document.CreateCanvasElement()
     c.Id <- "bla"
     c.Style.BackgroundColor <- "red"
@@ -543,10 +547,10 @@ let main _argv =
     c.Height <- 300
     c.Class <- "hans sepp"
     Document.Body.AppendChild c
-
+    Console.Warn(p.ValueDouble)
     let gl = c.GetWebGLContext()
 
-    gl.ClearColor(1.0, 0.0, 1.0, 1.0)
+    gl.ClearColor(0.0, 0.0, 0.0, 1.0)
     gl.Clear ClearBuffers.Color
 
 
