@@ -512,6 +512,7 @@ module Packager =
                 if config.Threads then "--threads"
                 if config.DynamicRuntime then "--dynamic-runtime"
                 if config.ZLib then "--zlib"
+                "--enable-fs"
 
                 for r in config.References do
                     let r = Path.GetFullPath r

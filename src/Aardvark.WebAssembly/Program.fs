@@ -4,8 +4,7 @@ module Bla
 open System
 open WebAssembly
 open WebAssembly.Core
-// C:\Users\Schorsch\Downloads\mono-wasm-28315c66b74>
-//    packager.exe --appdir=bla --search-path=C:\Users\Schorsch\.nuget\packages\fsharp.core\4.7.0\lib\netstandard2.0 "C:\Users\Schorsch\Development\wasm\Wasm\bin\Debug\netstandard2.1\Wasm.dll" C:\Users\Schorsch\.nuget\packages\fsharp.core\4.7.0\lib\netstandard2.0\FSharp.Core.dll
+open Aardvark.Base
 
 [<AllowNullLiteral>]
 type JsObj(r : JSObject) =
@@ -13,7 +12,7 @@ type JsObj(r : JSObject) =
         match o with
         | :? JsObj as o -> o.Reference :> obj
         | _ -> o
-
+        
     member x.Reference = r
 
     member x.Call(meth : string, a0 : 'a) =
@@ -288,6 +287,9 @@ type WebGLRenderingContext(ref : JSObject) =
 
     member x.VertexAttribPointer(index : int, size : int, typ : VertexAttribType, normalized : bool, stride : int, offset : int) =
         ref.Invoke("vertexAttribPointer", index, size, int typ, normalized, stride, offset) |> ignore
+        
+    member x.Uniform(location : int, value : int) =
+        ref.Invoke("uniform1i", location, value) |> ignore
 
     member x.DrawArrays(mode : PrimitiveTopology, first : int, count : int) =
         ref.Invoke("drawArrays", int mode, first, count) |> ignore
@@ -297,6 +299,14 @@ type WebGLRenderingContext(ref : JSObject) =
 
     member x.Clear(flags : ClearBuffers) =
         ref.Invoke("clear", int flags) |> ignore
+
+    member x.BindBufferRange(target : BufferTarget, index : int, buffer : WebGLBuffer, offset : int, size : int) =
+        if isNull buffer then ref.Invoke("bindBufferRange", int target, index, null, offset, size) |> ignore
+        else ref.Invoke("bindBufferRange", int target, index, buffer.Reference, offset, size) |> ignore
+        
+    member __.Viewport(x : int, y : int, w : int, h : int) =
+        ref.Invoke("viewport", x,y,w,h) |> ignore
+
 
 type CSSStyleDeclaration(r : JSObject) =
     inherit JsObj(r)
@@ -430,6 +440,13 @@ type HTMLElement(r : JSObject) =
     member x.AppendChild(e : HTMLElement) =
         r.Invoke("appendChild", e.Reference) |> ignore
         
+    member x.GetSize() =
+        use o = r.Invoke("getBoundingClientRect") |> unbox<JSObject>
+        let w = o.GetObjectProperty("width") |> System.Convert.ToDouble
+        let h = o.GetObjectProperty("height") |> System.Convert.ToDouble
+        V2d(w, h)
+
+
 
 type HTMLCanvasElement(r : JSObject) =
     inherit HTMLElement(r)
@@ -525,21 +542,28 @@ let testArrayBuffer() =
     print.Call(null, a) |> ignore
     Console.End()
 
-open Aardvark.Base
+let testAardvarkBase() =
+    Console.Begin "Aardvark.Base" 
+    Console.Log("[1, 1.5] =?= ", V2d(1.0, 1.5).ToString())
+    Console.End()
+
 
 [<EntryPoint>]
 let main _argv =
     testDynamicMethod()
     testArrayBuffer()
     testAdaptive()
+    testAardvarkBase()
 
-    Console.Log(V2d(1,2).ToString())
+    Document.Body.Style.Reference.SetObjectProperty("margin", "0")
+    Document.Body.Style.Reference.SetObjectProperty("padding", "0")
 
     let c = Document.CreateCanvasElement()
     c.Id <- "bla"
-    c.Style.BackgroundColor <- "red"
-    c.Width <- 800
-    c.Height <- 600
+    //c.Width <- 800
+    //c.Height <- 600
+    c.Style.Width <- "100%"
+    c.Style.Height <- "100%"
     c.Class <- "hans hugo"
     Document.Body.AppendChild c
     let gl = c.GetWebGLContext()
@@ -550,29 +574,27 @@ let main _argv =
     let pos = 
         Float32Array.op_Implicit (
             Span [| 
-                -1.0f; -1.0f; 0.0f
-                1.0f; -1.0f; 0.0f
-                1.0f; 1.0f; 0.0f
+                -0.9f; -0.9f; 0.0f
+                0.9f; -0.9f; 0.0f
+                0.9f; 0.9f; 0.0f
 
                 
-                -1.0f; -1.0f; 0.0f
-                1.0f; 1.0f; 0.0f
-                -1.0f; 1.0f; 0.0f
+                -0.9f; -0.9f; 0.0f
+                0.9f; 0.9f; 0.0f
+                -0.9f; 0.9f; 0.0f
             |]
         )
 
-    Console.Warn("asdsadasasdasd")
-     
     let col = 
         Uint8Array.op_Implicit (
             Span [|
                 255uy; 0uy; 0uy; 255uy
-                0uy; 255uy; 0uy; 255uy
+                255uy; 255uy; 255uy; 255uy
                 0uy; 0uy; 255uy; 255uy
                 
-                255uy; 0uy; 0uy; 255uy
-                0uy; 0uy; 255uy; 255uy
-                255uy; 255uy; 0uy; 255uy
+                255uy; 0uy; 0uy;   255uy
+                0uy; 0uy; 255uy;   255uy
+                0uy; 255uy; 0uy; 255uy
 
             |]
         )
@@ -596,7 +618,7 @@ let main _argv =
 
         void main() {
             gl_Position = v_position;
-            f_color = v_color;
+            f_color = vec4(v_color.rgb, 1.0);
         }
 
 
@@ -608,8 +630,14 @@ let main _argv =
         in vec4 f_color;
         out vec4 c;
 
+        uniform MyBuffer {
+            float time;
+        };
+
         void main() {
-            c = f_color;
+            float x = sin(5.0*time - dot(gl_FragCoord.xy / 100.0, normalize(vec2(1,2)))) * sin(3.0*time - dot(gl_FragCoord.xy / 50.0, normalize(vec2(-2,1))));
+            float a = 0.4 * x + 0.6;
+            c = vec4(f_color.rgb * a, 1.0);
         }
 
         """
@@ -636,25 +664,48 @@ let main _argv =
     let log = gl.GetProgramInfoLog(p)
     if not (String.IsNullOrWhiteSpace log) then
         Console.Warn(log)
+        
+    let ub = gl.CreateBuffer()
+    gl.BindBuffer(BufferTarget.Uniform, ub)
+    gl.BufferData(BufferTarget.Uniform, Float32Array.op_Implicit (Span (Array.create 64 1.0f)), BufferUsage.DynamicDraw)
+    gl.BindBuffer(BufferTarget.Uniform, null)
 
+    let sw = System.Diagnostics.Stopwatch.StartNew()
+    let rec draw() = 
+        
+        let s = c.GetSize()
+        c.Width <- int s.X
+        c.Height <- int s.Y
 
-    gl.UseProgram(p)
+        gl.Viewport(0,0,int s.X, int s.Y)
+        gl.BindBuffer(BufferTarget.Uniform, ub)
+        gl.BufferData(BufferTarget.Uniform, Float32Array.op_Implicit (Span (Array.create 64 (float32 sw.Elapsed.TotalSeconds))), BufferUsage.DynamicDraw)
+        gl.BindBuffer(BufferTarget.Uniform, null)
+        
+        let a = HSVf(float32 (0.05 * sw.Elapsed.TotalSeconds % 1.0), 0.7f, 0.5f).ToC3f()
 
-    gl.BindBuffer(BufferTarget.Array, pb)
-    gl.EnableVertexAttribArray 0
-    gl.VertexAttribPointer(0, 3, VertexAttribType.Float, false, 12, 0)
+        gl.ClearColor(float a.R, float a.G, float a.B, 1.0)
+        gl.Clear ClearBuffers.Color
+    
+        gl.UseProgram(p)
+
+        gl.BindBuffer(BufferTarget.Array, pb)
+        gl.EnableVertexAttribArray 0
+        gl.VertexAttribPointer(0, 3, VertexAttribType.Float, false, 12, 0)
 
     
-    gl.BindBuffer(BufferTarget.Array, cb)
-    gl.EnableVertexAttribArray 1
-    gl.VertexAttribPointer(1, 4, VertexAttribType.UnsignedByte, true, 4, 0)
+        gl.BindBuffer(BufferTarget.Array, cb)
+        gl.EnableVertexAttribArray 1
+        gl.VertexAttribPointer(1, 4, VertexAttribType.UnsignedByte, true, 4, 0)
     
+        gl.BindBufferRange(BufferTarget.Uniform, 0, ub, 0, 256)
 
-    gl.DrawArrays(PrimitiveTopology.Triangles, 0, 6)
+        gl.DrawArrays(PrimitiveTopology.Triangles, 0, 6)
 
-    gl.UseProgram(null)
-
-
+        gl.UseProgram(null)
 
 
+        Window.Reference.Invoke("setTimeout", System.Action(fun () -> draw()), 16) |> ignore
+
+    draw()
     0
