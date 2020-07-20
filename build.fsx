@@ -750,7 +750,7 @@ module Watcher =
     
  
 let config =
-    Fake.DotNet.DotNet.BuildConfiguration.Release
+    Fake.DotNet.DotNet.BuildConfiguration.Debug
 
 let configName =
     match config with
@@ -777,7 +777,7 @@ Target.create "Packager" (fun _ ->
         Project = Path.Combine("src", "Aardvark.WebAssembly", "Aardvark.WebAssembly.fsproj")
         OutputPath = Path.Combine("bin", configName, "netstandard2.0", "Aardvark.WebAssembly.dll")
         Output = Path.Combine("bin", "wasm")
-        CopyMode = Always
+        CopyMode = IfNewer
         Threads = true
         DynamicRuntime = true
         ZLib = true
