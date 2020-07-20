@@ -1,3 +1,4 @@
+version: 5.247.4
 framework: netstandard2.0
 source https://api.nuget.org/v3/index.json
 source https://vrvis.myget.org/F/aardvark_public/api/v3/index.json
@@ -11,3 +12,21 @@ nuget WebAssembly.Bindings  ~> 0.2.3
 nuget FSharp.Data.Adaptive  ~> 1.0.0
 nuget Aardvark.Base.Telemetry ~> 5.0.14
 nuget Aardvark.Base ~> 5.0.14
+
+group Build
+framework: netstandard2.0
+source https://api.nuget.org/v3/index.json
+	
+nuget SourceLink.Fake                ~> 1.1.0
+nuget Mono.Cecil                     ~> 0.10.4
+nuget Fake.IO.FileSystem             ~> 5.20.2
+nuget Fake.DotNet.Cli                ~> 5.20.2
+nuget Fake.DotNet.MSBuild            ~> 5.20.2
+nuget Fake.Tools.Git                 ~> 5.20.2
+nuget Fake.Core.Target               ~> 5.20.2
+nuget Fake.DotNet.Paket              ~> 5.20.2
+nuget Fake.DotNet.NuGet              ~> 5.20.2
+nuget Paket.Core                     ~> 5.247.4
+nuget Argu                           ~> 5.5.0
+nuget System.IO.Compression.ZipFile  ~> 4.3.0
+nuget fake-cli                       ~> 5.20.2

@@ -4,3 +4,5 @@ paket-files
 .vs
 /.paket
 /packages
+/.fake
+build.fsx.lock
