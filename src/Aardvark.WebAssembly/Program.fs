@@ -567,7 +567,7 @@ let main _argv =
                 255uy; 0uy; 0uy; 255uy
                 0uy; 255uy; 0uy; 255uy
                 0uy; 0uy; 255uy; 255uy
-                 
+                
                 255uy; 0uy; 0uy; 255uy
                 0uy; 0uy; 255uy; 255uy
                 255uy; 255uy; 0uy; 255uy

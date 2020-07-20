@@ -265,7 +265,7 @@ module Server =
 
             if all.Length <> !lastCount then
                 lastCount := all.Length
-                Trace.traceErrorfn "%d sessions" all.Length
+                Trace.tracefn "%d sessions" all.Length
 
             for KeyValue(session, webSocket) in all do
                 try webSocket.send Text byteResponse true |> Async.RunSynchronously |> ignore
@@ -346,6 +346,14 @@ module Server =
                 Program = "cmd.exe"
                 Args = []
                 CommandLine = "/C START http://localhost:8080"
+                WorkingDir = "."
+            } |> ignore
+
+        elif RuntimeInformation.IsOSPlatform OSPlatform.Linux then
+            Process.shellExec {
+                Program = "xdg-open"
+                Args = []
+                CommandLine = "http://localhost:8080"
                 WorkingDir = "."
             } |> ignore
             
@@ -476,7 +484,8 @@ module Packager =
 
     let package (config : PackagerConfig) =
         
-        Directory.Delete(config.Output, true)
+        if Directory.Exists config.Output then
+            Directory.Delete(config.Output, true)
 
         let args =
             [
