@@ -5,38 +5,7 @@ open System
 open WebAssembly
 open WebAssembly.Core
 open Aardvark.Base
-
-[<AllowNullLiteral>]
-type JsObj(r : JSObject) =
-    static let unbox (o : obj) =
-        match o with
-        | :? JsObj as o -> o.Reference :> obj
-        | _ -> o
-        
-    member x.Reference = r
-
-    member x.Call(meth : string, a0 : 'a) =
-        r.Invoke(meth, unbox a0)
-        
-    member x.Call(meth : string, a0 : 'a, a1 : 'b) =
-        r.Invoke(meth, unbox a0, unbox a1)
-
-    member x.Call(meth : string, a0 : 'a, a1 : 'b, a2 : 'c) =
-        r.Invoke(meth, unbox a0, unbox a1, unbox a2)
-
-    member x.Call(meth : string, a0 : 'a, a1 : 'b, a2 : 'c, a3 : 'd) =
-        r.Invoke(meth, unbox a0, unbox a1, unbox a2, unbox a3)
-
-    member x.Item
-        with get(name : string) = r.GetObjectProperty(name)
-        and set (name : string) (value : obj) = r.SetObjectProperty(name, unbox value)
-
-    member private x.Dispose(disposing : bool) =
-        if disposing then GC.SuppressFinalize x
-        r.Dispose()
-
-    override x.Finalize() = x.Dispose false
-    member x.Dispose() = x.Dispose true
+open Aardvark.WebAssembly
 
 
 let inline (?) (o : JsObj) (name : string) : 'a =
@@ -139,26 +108,32 @@ type BlendFactor =
 [<AllowNullLiteral>]
 type WebGLProgram(ref : JSObject) =
     inherit JsObj(ref)
+    new(o : JsObj) = WebGLProgram(o.Reference)
 
 [<AllowNullLiteral>]
 type WebGLShader(ref : JSObject) =
     inherit JsObj(ref)
+    new(o : JsObj) = WebGLShader(o.Reference)
 
 [<AllowNullLiteral>]
 type WebGLBuffer(ref : JSObject) =
     inherit JsObj(ref)
+    new(o : JsObj) = WebGLBuffer(o.Reference)
 
 [<AllowNullLiteral>]
 type WebGLFramebuffer(ref : JSObject) =
     inherit JsObj(ref)
+    new(o : JsObj) = WebGLFramebuffer(o.Reference)
 
 [<AllowNullLiteral>]
 type WebGLRenderbuffer(ref : JSObject) =
     inherit JsObj(ref)
+    new(o : JsObj) = WebGLRenderbuffer(o.Reference)
     
 [<AllowNullLiteral>]
 type WebGLTexture(ref : JSObject) =
     inherit JsObj(ref)
+    new(o : JsObj) = WebGLTexture(o.Reference)
 
 type WebGLRenderingContext(ref : JSObject) =
     inherit JsObj(ref)
@@ -307,6 +282,8 @@ type WebGLRenderingContext(ref : JSObject) =
     member __.Viewport(x : int, y : int, w : int, h : int) =
         ref.Invoke("viewport", x,y,w,h) |> ignore
 
+    new(o : JsObj) = WebGLRenderingContext(o.Reference)
+
 
 type CSSStyleDeclaration(r : JSObject) =
     inherit JsObj(r)
@@ -323,9 +300,11 @@ type CSSStyleDeclaration(r : JSObject) =
     member x.BackgroundColor
         with get() : string = r.GetObjectProperty("background-color") |> unbox<string>
         and set (v : string) = r.SetObjectProperty("background-color", v)
+        
+    new(o : JsObj) = CSSStyleDeclaration(o.Reference)
 
 type HTMLElement(r : JSObject) =
-    inherit JsObj(r)
+    inherit Element(r)
 
     
      
@@ -437,14 +416,16 @@ type HTMLElement(r : JSObject) =
         with get() = r.GetObjectProperty("title") |> unbox<string>
         and set (id : string) = r.SetObjectProperty("title", id)
 
-    member x.AppendChild(e : HTMLElement) =
-        r.Invoke("appendChild", e.Reference) |> ignore
-        
     member x.GetSize() =
-        use o = r.Invoke("getBoundingClientRect") |> unbox<JSObject>
-        let w = o.GetObjectProperty("width") |> System.Convert.ToDouble
-        let h = o.GetObjectProperty("height") |> System.Convert.ToDouble
+        if r.IsDisposed then failwith "r disposed"
+        let o = r.Invoke("getBoundingClientRect") |> unbox<JSObject>
+        if o.IsDisposed then failwith "o disposed"
+        
+        let w = (o.GetObjectProperty("width")) |> System.Convert.ToDouble
+        let h = (o.GetObjectProperty("height")) |> System.Convert.ToDouble
         V2d(w, h)
+
+    new(o : JsObj) = HTMLElement(o.Reference)
 
 
 
@@ -462,6 +443,8 @@ type HTMLCanvasElement(r : JSObject) =
     member x.GetWebGLContext() =
         r.Invoke("getContext", "webgl2") |> unbox<JSObject> |> WebGLRenderingContext
 
+    new(o : JsObj) = HTMLCanvasElement(o.Reference)
+
 
 type HTMLDocument(r : JSObject) =
     inherit JsObj(r)
@@ -471,6 +454,8 @@ type HTMLDocument(r : JSObject) =
     member x.CreateElement(tagName : string) = r.Invoke("createElement", tagName) |> unbox<JSObject> |> HTMLElement
     
     member x.CreateCanvasElement() = r.Invoke("createElement", "canvas") |> unbox<JSObject> |> HTMLCanvasElement
+    
+    new(o : JsObj) = HTMLDocument(o.Reference)
     
 
 type Console(r : JSObject) =
@@ -490,13 +475,15 @@ type Console(r : JSObject) =
     
     member x.Warn([<ParamArray>] values : obj[]) =
         r.Invoke("warn", values) |> ignore
+        
+    new(o : JsObj) = Console(o.Reference)
     
 
 [<AutoOpen>]
 module RuntimValues = 
-    let Window = JsObj (unbox (Runtime.GetGlobalObject "window"))
-    let Document = HTMLDocument (unbox (Runtime.GetGlobalObject "document"))
-    let Console = Console (unbox (Runtime.GetGlobalObject "console"))
+    let Window = JsObj (unbox<JSObject> (Runtime.GetGlobalObject "window"))
+    let Document = HTMLDocument (unbox<JSObject> (Runtime.GetGlobalObject "document"))
+    let Console = Console (unbox<JSObject> (Runtime.GetGlobalObject "console"))
 
 
 
@@ -559,15 +546,43 @@ let main _argv =
     Document.Body.Style.Reference.SetObjectProperty("padding", "0")
 
     let c = Document.CreateCanvasElement()
+
+    c.AddEventListener("pointerdown", fun e -> 
+        let e = PointerEvent e
+        let t = HTMLElement e.Target
+        Console.Log(t.Id)
+        Console.Begin("pointer")
+        Console.Log("button", string e.Button)
+        Console.Log("buttons", string e.Buttons)
+        Console.Log("pointerId", e.PointerId)
+        Console.Log("client", e.ClientX, e.ClientY)
+        Console.Log("offset", e.OffsetX, e.OffsetY)
+        Console.Log("page", e.PageX, e.PageY)
+        Console.Log("screen", e.ScreenX, e.ScreenY)
+        Console.Log("alt", e.Alt)
+        Console.Log("ctrl", e.Ctrl)
+        Console.Log("meta", e.Meta)
+        Console.Log("shift", e.Shift)
+        Console.End()
+    )
+    //let d = c.SubscribeEventListener("pointermove", fun e -> Console.Log("mouse", e?clientX, e?clientY))
+    
+    //c.AddEventListener("mousedown", fun _ -> d.Dispose())
+
     c.Id <- "bla"
     //c.Width <- 800
     //c.Height <- 600
     c.Style.Width <- "100%"
     c.Style.Height <- "100%"
     c.Class <- "hans hugo"
+
+    for a in c.Attributes do
+        printfn "%s: %A" a.Name a.Value
+
     Document.Body.AppendChild c
     let gl = c.GetWebGLContext()
      
+
     gl.ClearColor(0.0, 0.0, 0.0, 1.0)
     gl.Clear ClearBuffers.Color
     
@@ -670,19 +685,29 @@ let main _argv =
     gl.BufferData(BufferTarget.Uniform, Float32Array.op_Implicit (Span (Array.create 64 1.0f)), BufferUsage.DynamicDraw)
     gl.BindBuffer(BufferTarget.Uniform, null)
 
-    let sw = System.Diagnostics.Stopwatch.StartNew()
-    let rec draw() = 
+    let mutable cnt = 0
+    let mutable lastPrint = 0.0
+    let rec draw(t : float) = 
         
+        let dt = t - lastPrint
+        if dt > 2000.0 then
+            let fps = 1000.0 * float cnt / dt
+            //Console.Log("fps", fps.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))
+            lastPrint <- t 
+            cnt <- 0
+
+        cnt <- cnt + 1 
+
         let s = c.GetSize()
         c.Width <- int s.X
         c.Height <- int s.Y
 
         gl.Viewport(0,0,int s.X, int s.Y)
         gl.BindBuffer(BufferTarget.Uniform, ub)
-        gl.BufferData(BufferTarget.Uniform, Float32Array.op_Implicit (Span (Array.create 64 (float32 sw.Elapsed.TotalSeconds))), BufferUsage.DynamicDraw)
+        gl.BufferData(BufferTarget.Uniform, Float32Array.op_Implicit (Span (Array.create 64 (float32 t / 1000.0f))), BufferUsage.DynamicDraw)
         gl.BindBuffer(BufferTarget.Uniform, null)
         
-        let a = HSVf(float32 (0.05 * sw.Elapsed.TotalSeconds % 1.0), 0.7f, 0.5f).ToC3f()
+        let a = HSVf(float32 (0.05 * t / 1000.0 % 1.0), 0.7f, 0.5f).ToC3f()
 
         gl.ClearColor(float a.R, float a.G, float a.B, 1.0)
         gl.Clear ClearBuffers.Color
@@ -704,8 +729,9 @@ let main _argv =
 
         gl.UseProgram(null)
 
+        Window.Reference.Invoke("requestAnimationFrame", System.Action<float>(fun dt -> draw dt)) |> ignore
 
-        Window.Reference.Invoke("setTimeout", System.Action(fun () -> draw()), 16) |> ignore
+    draw 0.0
 
-    draw()
+
     0
