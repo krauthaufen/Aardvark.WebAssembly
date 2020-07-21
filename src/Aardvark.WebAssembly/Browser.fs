@@ -87,6 +87,19 @@ type KeyboardLocation =
     | NumPad = 3
     | Mobile = 4
     | JoyStick = 5
+    
+[<RequireQualifiedAccess>]
+type InsertMode =
+    | BeforeBegin
+    | AfterBegin
+    | BeforeEnd
+    | AfterEnd
+    
+[<RequireQualifiedAccess>]
+type ScrollBehaviour =
+    | Auto
+    | Smooth
+
 
 /// The Event interface represents an event which takes place in the DOM.
 [<AllowNullLiteral>]
@@ -1416,7 +1429,7 @@ type Element(r : JSObject) =
         
     /// The Element.getBoundingClientRect() method returns the size of an element and its position relative to the viewport.
     member x.GetBoundingClientRect() =
-        let o = r.Invoke("getBoundingClientRect") |> unbox<JsObj>
+        let o = r.Invoke("getBoundingClientRect") |> convert<JsObj>
         let x = convert<float> o.["x"]
         let y = convert<float> o.["y"]
         let w = convert<float> o.["width"]
@@ -1441,6 +1454,488 @@ type Element(r : JSObject) =
     /// Returns a Boolean indicating if the element has the specified attribute or not.
     member x.HasAttribute(ns : string, name : string) = r.Invoke("hasAttributeNS", ns, name) |> convert<bool>
 
+    /// The hasAttributes() method of the Element interface returns a Boolean indicating whether the current element has any attributes or not.
+    member x.HasAttributes() = r.Invoke("hasAttributes") |> convert<bool>
+
+    /// The hasPointerCapture() method of the Element interface sets whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID.
+    member x.HasPointerCapture(id : int) = r.Invoke("hasPointerCapture", id) |> convert<bool>
+    
+    /// The insertAdjacentElement() method of the Element interface inserts a given element node at a given position relative to the element it is invoked upon.
+    member x.InsertAdjacentElement(position : InsertMode, element : Element) = 
+        let position =
+            match position with
+            | InsertMode.BeforeBegin -> "beforebegin"
+            | InsertMode.AfterBegin -> "afterbegin"
+            | InsertMode.BeforeEnd -> "beforeend"
+            | InsertMode.AfterEnd -> "afterend"
+    
+        r.Invoke("insertAdjacentElement", position, js element) |> ignore
+    
+    /// The insertAdjacentHTML() method of the Element interface parses the specified text as HTML or XML and inserts the resulting nodes into the DOM tree at a specified position. It does not reparse the element it is being used on, and thus it does not corrupt the existing elements inside that element. This avoids the extra step of serialization, making it much faster than direct innerHTML manipulation.
+    member x.InsertAdjacentHTML(position : InsertMode, text : string) = 
+        let position =
+            match position with
+            | InsertMode.BeforeBegin -> "beforebegin"
+            | InsertMode.AfterBegin -> "afterbegin"
+            | InsertMode.BeforeEnd -> "beforeend"
+            | InsertMode.AfterEnd -> "afterend"
+    
+        r.Invoke("insertAdjacentHTML", position, text) |> ignore
+
+    /// The insertAdjacentText() method of the Element interface inserts a given text node at a given position relative to the element it is invoked upon.
+    member x.InsertAdjacentText(position : InsertMode, text : string) = 
+        let position =
+            match position with
+            | InsertMode.BeforeBegin -> "beforebegin"
+            | InsertMode.AfterBegin -> "afterbegin"
+            | InsertMode.BeforeEnd -> "beforeend"
+            | InsertMode.AfterEnd -> "afterend"
+    
+        r.Invoke("insertAdjacentText", position, text) |> ignore
+
+    /// The matches() method checks to see if the Element would be selected by the provided selectorString -- in other words -- checks if the element "is" the selector.
+    member x.Matches(selector : string) =
+        r.Invoke("matches", selector) |> convert<bool>
+
+    /// The querySelector() method of the Element interface returns the first element that is a descendant of the element on which it is invoked that matches the specified group of selectors.
+    member x.QuerySelector(selector : string) =
+        r.Invoke("querySelector", selector) |> convert<Element>
+        
+    /// The Element method querySelectorAll() returns a static (not live) NodeList representing a list of elements matching the specified group of selectors which are descendants of the element on which the method was called.
+    member x.QuerySelectorAll(selector : string) =
+        r.Invoke("querySelectorAll", selector) |> convert<NodeList>
+
+    /// The releasePointerCapture() method of the Element interface releases (stops) pointer capture that was previously set for a specific (PointerEvent) pointer.
+    member x.ReleasePointerCapture(id : int) =
+        r.Invoke("releasePointerCapture", id) |> ignore
+
+    /// Removes the element from the children list of its parent.
+    member x.Remove() =
+        r.Invoke("remove") |> ignore
+
+    /// The Element method removeAttribute() removes the attribute with the specified name from the element.
+    member x.RemoveAttribute(name : string) =
+        r.Invoke("removeAttribute", name) |> ignore
+        
+    /// The Element method removeAttribute() removes the attribute with the specified name from the element.
+    member x.RemoveAttribute(ns : string, name : string) =
+        r.Invoke("removeAttributeNS", ns, name) |> ignore
+
+    /// The Element.requestFullscreen() method issues an asynchronous request to make the element be displayed in full-screen mode.
+    member x.RequestFullscreen(?options : obj) =
+        match options with
+        | Some o -> r.Invoke("requestFullscreen", js o) |> convert<Task>
+        | None -> r.Invoke("requestFullscreen") |> convert<Task>
+        
+    /// The Element.requestPointerLock() method lets you asynchronously ask for the pointer to be locked on the given element.
+    member x.RequestPointerLock() =
+        r.Invoke("requestPointerLock") |> ignore
+        
+    /// The scroll() method of the Element interface scrolls the element to a particular set of coordinates inside a given element.
+    member __.Scroll(pos : Aardvark.Base.V2d, ?behaviour : ScrollBehaviour) =
+        match behaviour with
+        | None -> r.Invoke("scroll", pos.X, pos.Y) |> ignore
+        | Some b ->
+            r.Invoke(
+                "scroll",
+                createObj [
+                    "top", pos.Y :> obj
+                    "left", pos.X :> obj
+                    "behavior", (match b with | ScrollBehaviour.Auto -> "auto" | ScrollBehaviour.Smooth -> "smooth") :> obj
+                ]
+            ) |> ignore
+
+    /// The Element interface's scrollIntoView() method scrolls the element's parent container such that the element on which scrollIntoView() is called is visible to the user
+    member x.ScrollIntoView(?alignToTop : bool) =
+        match alignToTop with
+        | Some a -> r.Invoke("scrollIntoView", a) |> ignore
+        | None -> r.Invoke("scrollIntoView") |> ignore
+        
+    /// The Element interface's scrollIntoView() method scrolls the element's parent container such that the element on which scrollIntoView() is called is visible to the user
+    member x.ScrollIntoView(?behavior : ScrollBehaviour, ?block : string, ?inl : string) =
+        r.Invoke("scrollIntoView", 
+            createObj [
+                match behavior with
+                | Some ScrollBehaviour.Auto -> "behaviour", "auto" :> obj
+                | Some ScrollBehaviour.Smooth -> "behaviour", "smooth" :> obj
+                | None -> ()
+
+                match block with
+                | Some b -> "block", b :> obj
+                | None -> ()
+                
+                match inl with
+                | Some b -> "inline", b :> obj
+                | None -> ()
+            ]
+        ) |> ignore
+        
+    /// The scrollTo() method of the Element interface scrolls to a particular set of coordinates inside a given element.
+    member __.ScrollTo(pos : Aardvark.Base.V2d, ?behaviour : ScrollBehaviour) =
+        match behaviour with
+        | None -> r.Invoke("scrollTo", pos.X, pos.Y) |> ignore
+        | Some b ->
+            r.Invoke(
+                "scrollTo",
+                createObj [
+                    "top", pos.Y :> obj
+                    "left", pos.X :> obj
+                    "behavior", (match b with | ScrollBehaviour.Auto -> "auto" | ScrollBehaviour.Smooth -> "smooth") :> obj
+                ]
+            ) |> ignore
+
+    /// Sets the value of an attribute on the specified element. If the attribute already exists, the value is updated; otherwise a new attribute is added with the specified name and value.
+    member x.SetAttriubte(name : string, value : obj) =
+        r.Invoke("setAttribute", name, js value) |> ignore
+        
+    /// Sets the value of an attribute on the specified element. If the attribute already exists, the value is updated; otherwise a new attribute is added with the specified name and value.
+    member x.SetAttriubte(ns : string, name : string, value : obj) =
+        r.Invoke("setAttributeNS", ns, name, js value) |> ignore
+
+    /// Call this method during the handling of a mousedown event to retarget all mouse events to this element until the mouse button is released or document.releaseCapture() is called.
+    member x.SetCapture(retargetToElement : bool) =
+        r.Invoke("setCapture", retargetToElement) |> ignore
+
+    /// The setPointerCapture() method of the Element interface is used to designate a specific element as the capture target of future pointer events. Subsequent events for the pointer will be targeted at the capture element until capture is released (via Element.releasePointerCapture()).
+    member x.SetPointerCapture(id : int) =
+        r.Invoke("setPointerCapture", id) |> ignore
+
+    /// The toggleAttribute() method of the Element interface toggles a Boolean attribute (removing it if it is present and adding it if it is not present) on the given element.
+    member x.ToggleAttribute(name : string, ?force : bool) =
+        match force with
+        | Some f -> r.Invoke("toggleAttribute", f) |> convert<bool>
+        | None -> r.Invoke("toggleAttribute") |> convert<bool>
+
+    /// The cancel event fires on a <dialog> when the user instructs the browser that they wish to dismiss the current open dialog. For example, the browser might fire this event when the user presses the Esc key or clicks a "Close dialog" button which is part of the browser's UI.
+    member x.OnCancel =
+        { new IObservable<Event> with
+            member __.Subscribe(obs : IObserver<Event>) =
+                x.SubscribeEventListener("cancel", obs.OnNext)
+        }
+
+    /// The error event is fired on an Element object when a resource failed to load, or can't be used. For example, if a script has an execution error or an image can't be found or is invalid.
+    member x.OnError =
+        { new IObservable<Event> with
+            member __.Subscribe(obs : IObserver<Event>) =
+                x.SubscribeEventListener("error", obs.OnNext)
+        }
+
+    /// The scroll event fires an element has been scrolled.
+    member x.OnScroll =
+        { new IObservable<Event> with
+            member __.Subscribe(obs : IObserver<Event>) =
+                x.SubscribeEventListener("scroll", obs.OnNext)
+        }
+
+    /// The select event fires when some text has been selected.
+    member x.OnSelect =
+        { new IObservable<Event> with
+            member __.Subscribe(obs : IObserver<Event>) =
+                x.SubscribeEventListener("select", obs.OnNext)
+        }
+
+    /// The wheel event fires when the user rotates a wheel button on a pointing device (typically a mouse).
+    member x.OnWheel =
+        { new IObservable<WheelEvent> with
+            member __.Subscribe(obs : IObserver<WheelEvent>) =
+                x.SubscribeEventListener("wheel", WheelEvent >> obs.OnNext)
+        }
+
+    /// The copy event fires when the user initiates a copy action through the browser's user interface.
+    member x.OnCopy =
+        { new IObservable<ClipboardEvent> with
+            member __.Subscribe(obs : IObserver<ClipboardEvent>) =
+                x.SubscribeEventListener("copy", ClipboardEvent >> obs.OnNext)
+        }
+
+    /// The cut event is fired when the user has initiated a "cut" action through the browser's user interface.
+    member x.OnCut =
+        { new IObservable<ClipboardEvent> with
+            member __.Subscribe(obs : IObserver<ClipboardEvent>) =
+                x.SubscribeEventListener("cut", ClipboardEvent >> obs.OnNext)
+        }
+
+    /// The paste event is fired when the user has initiated a "paste" action through the browser's user interface.
+    member x.OnPaste =
+        { new IObservable<ClipboardEvent> with
+            member __.Subscribe(obs : IObserver<ClipboardEvent>) =
+                x.SubscribeEventListener("paste", ClipboardEvent >> obs.OnNext)
+        }
+
+    /// Fired when a text composition system such as an input method editor starts a new composition session.
+    member x.OnCompositionStart =
+        { new IObservable<CompositionEvent> with
+            member __.Subscribe(obs : IObserver<CompositionEvent>) =
+                x.SubscribeEventListener("compositionstart", CompositionEvent >> obs.OnNext)
+        }
+        
+    /// Fired when a text composition system such as an input method editor completes or cancels the current composition session.
+    member x.OnCompositionEnd =
+        { new IObservable<CompositionEvent> with
+            member __.Subscribe(obs : IObserver<CompositionEvent>) =
+                x.SubscribeEventListener("compositionend", CompositionEvent >> obs.OnNext)
+        }
+
+    /// Fired when a new character is received in the context of a text composition session controlled by a text composition system such as an input method editor.
+    member x.OnCompositionUpdate =
+        { new IObservable<CompositionEvent> with
+            member __.Subscribe(obs : IObserver<CompositionEvent>) =
+                x.SubscribeEventListener("compositionupdate", CompositionEvent >> obs.OnNext)
+        }
+
+    /// Fired when an element has lost focus.
+    member x.OnBlur =
+        { new IObservable<FocusEvent> with
+            member __.Subscribe(obs : IObserver<FocusEvent>) =
+                x.SubscribeEventListener("blur", FocusEvent >> obs.OnNext)
+        }
+
+    /// Fired when an element has gained focus.
+    member x.OnFocus =
+        { new IObservable<FocusEvent> with
+            member __.Subscribe(obs : IObserver<FocusEvent>) =
+                x.SubscribeEventListener("focus", FocusEvent >> obs.OnNext)
+        }
+        
+    /// Fired when an element is about to gain focus.
+    member x.OnFocusIn =
+        { new IObservable<FocusEvent> with
+            member __.Subscribe(obs : IObserver<FocusEvent>) =
+                x.SubscribeEventListener("focusin", FocusEvent >> obs.OnNext)
+        }
+        
+    /// Fired when an element is about to lose focus.
+    member x.OnFocusOut =
+        { new IObservable<FocusEvent> with
+            member __.Subscribe(obs : IObserver<FocusEvent>) =
+                x.SubscribeEventListener("focusout", FocusEvent >> obs.OnNext)
+        }
+
+    /// The fullscreenchange event is fired immediately after an Element switches into or out of full-screen mode.
+    member x.OnFullScreenChange =
+        { new IObservable<Event> with
+            member __.Subscribe(obs : IObserver<Event>) =
+                x.SubscribeEventListener("fullscreenchange", obs.OnNext)
+        }
+
+    /// Sent to an Element if an error occurs while attempting to switch it into or out of full-screen mode.
+    member x.OnFullScreenError =
+        { new IObservable<Event> with
+            member __.Subscribe(obs : IObserver<Event>) =
+                x.SubscribeEventListener("fullscreenerror", obs.OnNext)
+        }
+
+    /// Fired when a key is pressed.
+    member x.OnKeyDown =
+        { new IObservable<KeyboardEvent> with
+            member __.Subscribe(obs : IObserver<KeyboardEvent>) =
+                x.SubscribeEventListener("keydown", KeyboardEvent >> obs.OnNext)
+        }
+
+    /// Fired when a key that produces a character value is pressed down.
+    member x.OnKeyPress =
+        { new IObservable<KeyboardEvent> with
+            member __.Subscribe(obs : IObserver<KeyboardEvent>) =
+                x.SubscribeEventListener("keypress", KeyboardEvent >> obs.OnNext)
+        }
+
+    /// Fired when a key is released.
+    member x.OnKeyUp =
+        { new IObservable<KeyboardEvent> with
+            member __.Subscribe(obs : IObserver<KeyboardEvent>) =
+                x.SubscribeEventListener("keyup", KeyboardEvent >> obs.OnNext)
+        }
+
+    /// Fired when a non-primary pointing device button (e.g., any mouse button other than the left button) has been pressed and released on an element.
+    member x.OnAuxClick =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("auxclick", MouseEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointing device button (e.g., a mouse's primary button) is pressed and released on a single element.
+    member x.OnClick =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("click", MouseEvent >> obs.OnNext)
+        }
+        
+    /// Fired when the user attempts to open a context menu.
+    member x.OnContextMenu =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("contextmenu", MouseEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointing device button (e.g., a mouse's primary button) is clicked twice on a single element.
+    member x.OnDoubleClick =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("dblclick", MouseEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointing device button is pressed on an element.
+    member x.OnMouseDown =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("mousedown", MouseEvent >> obs.OnNext)
+        }
+        
+    /// Fired when a pointing device (usually a mouse) is moved over the element that has the listener attached.
+    member x.OnMouseEnter =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("mouseenter", MouseEvent >> obs.OnNext)
+        }
+
+    /// Fired when the pointer of a pointing device (usually a mouse) is moved out of an element that has the listener attached to it.
+    member x.OnMouseLeave =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("mouseleave", MouseEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointing device (usually a mouse) is moved while over an element.
+    member x.OnMouseMove =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("mousemove", MouseEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointing device (usually a mouse) is moved off the element to which the listener is attached or off one of its children.
+    member x.OnMouseOut =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("mouseout", MouseEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointing device is moved onto the element to which the listener is attached or onto one of its children.
+    member x.OnMouseOver =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("mouseover", MouseEvent >> obs.OnNext)
+        }
+        
+    /// Fired when a pointing device button is released on an element.
+    member x.OnMouseUp =
+        { new IObservable<MouseEvent> with
+            member __.Subscribe(obs : IObserver<MouseEvent>) =
+                x.SubscribeEventListener("mouseup", MouseEvent >> obs.OnNext)
+        }
+        
+    /// Fired when one or more touch points have been disrupted in an implementation-specific manner (for example, too many touch points are created).
+    member x.OnTouchCancel =
+        { new IObservable<TouchEvent> with
+            member __.Subscribe(obs : IObserver<TouchEvent>) =
+                x.SubscribeEventListener("touchcancel", TouchEvent >> obs.OnNext)
+        }
+        
+    /// Fired when one or more touch points are removed from the touch surface.
+    member x.OnTouchEnd =
+        { new IObservable<TouchEvent> with
+            member __.Subscribe(obs : IObserver<TouchEvent>) =
+                x.SubscribeEventListener("touchend", TouchEvent >> obs.OnNext)
+        }
+        
+    /// Fired when one or more touch points are moved along the touch surface.
+    member x.OnTouchMove =
+        { new IObservable<TouchEvent> with
+            member __.Subscribe(obs : IObserver<TouchEvent>) =
+                x.SubscribeEventListener("touchmove", TouchEvent >> obs.OnNext)
+        }
+
+    /// Fired when one or more touch points are placed on the touch surface.
+    member x.OnTouchStart =
+        { new IObservable<TouchEvent> with
+            member __.Subscribe(obs : IObserver<TouchEvent>) =
+                x.SubscribeEventListener("touchstart", TouchEvent >> obs.OnNext)
+        }
+
+    /// Fired when the value of an <input>, <select>, or <textarea> element is about to be modified.
+    member x.OnBeforeInput =
+        { new IObservable<InputEvent> with
+            member __.Subscribe(obs : IObserver<InputEvent>) =
+                x.SubscribeEventListener("beforeinput", InputEvent >> obs.OnNext)
+        }
+        
+    /// Fired when the value of an <input>, <select>, or <textarea> element has been changed.
+    member x.OnInput =
+        { new IObservable<InputEvent> with
+            member __.Subscribe(obs : IObserver<InputEvent>) =
+                x.SubscribeEventListener("input", InputEvent >> obs.OnNext)
+        }
+
+    /// Fired when an element captures a pointer using setPointerCapture().
+    member x.OnGotPointerCapture =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("gotpointercapture", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a captured pointer is released.
+    member x.OnLostPointerCapture =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("lostpointercapture", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer event is canceled.
+    member x.OnPointerCancel =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointercancel", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer becomes active.
+    member x.OnPointerDown =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointerdown", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer is moved into the hit test boundaries of an element or one of its descendants.
+    member x.OnPointerEnter =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointerenter", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer is moved out of the hit test boundaries of an element.
+    member x.OnPointerLeave =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointerleave", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer changes coordinates.
+    member x.OnPointerMove =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointermove", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer is moved out of the hit test boundaries of an element (among other reasons).
+    member x.OnPointerOut =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointerout", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer is moved into an element's hit test boundaries.
+    member x.OnPointerOver =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointerover", PointerEvent >> obs.OnNext)
+        }
+
+    /// Fired when a pointer is no longer active.
+    member x.OnPointerUp =
+        { new IObservable<PointerEvent> with
+            member __.Subscribe(obs : IObserver<PointerEvent>) =
+                x.SubscribeEventListener("pointerup", PointerEvent >> obs.OnNext)
+        }
+        
+
     // TODO: ShadowRoot
     //       OpenOrClosedShadowRoot
     //       Slot
@@ -1449,22 +1944,2694 @@ type Element(r : JSObject) =
     //       AttachShadow
     //       CreateShadowRoot
     //       GetClientRects
+    //       OnAnimationCancel
+    //       OnAnimationEnd
+    //       OnAnimationIteration
+    //       OnAnimationStart
+    //       OnTransitionCancel
+    //       OnTransitionEnd
+    //       OnTransitionRun
+    //       OnTransitionStart
 
     new (o : JsObj) =
         Element o.Reference
 
+[<AllowNullLiteral>]
+type HTMLElement(r : JSObject) =
+    inherit Element(r)
+    
+    /// Is a DOMString representing the access key assigned to the element.
+    member x.AccessKey = r.GetObjectProperty "accessKey" |> convert<string>
+
+    /// Returns a DOMString containing the element's assigned access key.
+    member x.AccessKeyLabel = r.GetObjectProperty "accessKeyLabel" |> convert<string>
+
+    /// Is a DOMString, where a value of true means the element is editable and a value of false means it isn't.
+    member x.ContentEditable
+        with get() = r.GetObjectProperty "contentEditable" |> convert<string>
+        and set(v : string) = r.SetObjectProperty("contentEditable", v)
+
+    /// Returns a Boolean that indicates whether or not the content of the element can be edited.
+    member x.IsContentEditable
+        with get() = r.GetObjectProperty "isContentEditable" |> convert<bool>
+        and set (v : bool) =
+            if v then x.ContentEditable <- "true"
+            else x.ContentEditable <- "false"
+
+    /// Returns a DOMStringMap with which script can read and write the element's custom data attributes (data-*) .
+    member x.Dataset = r.GetObjectProperty "dataset" |> net // TODO: DOMStringMap
+
+    /// Is a DOMString, reflecting the dir global attribute, representing the directionality of the element. Possible values are "ltr", "rtl", and "auto".
+    member x.Dir
+        with get() = r.GetObjectProperty "dir" |> convert<string>
+        and set(v : string) = r.SetObjectProperty("dir", v)
+
+    /// Is a Boolean indicating if the element can be dragged.
+    member x.Draggable
+        with get() = r.GetObjectProperty "draggable" |> convert<bool>
+        and set (v : bool) = r.SetObjectProperty("draggable", v)
+
+    /// Returns a DOMSettableTokenList reflecting the dropzone global attribute and describing the behavior of the element regarding a drop operation.
+    member x.DropZone = r.GetObjectProperty("dropzone") |> net // TODO: DOMSettableTokenList
+
+    /// Is a Boolean indicating if the element is hidden or not.
+    member x.Hidden
+        with get() = r.GetObjectProperty "hidden" |> convert<bool>
+        and set (v : bool) = r.SetObjectProperty("hidden", v)
         
+    /// Is a Boolean indicating whether the user agent must act as though the given node is absent for the purposes of user interaction events, in-page text searches ("find in page"), and text selection.
+    member x.Inert
+        with get() = r.GetObjectProperty "inert" |> convert<bool>
+        and set (v : bool) = r.SetObjectProperty("inert", v)
+        
+    /// Represents the "rendered" text content of a node and its descendants. As a getter, it approximates the text the user would get if they highlighted the contents of the element with the cursor and then copied it to the clipboard.
+    member x.InnerText
+        with get() = r.GetObjectProperty "innerText" |> convert<string>
+        and set (v : string) = r.SetObjectProperty("innerText", v)
+
+    /// Is a Boolean representing the item scope.
+    member x.ItemScope
+        with get() = r.GetObjectProperty "itemScope" |> convert<bool>
+        and set (v : bool) = r.SetObjectProperty("itemScope", v)
+
+    /// Returns a DOMSettableTokenList...
+    member x.ItemType
+        with get() = r.GetObjectProperty "itemType" |> net
+        and set (v : obj) = r.SetObjectProperty("itemType", js v) // TODO: DOMSettableTokenList
+    
+    /// Is a DOMString representing the item ID.
+    member x.ItemId
+        with get() = r.GetObjectProperty "itemType" |> convert<string>
+        and set (v : string) = r.SetObjectProperty("itemType", v)
+    
+    /// Returns a DOMSettableTokenList...
+    member x.ItemRef
+        with get() = r.GetObjectProperty "itemRef" |> net
+        and set (v : obj) = r.SetObjectProperty("itemRef", js v) // TODO: DOMSettableTokenList
+    
+    /// Returns a DOMSettableTokenList...
+    member x.ItemProp
+        with get() = r.GetObjectProperty "itemProp" |> net
+        and set (v : obj) = r.SetObjectProperty("itemProp", js v) // TODO: DOMSettableTokenList
+
+    /// Returns a Object representing the item value.
+    member x.ItemValue
+        with get() = r.GetObjectProperty "itemValue " |> net
+        and set (v : obj) = r.SetObjectProperty("itemValue ", js v)
+    
+    /// Is a DOMString representing the language of an element's attributes, text, and element contents.
+    member x.Lang
+        with get() = r.GetObjectProperty "lang " |> convert<string>
+        and set (v : string) = r.SetObjectProperty("lang ", v)
+    
+    /// Is a Boolean indicating whether an import script can be executed in user agents that support module scripts.
+    member x.NoModule
+        with get() = r.GetObjectProperty "noModule" |> convert<bool>
+        and set (v : bool) = r.SetObjectProperty("noModule", v)
+    
+    /// Returns the cryptographic number used once that is used by Content Security Policy to determine whether a given fetch will be allowed to proceed.
+    member x.Nonce
+        with get() = r.GetObjectProperty "nonce" |> convert<string>
+        and set (v : string) = r.SetObjectProperty("nonce", v)
+        
+        
+    /// Returns a Element that is the element from which all offset calculations are currently computed.
+    member x.OffsetParent = r.GetObjectProperty "offsetParent" |> convert<Element>
+    /// Returns a double, the distance from this element's left border to its offsetParent's left border.
+    member x.OffsetLeft = r.GetObjectProperty("offsetLeft") |> convert<float>
+    /// Returns a double, the distance from this element's top border to its offsetParent's top border.
+    member x.OffsetTop = r.GetObjectProperty("offsetTop") |> convert<float>
+    /// Returns a double containing the width of an element, relative to the layout.
+    member x.OffsetWidth = r.GetObjectProperty("offsetWidth") |> convert<float>
+    /// Returns a double containing the height of an element, relative to the layout.
+    member x.OffsetHeight = r.GetObjectProperty("offsetHeight") |> convert<float>
+
+    /// Returns a HTMLPropertiesCollection…
+    member x.Properties = r.GetObjectProperty "properties" |> net // TODO: HTMLPropertiesCollection
+
+    /// Is a Boolean that controls spell-checking. It is present on all HTML elements, though it doesn't have an effect on all of them.
+    member x.SpellCheck
+        with get() = r.GetObjectProperty "spellcheck" |> convert<bool>
+        and set (v : bool) = r.SetObjectProperty("spellcheck", v)
+        
+    /// Is a CSSStyleDeclaration, an object representing the declarations of an element's style attributes.
+    member x.Style = r.GetObjectProperty "style" |> convert<CSSStyleDeclaration>
+
+    /// Is a long representing the position of the element in the tabbing order.
+    member x.TabIndex
+        with get() = r.GetObjectProperty "tabIndex" |> convert<int>
+        and set (v : int) = r.SetObjectProperty("tabIndex", v)
+        
+    /// Is a DOMString containing the text that appears in a popup box when mouse is over the element.
+    member x.Title
+        with get() = r.GetObjectProperty "title" |> convert<string>
+        and set (v : string) = r.SetObjectProperty("title", v)
+
+    /// Is a Boolean representing the translation.
+    member x.Translate
+        with get() = r.GetObjectProperty "translate" |> convert<bool>
+        and set (v : bool) = r.SetObjectProperty("translate", v)
+        
+    /// Removes keyboard focus from the currently focused element.
+    member x.Blur() = r.Invoke("blur") |> ignore
+    
+    /// Sends a mouse click event to the element.
+    member x.Click() = r.Invoke("click") |> ignore
+    
+    /// Makes the element the current keyboard focus.
+    member x.Focus() = r.Invoke("focus") |> ignore
+    
+    /// Runs the spell checker on the element's contents.
+    member x.ForceSpellCheck() = r.Invoke("forceSpellCheck") |> ignore
+
+    /// Fired when an element does not satisfy its constraints during constraint validation.
+    member x.OnInvalid =
+        { new IObservable<Event> with
+            member __.Subscribe(obs : IObserver<Event>) =
+                x.SubscribeEventListener("invalid", obs.OnNext)
+        }
+
+    new (o : JsObj) =
+        HTMLElement o.Reference
+    
+
+/// The CSSStyleDeclaration interface represents an object that is a CSS declaration block, and exposes style information and various style-related methods and properties.
+[<AllowNullLiteral>]
+type CSSStyleDeclaration(r : JSObject) =
+    inherit JsObj(r)
+
+    member x.CssText
+        with get() : string = r.GetObjectProperty("cssText") |> convert
+        and set(v : string)  = r.SetObjectProperty("cssText", v) |> convert
+
+    member x.GetPropertyValue(name : string) =
+        r.Invoke("getPropertyValue", name) |> convert<string>
+        
+    member x.SetProperty(name : string, value : string) =
+        r.Invoke("setProperty", name, value) |> ignore
+
+    member x.SetProperty(name : string, value : string, priority : string) =
+        r.Invoke("setProperty", name, value, priority) |> ignore
+
+    member x.RemoveProperty(name : string) =
+        r.Invoke("removeProperty", name) |> ignore
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-accelerator
+    member x.MsAccelerator
+        with get() = x.GetPropertyValue("-ms-accelerator")
+        and set v  = x.SetProperty("-ms-accelerator", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-block-progression
+    member x.MsBlockProgression
+        with get() = x.GetPropertyValue("-ms-block-progression")
+        and set v  = x.SetProperty("-ms-block-progression", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zoom-chaining
+    member x.MsContentZoomChaining
+        with get() = x.GetPropertyValue("-ms-content-zoom-chaining")
+        and set v  = x.SetProperty("-ms-content-zoom-chaining", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zooming
+    member x.MsContentZooming
+        with get() = x.GetPropertyValue("-ms-content-zooming")
+        and set v  = x.SetProperty("-ms-content-zooming", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zoom-limit
+    member x.MsContentZoomLimit
+        with get() = x.GetPropertyValue("-ms-content-zoom-limit")
+        and set v  = x.SetProperty("-ms-content-zoom-limit", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zoom-limit-max
+    member x.MsContentZoomLimitMax
+        with get() = x.GetPropertyValue("-ms-content-zoom-limit-max")
+        and set v  = x.SetProperty("-ms-content-zoom-limit-max", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zoom-limit-min
+    member x.MsContentZoomLimitMin
+        with get() = x.GetPropertyValue("-ms-content-zoom-limit-min")
+        and set v  = x.SetProperty("-ms-content-zoom-limit-min", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zoom-snap
+    member x.MsContentZoomSnap
+        with get() = x.GetPropertyValue("-ms-content-zoom-snap")
+        and set v  = x.SetProperty("-ms-content-zoom-snap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zoom-snap-points
+    member x.MsContentZoomSnapPoints
+        with get() = x.GetPropertyValue("-ms-content-zoom-snap-points")
+        and set v  = x.SetProperty("-ms-content-zoom-snap-points", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-content-zoom-snap-type
+    member x.MsContentZoomSnapType
+        with get() = x.GetPropertyValue("-ms-content-zoom-snap-type")
+        and set v  = x.SetProperty("-ms-content-zoom-snap-type", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-filter
+    member x.MsFilter
+        with get() = x.GetPropertyValue("-ms-filter")
+        and set v  = x.SetProperty("-ms-filter", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-flow-from
+    member x.MsFlowFrom
+        with get() = x.GetPropertyValue("-ms-flow-from")
+        and set v  = x.SetProperty("-ms-flow-from", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-flow-into
+    member x.MsFlowInto
+        with get() = x.GetPropertyValue("-ms-flow-into")
+        and set v  = x.SetProperty("-ms-flow-into", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-high-contrast-adjust
+    member x.MsHighContrastAdjust
+        with get() = x.GetPropertyValue("-ms-high-contrast-adjust")
+        and set v  = x.SetProperty("-ms-high-contrast-adjust", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-hyphenate-limit-chars
+    member x.MsHyphenateLimitChars
+        with get() = x.GetPropertyValue("-ms-hyphenate-limit-chars")
+        and set v  = x.SetProperty("-ms-hyphenate-limit-chars", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-hyphenate-limit-lines
+    member x.MsHyphenateLimitLines
+        with get() = x.GetPropertyValue("-ms-hyphenate-limit-lines")
+        and set v  = x.SetProperty("-ms-hyphenate-limit-lines", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-hyphenate-limit-zone
+    member x.MsHyphenateLimitZone
+        with get() = x.GetPropertyValue("-ms-hyphenate-limit-zone")
+        and set v  = x.SetProperty("-ms-hyphenate-limit-zone", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-ime-align
+    member x.MsImeAlign
+        with get() = x.GetPropertyValue("-ms-ime-align")
+        and set v  = x.SetProperty("-ms-ime-align", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-overflow-style
+    member x.MsOverflowStyle
+        with get() = x.GetPropertyValue("-ms-overflow-style")
+        and set v  = x.SetProperty("-ms-overflow-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-3dlight-color
+    member x.MsScrollbar3dlightColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-3dlight-color")
+        and set v  = x.SetProperty("-ms-scrollbar-3dlight-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-arrow-color
+    member x.MsScrollbarArrowColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-arrow-color")
+        and set v  = x.SetProperty("-ms-scrollbar-arrow-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-base-color
+    member x.MsScrollbarBaseColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-base-color")
+        and set v  = x.SetProperty("-ms-scrollbar-base-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-darkshadow-color
+    member x.MsScrollbarDarkshadowColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-darkshadow-color")
+        and set v  = x.SetProperty("-ms-scrollbar-darkshadow-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-face-color
+    member x.MsScrollbarFaceColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-face-color")
+        and set v  = x.SetProperty("-ms-scrollbar-face-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-highlight-color
+    member x.MsScrollbarHighlightColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-highlight-color")
+        and set v  = x.SetProperty("-ms-scrollbar-highlight-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-shadow-color
+    member x.MsScrollbarShadowColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-shadow-color")
+        and set v  = x.SetProperty("-ms-scrollbar-shadow-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scrollbar-track-color
+    member x.MsScrollbarTrackColor
+        with get() = x.GetPropertyValue("-ms-scrollbar-track-color")
+        and set v  = x.SetProperty("-ms-scrollbar-track-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-chaining
+    member x.MsScrollChaining
+        with get() = x.GetPropertyValue("-ms-scroll-chaining")
+        and set v  = x.SetProperty("-ms-scroll-chaining", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-limit
+    member x.MsScrollLimit
+        with get() = x.GetPropertyValue("-ms-scroll-limit")
+        and set v  = x.SetProperty("-ms-scroll-limit", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-limit-x-max
+    member x.MsScrollLimitXMax
+        with get() = x.GetPropertyValue("-ms-scroll-limit-x-max")
+        and set v  = x.SetProperty("-ms-scroll-limit-x-max", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-limit-x-min
+    member x.MsScrollLimitXMin
+        with get() = x.GetPropertyValue("-ms-scroll-limit-x-min")
+        and set v  = x.SetProperty("-ms-scroll-limit-x-min", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-limit-y-max
+    member x.MsScrollLimitYMax
+        with get() = x.GetPropertyValue("-ms-scroll-limit-y-max")
+        and set v  = x.SetProperty("-ms-scroll-limit-y-max", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-limit-y-min
+    member x.MsScrollLimitYMin
+        with get() = x.GetPropertyValue("-ms-scroll-limit-y-min")
+        and set v  = x.SetProperty("-ms-scroll-limit-y-min", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-rails
+    member x.MsScrollRails
+        with get() = x.GetPropertyValue("-ms-scroll-rails")
+        and set v  = x.SetProperty("-ms-scroll-rails", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-snap-points-x
+    member x.MsScrollSnapPointsX
+        with get() = x.GetPropertyValue("-ms-scroll-snap-points-x")
+        and set v  = x.SetProperty("-ms-scroll-snap-points-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-snap-points-y
+    member x.MsScrollSnapPointsY
+        with get() = x.GetPropertyValue("-ms-scroll-snap-points-y")
+        and set v  = x.SetProperty("-ms-scroll-snap-points-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-snap-type
+    member x.MsScrollSnapType
+        with get() = x.GetPropertyValue("-ms-scroll-snap-type")
+        and set v  = x.SetProperty("-ms-scroll-snap-type", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-snap-x
+    member x.MsScrollSnapX
+        with get() = x.GetPropertyValue("-ms-scroll-snap-x")
+        and set v  = x.SetProperty("-ms-scroll-snap-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-snap-y
+    member x.MsScrollSnapY
+        with get() = x.GetPropertyValue("-ms-scroll-snap-y")
+        and set v  = x.SetProperty("-ms-scroll-snap-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-scroll-translation
+    member x.MsScrollTranslation
+        with get() = x.GetPropertyValue("-ms-scroll-translation")
+        and set v  = x.SetProperty("-ms-scroll-translation", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-text-autospace
+    member x.MsTextAutospace
+        with get() = x.GetPropertyValue("-ms-text-autospace")
+        and set v  = x.SetProperty("-ms-text-autospace", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-touch-select
+    member x.MsTouchSelect
+        with get() = x.GetPropertyValue("-ms-touch-select")
+        and set v  = x.SetProperty("-ms-touch-select", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-user-select
+    member x.MsUserSelect
+        with get() = x.GetPropertyValue("-ms-user-select")
+        and set v  = x.SetProperty("-ms-user-select", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-wrap-flow
+    member x.MsWrapFlow
+        with get() = x.GetPropertyValue("-ms-wrap-flow")
+        and set v  = x.SetProperty("-ms-wrap-flow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-wrap-margin
+    member x.MsWrapMargin
+        with get() = x.GetPropertyValue("-ms-wrap-margin")
+        and set v  = x.SetProperty("-ms-wrap-margin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-ms-wrap-through
+    member x.MsWrapThrough
+        with get() = x.GetPropertyValue("-ms-wrap-through")
+        and set v  = x.SetProperty("-ms-wrap-through", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/appearance
+    member x.MozAppearance
+        with get() = x.GetPropertyValue("-moz-appearance")
+        and set v  = x.SetProperty("-moz-appearance", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-binding
+    member x.MozBinding
+        with get() = x.GetPropertyValue("-moz-binding")
+        and set v  = x.SetProperty("-moz-binding", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-border-bottom-colors
+    member x.MozBorderBottomColors
+        with get() = x.GetPropertyValue("-moz-border-bottom-colors")
+        and set v  = x.SetProperty("-moz-border-bottom-colors", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-border-left-colors
+    member x.MozBorderLeftColors
+        with get() = x.GetPropertyValue("-moz-border-left-colors")
+        and set v  = x.SetProperty("-moz-border-left-colors", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-border-right-colors
+    member x.MozBorderRightColors
+        with get() = x.GetPropertyValue("-moz-border-right-colors")
+        and set v  = x.SetProperty("-moz-border-right-colors", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-border-top-colors
+    member x.MozBorderTopColors
+        with get() = x.GetPropertyValue("-moz-border-top-colors")
+        and set v  = x.SetProperty("-moz-border-top-colors", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-context-properties
+    member x.MozContextProperties
+        with get() = x.GetPropertyValue("-moz-context-properties")
+        and set v  = x.SetProperty("-moz-context-properties", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-float-edge
+    member x.MozFloatEdge
+        with get() = x.GetPropertyValue("-moz-float-edge")
+        and set v  = x.SetProperty("-moz-float-edge", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-force-broken-image-icon
+    member x.MozForceBrokenImageIcon
+        with get() = x.GetPropertyValue("-moz-force-broken-image-icon")
+        and set v  = x.SetProperty("-moz-force-broken-image-icon", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-image-region
+    member x.MozImageRegion
+        with get() = x.GetPropertyValue("-moz-image-region")
+        and set v  = x.SetProperty("-moz-image-region", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-orient
+    member x.MozOrient
+        with get() = x.GetPropertyValue("-moz-orient")
+        and set v  = x.SetProperty("-moz-orient", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-outline-radius
+    member x.MozOutlineRadius
+        with get() = x.GetPropertyValue("-moz-outline-radius")
+        and set v  = x.SetProperty("-moz-outline-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-outline-radius-bottomleft
+    member x.MozOutlineRadiusBottomleft
+        with get() = x.GetPropertyValue("-moz-outline-radius-bottomleft")
+        and set v  = x.SetProperty("-moz-outline-radius-bottomleft", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-outline-radius-bottomright
+    member x.MozOutlineRadiusBottomright
+        with get() = x.GetPropertyValue("-moz-outline-radius-bottomright")
+        and set v  = x.SetProperty("-moz-outline-radius-bottomright", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-outline-radius-topleft
+    member x.MozOutlineRadiusTopleft
+        with get() = x.GetPropertyValue("-moz-outline-radius-topleft")
+        and set v  = x.SetProperty("-moz-outline-radius-topleft", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-outline-radius-topright
+    member x.MozOutlineRadiusTopright
+        with get() = x.GetPropertyValue("-moz-outline-radius-topright")
+        and set v  = x.SetProperty("-moz-outline-radius-topright", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-stack-sizing
+    member x.MozStackSizing
+        with get() = x.GetPropertyValue("-moz-stack-sizing")
+        and set v  = x.SetProperty("-moz-stack-sizing", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-text-blink
+    member x.MozTextBlink
+        with get() = x.GetPropertyValue("-moz-text-blink")
+        and set v  = x.SetProperty("-moz-text-blink", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-user-focus
+    member x.MozUserFocus
+        with get() = x.GetPropertyValue("-moz-user-focus")
+        and set v  = x.SetProperty("-moz-user-focus", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-user-input
+    member x.MozUserInput
+        with get() = x.GetPropertyValue("-moz-user-input")
+        and set v  = x.SetProperty("-moz-user-input", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-user-modify
+    member x.MozUserModify
+        with get() = x.GetPropertyValue("-moz-user-modify")
+        and set v  = x.SetProperty("-moz-user-modify", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-window-dragging
+    member x.MozWindowDragging
+        with get() = x.GetPropertyValue("-moz-window-dragging")
+        and set v  = x.SetProperty("-moz-window-dragging", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-moz-window-shadow
+    member x.MozWindowShadow
+        with get() = x.GetPropertyValue("-moz-window-shadow")
+        and set v  = x.SetProperty("-moz-window-shadow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/appearance
+    member x.WebkitAppearance
+        with get() = x.GetPropertyValue("-webkit-appearance")
+        and set v  = x.SetProperty("-webkit-appearance", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-border-before
+    member x.WebkitBorderBefore
+        with get() = x.GetPropertyValue("-webkit-border-before")
+        and set v  = x.SetProperty("-webkit-border-before", v)
+
+    member x.WebkitBorderBeforeColor
+        with get() = x.GetPropertyValue("-webkit-border-before-color")
+        and set v  = x.SetProperty("-webkit-border-before-color", v)
+
+    member x.WebkitBorderBeforeStyle
+        with get() = x.GetPropertyValue("-webkit-border-before-style")
+        and set v  = x.SetProperty("-webkit-border-before-style", v)
+
+    member x.WebkitBorderBeforeWidth
+        with get() = x.GetPropertyValue("-webkit-border-before-width")
+        and set v  = x.SetProperty("-webkit-border-before-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-box-reflect
+    member x.WebkitBoxReflect
+        with get() = x.GetPropertyValue("-webkit-box-reflect")
+        and set v  = x.SetProperty("-webkit-box-reflect", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-line-clamp
+    member x.WebkitLineClamp
+        with get() = x.GetPropertyValue("-webkit-line-clamp")
+        and set v  = x.SetProperty("-webkit-line-clamp", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask
+    member x.WebkitMask
+        with get() = x.GetPropertyValue("-webkit-mask")
+        and set v  = x.SetProperty("-webkit-mask", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-mask-attachment
+    member x.WebkitMaskAttachment
+        with get() = x.GetPropertyValue("-webkit-mask-attachment")
+        and set v  = x.SetProperty("-webkit-mask-attachment", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-clip
+    member x.WebkitMaskClip
+        with get() = x.GetPropertyValue("-webkit-mask-clip")
+        and set v  = x.SetProperty("-webkit-mask-clip", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-mask-composite
+    member x.WebkitMaskComposite
+        with get() = x.GetPropertyValue("-webkit-mask-composite")
+        and set v  = x.SetProperty("-webkit-mask-composite", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-image
+    member x.WebkitMaskImage
+        with get() = x.GetPropertyValue("-webkit-mask-image")
+        and set v  = x.SetProperty("-webkit-mask-image", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-origin
+    member x.WebkitMaskOrigin
+        with get() = x.GetPropertyValue("-webkit-mask-origin")
+        and set v  = x.SetProperty("-webkit-mask-origin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-position
+    member x.WebkitMaskPosition
+        with get() = x.GetPropertyValue("-webkit-mask-position")
+        and set v  = x.SetProperty("-webkit-mask-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-mask-position-x
+    member x.WebkitMaskPositionX
+        with get() = x.GetPropertyValue("-webkit-mask-position-x")
+        and set v  = x.SetProperty("-webkit-mask-position-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-mask-position-y
+    member x.WebkitMaskPositionY
+        with get() = x.GetPropertyValue("-webkit-mask-position-y")
+        and set v  = x.SetProperty("-webkit-mask-position-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-repeat
+    member x.WebkitMaskRepeat
+        with get() = x.GetPropertyValue("-webkit-mask-repeat")
+        and set v  = x.SetProperty("-webkit-mask-repeat", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-mask-repeat-x
+    member x.WebkitMaskRepeatX
+        with get() = x.GetPropertyValue("-webkit-mask-repeat-x")
+        and set v  = x.SetProperty("-webkit-mask-repeat-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-mask-repeat-y
+    member x.WebkitMaskRepeatY
+        with get() = x.GetPropertyValue("-webkit-mask-repeat-y")
+        and set v  = x.SetProperty("-webkit-mask-repeat-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-size
+    member x.WebkitMaskSize
+        with get() = x.GetPropertyValue("-webkit-mask-size")
+        and set v  = x.SetProperty("-webkit-mask-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-overflow-scrolling
+    member x.WebkitOverflowScrolling
+        with get() = x.GetPropertyValue("-webkit-overflow-scrolling")
+        and set v  = x.SetProperty("-webkit-overflow-scrolling", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-tap-highlight-color
+    member x.WebkitTapHighlightColor
+        with get() = x.GetPropertyValue("-webkit-tap-highlight-color")
+        and set v  = x.SetProperty("-webkit-tap-highlight-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-text-fill-color
+    member x.WebkitTextFillColor
+        with get() = x.GetPropertyValue("-webkit-text-fill-color")
+        and set v  = x.SetProperty("-webkit-text-fill-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-text-stroke
+    member x.WebkitTextStroke
+        with get() = x.GetPropertyValue("-webkit-text-stroke")
+        and set v  = x.SetProperty("-webkit-text-stroke", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-text-stroke-color
+    member x.WebkitTextStrokeColor
+        with get() = x.GetPropertyValue("-webkit-text-stroke-color")
+        and set v  = x.SetProperty("-webkit-text-stroke-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-text-stroke-width
+    member x.WebkitTextStrokeWidth
+        with get() = x.GetPropertyValue("-webkit-text-stroke-width")
+        and set v  = x.SetProperty("-webkit-text-stroke-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/-webkit-touch-callout
+    member x.WebkitTouchCallout
+        with get() = x.GetPropertyValue("-webkit-touch-callout")
+        and set v  = x.SetProperty("-webkit-touch-callout", v)
+
+    member x.WebkitUserModify
+        with get() = x.GetPropertyValue("-webkit-user-modify")
+        and set v  = x.SetProperty("-webkit-user-modify", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/align-content
+    member x.AlignContent
+        with get() = x.GetPropertyValue("align-content")
+        and set v  = x.SetProperty("align-content", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/align-items
+    member x.AlignItems
+        with get() = x.GetPropertyValue("align-items")
+        and set v  = x.SetProperty("align-items", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/align-self
+    member x.AlignSelf
+        with get() = x.GetPropertyValue("align-self")
+        and set v  = x.SetProperty("align-self", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/all
+    member x.All
+        with get() = x.GetPropertyValue("all")
+        and set v  = x.SetProperty("all", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation
+    member x.Animation
+        with get() = x.GetPropertyValue("animation")
+        and set v  = x.SetProperty("animation", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-delay
+    member x.AnimationDelay
+        with get() = x.GetPropertyValue("animation-delay")
+        and set v  = x.SetProperty("animation-delay", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-direction
+    member x.AnimationDirection
+        with get() = x.GetPropertyValue("animation-direction")
+        and set v  = x.SetProperty("animation-direction", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-duration
+    member x.AnimationDuration
+        with get() = x.GetPropertyValue("animation-duration")
+        and set v  = x.SetProperty("animation-duration", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-fill-mode
+    member x.AnimationFillMode
+        with get() = x.GetPropertyValue("animation-fill-mode")
+        and set v  = x.SetProperty("animation-fill-mode", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-iteration-count
+    member x.AnimationIterationCount
+        with get() = x.GetPropertyValue("animation-iteration-count")
+        and set v  = x.SetProperty("animation-iteration-count", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-name
+    member x.AnimationName
+        with get() = x.GetPropertyValue("animation-name")
+        and set v  = x.SetProperty("animation-name", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-play-state
+    member x.AnimationPlayState
+        with get() = x.GetPropertyValue("animation-play-state")
+        and set v  = x.SetProperty("animation-play-state", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/animation-timing-function
+    member x.AnimationTimingFunction
+        with get() = x.GetPropertyValue("animation-timing-function")
+        and set v  = x.SetProperty("animation-timing-function", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/appearance
+    member x.Appearance
+        with get() = x.GetPropertyValue("appearance")
+        and set v  = x.SetProperty("appearance", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/aspect-ratio
+    member x.AspectRatio
+        with get() = x.GetPropertyValue("aspect-ratio")
+        and set v  = x.SetProperty("aspect-ratio", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/azimuth
+    member x.Azimuth
+        with get() = x.GetPropertyValue("azimuth")
+        and set v  = x.SetProperty("azimuth", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/backdrop-filter
+    member x.BackdropFilter
+        with get() = x.GetPropertyValue("backdrop-filter")
+        and set v  = x.SetProperty("backdrop-filter", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/backface-visibility
+    member x.BackfaceVisibility
+        with get() = x.GetPropertyValue("backface-visibility")
+        and set v  = x.SetProperty("backface-visibility", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background
+    member x.Background
+        with get() = x.GetPropertyValue("background")
+        and set v  = x.SetProperty("background", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-attachment
+    member x.BackgroundAttachment
+        with get() = x.GetPropertyValue("background-attachment")
+        and set v  = x.SetProperty("background-attachment", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-blend-mode
+    member x.BackgroundBlendMode
+        with get() = x.GetPropertyValue("background-blend-mode")
+        and set v  = x.SetProperty("background-blend-mode", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-clip
+    member x.BackgroundClip
+        with get() = x.GetPropertyValue("background-clip")
+        and set v  = x.SetProperty("background-clip", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-color
+    member x.BackgroundColor
+        with get() = x.GetPropertyValue("background-color")
+        and set v  = x.SetProperty("background-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-image
+    member x.BackgroundImage
+        with get() = x.GetPropertyValue("background-image")
+        and set v  = x.SetProperty("background-image", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-origin
+    member x.BackgroundOrigin
+        with get() = x.GetPropertyValue("background-origin")
+        and set v  = x.SetProperty("background-origin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-position
+    member x.BackgroundPosition
+        with get() = x.GetPropertyValue("background-position")
+        and set v  = x.SetProperty("background-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-position-x
+    member x.BackgroundPositionX
+        with get() = x.GetPropertyValue("background-position-x")
+        and set v  = x.SetProperty("background-position-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-position-y
+    member x.BackgroundPositionY
+        with get() = x.GetPropertyValue("background-position-y")
+        and set v  = x.SetProperty("background-position-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-repeat
+    member x.BackgroundRepeat
+        with get() = x.GetPropertyValue("background-repeat")
+        and set v  = x.SetProperty("background-repeat", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/background-size
+    member x.BackgroundSize
+        with get() = x.GetPropertyValue("background-size")
+        and set v  = x.SetProperty("background-size", v)
+
+    member x.BlockOverflow
+        with get() = x.GetPropertyValue("block-overflow")
+        and set v  = x.SetProperty("block-overflow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/block-size
+    member x.BlockSize
+        with get() = x.GetPropertyValue("block-size")
+        and set v  = x.SetProperty("block-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border
+    member x.Border
+        with get() = x.GetPropertyValue("border")
+        and set v  = x.SetProperty("border", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block
+    member x.BorderBlock
+        with get() = x.GetPropertyValue("border-block")
+        and set v  = x.SetProperty("border-block", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-color
+    member x.BorderBlockColor
+        with get() = x.GetPropertyValue("border-block-color")
+        and set v  = x.SetProperty("border-block-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-style
+    member x.BorderBlockStyle
+        with get() = x.GetPropertyValue("border-block-style")
+        and set v  = x.SetProperty("border-block-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-width
+    member x.BorderBlockWidth
+        with get() = x.GetPropertyValue("border-block-width")
+        and set v  = x.SetProperty("border-block-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-end
+    member x.BorderBlockEnd
+        with get() = x.GetPropertyValue("border-block-end")
+        and set v  = x.SetProperty("border-block-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-end-color
+    member x.BorderBlockEndColor
+        with get() = x.GetPropertyValue("border-block-end-color")
+        and set v  = x.SetProperty("border-block-end-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-end-style
+    member x.BorderBlockEndStyle
+        with get() = x.GetPropertyValue("border-block-end-style")
+        and set v  = x.SetProperty("border-block-end-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-end-width
+    member x.BorderBlockEndWidth
+        with get() = x.GetPropertyValue("border-block-end-width")
+        and set v  = x.SetProperty("border-block-end-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-start
+    member x.BorderBlockStart
+        with get() = x.GetPropertyValue("border-block-start")
+        and set v  = x.SetProperty("border-block-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-start-color
+    member x.BorderBlockStartColor
+        with get() = x.GetPropertyValue("border-block-start-color")
+        and set v  = x.SetProperty("border-block-start-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-start-style
+    member x.BorderBlockStartStyle
+        with get() = x.GetPropertyValue("border-block-start-style")
+        and set v  = x.SetProperty("border-block-start-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-block-start-width
+    member x.BorderBlockStartWidth
+        with get() = x.GetPropertyValue("border-block-start-width")
+        and set v  = x.SetProperty("border-block-start-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-bottom
+    member x.BorderBottom
+        with get() = x.GetPropertyValue("border-bottom")
+        and set v  = x.SetProperty("border-bottom", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-bottom-color
+    member x.BorderBottomColor
+        with get() = x.GetPropertyValue("border-bottom-color")
+        and set v  = x.SetProperty("border-bottom-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-bottom-left-radius
+    member x.BorderBottomLeftRadius
+        with get() = x.GetPropertyValue("border-bottom-left-radius")
+        and set v  = x.SetProperty("border-bottom-left-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-bottom-right-radius
+    member x.BorderBottomRightRadius
+        with get() = x.GetPropertyValue("border-bottom-right-radius")
+        and set v  = x.SetProperty("border-bottom-right-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-bottom-style
+    member x.BorderBottomStyle
+        with get() = x.GetPropertyValue("border-bottom-style")
+        and set v  = x.SetProperty("border-bottom-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-bottom-width
+    member x.BorderBottomWidth
+        with get() = x.GetPropertyValue("border-bottom-width")
+        and set v  = x.SetProperty("border-bottom-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-collapse
+    member x.BorderCollapse
+        with get() = x.GetPropertyValue("border-collapse")
+        and set v  = x.SetProperty("border-collapse", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-color
+    member x.BorderColor
+        with get() = x.GetPropertyValue("border-color")
+        and set v  = x.SetProperty("border-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-end-end-radius
+    member x.BorderEndEndRadius
+        with get() = x.GetPropertyValue("border-end-end-radius")
+        and set v  = x.SetProperty("border-end-end-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-end-start-radius
+    member x.BorderEndStartRadius
+        with get() = x.GetPropertyValue("border-end-start-radius")
+        and set v  = x.SetProperty("border-end-start-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-image
+    member x.BorderImage
+        with get() = x.GetPropertyValue("border-image")
+        and set v  = x.SetProperty("border-image", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-image-outset
+    member x.BorderImageOutset
+        with get() = x.GetPropertyValue("border-image-outset")
+        and set v  = x.SetProperty("border-image-outset", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-image-repeat
+    member x.BorderImageRepeat
+        with get() = x.GetPropertyValue("border-image-repeat")
+        and set v  = x.SetProperty("border-image-repeat", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-image-slice
+    member x.BorderImageSlice
+        with get() = x.GetPropertyValue("border-image-slice")
+        and set v  = x.SetProperty("border-image-slice", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-image-source
+    member x.BorderImageSource
+        with get() = x.GetPropertyValue("border-image-source")
+        and set v  = x.SetProperty("border-image-source", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-image-width
+    member x.BorderImageWidth
+        with get() = x.GetPropertyValue("border-image-width")
+        and set v  = x.SetProperty("border-image-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline
+    member x.BorderInline
+        with get() = x.GetPropertyValue("border-inline")
+        and set v  = x.SetProperty("border-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-end
+    member x.BorderInlineEnd
+        with get() = x.GetPropertyValue("border-inline-end")
+        and set v  = x.SetProperty("border-inline-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-color
+    member x.BorderInlineColor
+        with get() = x.GetPropertyValue("border-inline-color")
+        and set v  = x.SetProperty("border-inline-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-style
+    member x.BorderInlineStyle
+        with get() = x.GetPropertyValue("border-inline-style")
+        and set v  = x.SetProperty("border-inline-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-width
+    member x.BorderInlineWidth
+        with get() = x.GetPropertyValue("border-inline-width")
+        and set v  = x.SetProperty("border-inline-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-end-color
+    member x.BorderInlineEndColor
+        with get() = x.GetPropertyValue("border-inline-end-color")
+        and set v  = x.SetProperty("border-inline-end-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-end-style
+    member x.BorderInlineEndStyle
+        with get() = x.GetPropertyValue("border-inline-end-style")
+        and set v  = x.SetProperty("border-inline-end-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-end-width
+    member x.BorderInlineEndWidth
+        with get() = x.GetPropertyValue("border-inline-end-width")
+        and set v  = x.SetProperty("border-inline-end-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-start
+    member x.BorderInlineStart
+        with get() = x.GetPropertyValue("border-inline-start")
+        and set v  = x.SetProperty("border-inline-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-start-color
+    member x.BorderInlineStartColor
+        with get() = x.GetPropertyValue("border-inline-start-color")
+        and set v  = x.SetProperty("border-inline-start-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-start-style
+    member x.BorderInlineStartStyle
+        with get() = x.GetPropertyValue("border-inline-start-style")
+        and set v  = x.SetProperty("border-inline-start-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-inline-start-width
+    member x.BorderInlineStartWidth
+        with get() = x.GetPropertyValue("border-inline-start-width")
+        and set v  = x.SetProperty("border-inline-start-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-left
+    member x.BorderLeft
+        with get() = x.GetPropertyValue("border-left")
+        and set v  = x.SetProperty("border-left", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-left-color
+    member x.BorderLeftColor
+        with get() = x.GetPropertyValue("border-left-color")
+        and set v  = x.SetProperty("border-left-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-left-style
+    member x.BorderLeftStyle
+        with get() = x.GetPropertyValue("border-left-style")
+        and set v  = x.SetProperty("border-left-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-left-width
+    member x.BorderLeftWidth
+        with get() = x.GetPropertyValue("border-left-width")
+        and set v  = x.SetProperty("border-left-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-radius
+    member x.BorderRadius
+        with get() = x.GetPropertyValue("border-radius")
+        and set v  = x.SetProperty("border-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-right
+    member x.BorderRight
+        with get() = x.GetPropertyValue("border-right")
+        and set v  = x.SetProperty("border-right", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-right-color
+    member x.BorderRightColor
+        with get() = x.GetPropertyValue("border-right-color")
+        and set v  = x.SetProperty("border-right-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-right-style
+    member x.BorderRightStyle
+        with get() = x.GetPropertyValue("border-right-style")
+        and set v  = x.SetProperty("border-right-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-right-width
+    member x.BorderRightWidth
+        with get() = x.GetPropertyValue("border-right-width")
+        and set v  = x.SetProperty("border-right-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-spacing
+    member x.BorderSpacing
+        with get() = x.GetPropertyValue("border-spacing")
+        and set v  = x.SetProperty("border-spacing", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-start-end-radius
+    member x.BorderStartEndRadius
+        with get() = x.GetPropertyValue("border-start-end-radius")
+        and set v  = x.SetProperty("border-start-end-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-start-start-radius
+    member x.BorderStartStartRadius
+        with get() = x.GetPropertyValue("border-start-start-radius")
+        and set v  = x.SetProperty("border-start-start-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-style
+    member x.BorderStyle
+        with get() = x.GetPropertyValue("border-style")
+        and set v  = x.SetProperty("border-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-top
+    member x.BorderTop
+        with get() = x.GetPropertyValue("border-top")
+        and set v  = x.SetProperty("border-top", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-top-color
+    member x.BorderTopColor
+        with get() = x.GetPropertyValue("border-top-color")
+        and set v  = x.SetProperty("border-top-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-top-left-radius
+    member x.BorderTopLeftRadius
+        with get() = x.GetPropertyValue("border-top-left-radius")
+        and set v  = x.SetProperty("border-top-left-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-top-right-radius
+    member x.BorderTopRightRadius
+        with get() = x.GetPropertyValue("border-top-right-radius")
+        and set v  = x.SetProperty("border-top-right-radius", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-top-style
+    member x.BorderTopStyle
+        with get() = x.GetPropertyValue("border-top-style")
+        and set v  = x.SetProperty("border-top-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-top-width
+    member x.BorderTopWidth
+        with get() = x.GetPropertyValue("border-top-width")
+        and set v  = x.SetProperty("border-top-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/border-width
+    member x.BorderWidth
+        with get() = x.GetPropertyValue("border-width")
+        and set v  = x.SetProperty("border-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/bottom
+    member x.Bottom
+        with get() = x.GetPropertyValue("bottom")
+        and set v  = x.SetProperty("bottom", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-align
+    member x.BoxAlign
+        with get() = x.GetPropertyValue("box-align")
+        and set v  = x.SetProperty("box-align", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-decoration-break
+    member x.BoxDecorationBreak
+        with get() = x.GetPropertyValue("box-decoration-break")
+        and set v  = x.SetProperty("box-decoration-break", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-direction
+    member x.BoxDirection
+        with get() = x.GetPropertyValue("box-direction")
+        and set v  = x.SetProperty("box-direction", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-flex
+    member x.BoxFlex
+        with get() = x.GetPropertyValue("box-flex")
+        and set v  = x.SetProperty("box-flex", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-flex-group
+    member x.BoxFlexGroup
+        with get() = x.GetPropertyValue("box-flex-group")
+        and set v  = x.SetProperty("box-flex-group", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-lines
+    member x.BoxLines
+        with get() = x.GetPropertyValue("box-lines")
+        and set v  = x.SetProperty("box-lines", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-ordinal-group
+    member x.BoxOrdinalGroup
+        with get() = x.GetPropertyValue("box-ordinal-group")
+        and set v  = x.SetProperty("box-ordinal-group", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-orient
+    member x.BoxOrient
+        with get() = x.GetPropertyValue("box-orient")
+        and set v  = x.SetProperty("box-orient", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-pack
+    member x.BoxPack
+        with get() = x.GetPropertyValue("box-pack")
+        and set v  = x.SetProperty("box-pack", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-shadow
+    member x.BoxShadow
+        with get() = x.GetPropertyValue("box-shadow")
+        and set v  = x.SetProperty("box-shadow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/box-sizing
+    member x.BoxSizing
+        with get() = x.GetPropertyValue("box-sizing")
+        and set v  = x.SetProperty("box-sizing", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/break-after
+    member x.BreakAfter
+        with get() = x.GetPropertyValue("break-after")
+        and set v  = x.SetProperty("break-after", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/break-before
+    member x.BreakBefore
+        with get() = x.GetPropertyValue("break-before")
+        and set v  = x.SetProperty("break-before", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/break-inside
+    member x.BreakInside
+        with get() = x.GetPropertyValue("break-inside")
+        and set v  = x.SetProperty("break-inside", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/caption-side
+    member x.CaptionSide
+        with get() = x.GetPropertyValue("caption-side")
+        and set v  = x.SetProperty("caption-side", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/caret-color
+    member x.CaretColor
+        with get() = x.GetPropertyValue("caret-color")
+        and set v  = x.SetProperty("caret-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/clear
+    member x.Clear
+        with get() = x.GetPropertyValue("clear")
+        and set v  = x.SetProperty("clear", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/clip
+    member x.Clip
+        with get() = x.GetPropertyValue("clip")
+        and set v  = x.SetProperty("clip", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/clip-path
+    member x.ClipPath
+        with get() = x.GetPropertyValue("clip-path")
+        and set v  = x.SetProperty("clip-path", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/color
+    member x.Color
+        with get() = x.GetPropertyValue("color")
+        and set v  = x.SetProperty("color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/color-adjust
+    member x.ColorAdjust
+        with get() = x.GetPropertyValue("color-adjust")
+        and set v  = x.SetProperty("color-adjust", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-count
+    member x.ColumnCount
+        with get() = x.GetPropertyValue("column-count")
+        and set v  = x.SetProperty("column-count", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-fill
+    member x.ColumnFill
+        with get() = x.GetPropertyValue("column-fill")
+        and set v  = x.SetProperty("column-fill", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-gap
+    member x.ColumnGap
+        with get() = x.GetPropertyValue("column-gap")
+        and set v  = x.SetProperty("column-gap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-rule
+    member x.ColumnRule
+        with get() = x.GetPropertyValue("column-rule")
+        and set v  = x.SetProperty("column-rule", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-rule-color
+    member x.ColumnRuleColor
+        with get() = x.GetPropertyValue("column-rule-color")
+        and set v  = x.SetProperty("column-rule-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-rule-style
+    member x.ColumnRuleStyle
+        with get() = x.GetPropertyValue("column-rule-style")
+        and set v  = x.SetProperty("column-rule-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-rule-width
+    member x.ColumnRuleWidth
+        with get() = x.GetPropertyValue("column-rule-width")
+        and set v  = x.SetProperty("column-rule-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-span
+    member x.ColumnSpan
+        with get() = x.GetPropertyValue("column-span")
+        and set v  = x.SetProperty("column-span", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-width
+    member x.ColumnWidth
+        with get() = x.GetPropertyValue("column-width")
+        and set v  = x.SetProperty("column-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/columns
+    member x.Columns
+        with get() = x.GetPropertyValue("columns")
+        and set v  = x.SetProperty("columns", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/contain
+    member x.Contain
+        with get() = x.GetPropertyValue("contain")
+        and set v  = x.SetProperty("contain", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/content
+    member x.Content
+        with get() = x.GetPropertyValue("content")
+        and set v  = x.SetProperty("content", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/counter-increment
+    member x.CounterIncrement
+        with get() = x.GetPropertyValue("counter-increment")
+        and set v  = x.SetProperty("counter-increment", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/counter-reset
+    member x.CounterReset
+        with get() = x.GetPropertyValue("counter-reset")
+        and set v  = x.SetProperty("counter-reset", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/counter-set
+    member x.CounterSet
+        with get() = x.GetPropertyValue("counter-set")
+        and set v  = x.SetProperty("counter-set", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/cursor
+    member x.Cursor
+        with get() = x.GetPropertyValue("cursor")
+        and set v  = x.SetProperty("cursor", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/direction
+    member x.Direction
+        with get() = x.GetPropertyValue("direction")
+        and set v  = x.SetProperty("direction", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/display
+    member x.Display
+        with get() = x.GetPropertyValue("display")
+        and set v  = x.SetProperty("display", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/empty-cells
+    member x.EmptyCells
+        with get() = x.GetPropertyValue("empty-cells")
+        and set v  = x.SetProperty("empty-cells", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/filter
+    member x.Filter
+        with get() = x.GetPropertyValue("filter")
+        and set v  = x.SetProperty("filter", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/flex
+    member x.Flex
+        with get() = x.GetPropertyValue("flex")
+        and set v  = x.SetProperty("flex", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/flex-basis
+    member x.FlexBasis
+        with get() = x.GetPropertyValue("flex-basis")
+        and set v  = x.SetProperty("flex-basis", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/flex-direction
+    member x.FlexDirection
+        with get() = x.GetPropertyValue("flex-direction")
+        and set v  = x.SetProperty("flex-direction", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/flex-flow
+    member x.FlexFlow
+        with get() = x.GetPropertyValue("flex-flow")
+        and set v  = x.SetProperty("flex-flow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/flex-grow
+    member x.FlexGrow
+        with get() = x.GetPropertyValue("flex-grow")
+        and set v  = x.SetProperty("flex-grow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/flex-shrink
+    member x.FlexShrink
+        with get() = x.GetPropertyValue("flex-shrink")
+        and set v  = x.SetProperty("flex-shrink", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/flex-wrap
+    member x.FlexWrap
+        with get() = x.GetPropertyValue("flex-wrap")
+        and set v  = x.SetProperty("flex-wrap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/float
+    member x.Float
+        with get() = x.GetPropertyValue("float")
+        and set v  = x.SetProperty("float", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font
+    member x.Font
+        with get() = x.GetPropertyValue("font")
+        and set v  = x.SetProperty("font", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-family
+    member x.FontFamily
+        with get() = x.GetPropertyValue("font-family")
+        and set v  = x.SetProperty("font-family", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-feature-settings
+    member x.FontFeatureSettings
+        with get() = x.GetPropertyValue("font-feature-settings")
+        and set v  = x.SetProperty("font-feature-settings", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-kerning
+    member x.FontKerning
+        with get() = x.GetPropertyValue("font-kerning")
+        and set v  = x.SetProperty("font-kerning", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-language-override
+    member x.FontLanguageOverride
+        with get() = x.GetPropertyValue("font-language-override")
+        and set v  = x.SetProperty("font-language-override", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-optical-sizing
+    member x.FontOpticalSizing
+        with get() = x.GetPropertyValue("font-optical-sizing")
+        and set v  = x.SetProperty("font-optical-sizing", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variation-settings
+    member x.FontVariationSettings
+        with get() = x.GetPropertyValue("font-variation-settings")
+        and set v  = x.SetProperty("font-variation-settings", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-size
+    member x.FontSize
+        with get() = x.GetPropertyValue("font-size")
+        and set v  = x.SetProperty("font-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-size-adjust
+    member x.FontSizeAdjust
+        with get() = x.GetPropertyValue("font-size-adjust")
+        and set v  = x.SetProperty("font-size-adjust", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-stretch
+    member x.FontStretch
+        with get() = x.GetPropertyValue("font-stretch")
+        and set v  = x.SetProperty("font-stretch", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-style
+    member x.FontStyle
+        with get() = x.GetPropertyValue("font-style")
+        and set v  = x.SetProperty("font-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-synthesis
+    member x.FontSynthesis
+        with get() = x.GetPropertyValue("font-synthesis")
+        and set v  = x.SetProperty("font-synthesis", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variant
+    member x.FontVariant
+        with get() = x.GetPropertyValue("font-variant")
+        and set v  = x.SetProperty("font-variant", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variant-alternates
+    member x.FontVariantAlternates
+        with get() = x.GetPropertyValue("font-variant-alternates")
+        and set v  = x.SetProperty("font-variant-alternates", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variant-caps
+    member x.FontVariantCaps
+        with get() = x.GetPropertyValue("font-variant-caps")
+        and set v  = x.SetProperty("font-variant-caps", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variant-east-asian
+    member x.FontVariantEastAsian
+        with get() = x.GetPropertyValue("font-variant-east-asian")
+        and set v  = x.SetProperty("font-variant-east-asian", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variant-ligatures
+    member x.FontVariantLigatures
+        with get() = x.GetPropertyValue("font-variant-ligatures")
+        and set v  = x.SetProperty("font-variant-ligatures", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variant-numeric
+    member x.FontVariantNumeric
+        with get() = x.GetPropertyValue("font-variant-numeric")
+        and set v  = x.SetProperty("font-variant-numeric", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-variant-position
+    member x.FontVariantPosition
+        with get() = x.GetPropertyValue("font-variant-position")
+        and set v  = x.SetProperty("font-variant-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/font-weight
+    member x.FontWeight
+        with get() = x.GetPropertyValue("font-weight")
+        and set v  = x.SetProperty("font-weight", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/gap
+    member x.Gap
+        with get() = x.GetPropertyValue("gap")
+        and set v  = x.SetProperty("gap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid
+    member x.Grid
+        with get() = x.GetPropertyValue("grid")
+        and set v  = x.SetProperty("grid", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-area
+    member x.GridArea
+        with get() = x.GetPropertyValue("grid-area")
+        and set v  = x.SetProperty("grid-area", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-auto-columns
+    member x.GridAutoColumns
+        with get() = x.GetPropertyValue("grid-auto-columns")
+        and set v  = x.SetProperty("grid-auto-columns", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-auto-flow
+    member x.GridAutoFlow
+        with get() = x.GetPropertyValue("grid-auto-flow")
+        and set v  = x.SetProperty("grid-auto-flow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-auto-rows
+    member x.GridAutoRows
+        with get() = x.GetPropertyValue("grid-auto-rows")
+        and set v  = x.SetProperty("grid-auto-rows", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-column
+    member x.GridColumn
+        with get() = x.GetPropertyValue("grid-column")
+        and set v  = x.SetProperty("grid-column", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-column-end
+    member x.GridColumnEnd
+        with get() = x.GetPropertyValue("grid-column-end")
+        and set v  = x.SetProperty("grid-column-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/column-gap
+    member x.GridColumnGap
+        with get() = x.GetPropertyValue("grid-column-gap")
+        and set v  = x.SetProperty("grid-column-gap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-column-start
+    member x.GridColumnStart
+        with get() = x.GetPropertyValue("grid-column-start")
+        and set v  = x.SetProperty("grid-column-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/gap
+    member x.GridGap
+        with get() = x.GetPropertyValue("grid-gap")
+        and set v  = x.SetProperty("grid-gap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-row
+    member x.GridRow
+        with get() = x.GetPropertyValue("grid-row")
+        and set v  = x.SetProperty("grid-row", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-row-end
+    member x.GridRowEnd
+        with get() = x.GetPropertyValue("grid-row-end")
+        and set v  = x.SetProperty("grid-row-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/row-gap
+    member x.GridRowGap
+        with get() = x.GetPropertyValue("grid-row-gap")
+        and set v  = x.SetProperty("grid-row-gap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-row-start
+    member x.GridRowStart
+        with get() = x.GetPropertyValue("grid-row-start")
+        and set v  = x.SetProperty("grid-row-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-template
+    member x.GridTemplate
+        with get() = x.GetPropertyValue("grid-template")
+        and set v  = x.SetProperty("grid-template", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-template-areas
+    member x.GridTemplateAreas
+        with get() = x.GetPropertyValue("grid-template-areas")
+        and set v  = x.SetProperty("grid-template-areas", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-template-columns
+    member x.GridTemplateColumns
+        with get() = x.GetPropertyValue("grid-template-columns")
+        and set v  = x.SetProperty("grid-template-columns", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/grid-template-rows
+    member x.GridTemplateRows
+        with get() = x.GetPropertyValue("grid-template-rows")
+        and set v  = x.SetProperty("grid-template-rows", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/hanging-punctuation
+    member x.HangingPunctuation
+        with get() = x.GetPropertyValue("hanging-punctuation")
+        and set v  = x.SetProperty("hanging-punctuation", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/height
+    member x.Height
+        with get() = x.GetPropertyValue("height")
+        and set v  = x.SetProperty("height", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/hyphens
+    member x.Hyphens
+        with get() = x.GetPropertyValue("hyphens")
+        and set v  = x.SetProperty("hyphens", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/image-orientation
+    member x.ImageOrientation
+        with get() = x.GetPropertyValue("image-orientation")
+        and set v  = x.SetProperty("image-orientation", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/image-rendering
+    member x.ImageRendering
+        with get() = x.GetPropertyValue("image-rendering")
+        and set v  = x.SetProperty("image-rendering", v)
+
+    member x.ImageResolution
+        with get() = x.GetPropertyValue("image-resolution")
+        and set v  = x.SetProperty("image-resolution", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/ime-mode
+    member x.ImeMode
+        with get() = x.GetPropertyValue("ime-mode")
+        and set v  = x.SetProperty("ime-mode", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/initial-letter
+    member x.InitialLetter
+        with get() = x.GetPropertyValue("initial-letter")
+        and set v  = x.SetProperty("initial-letter", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/initial-letter-align
+    member x.InitialLetterAlign
+        with get() = x.GetPropertyValue("initial-letter-align")
+        and set v  = x.SetProperty("initial-letter-align", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inline-size
+    member x.InlineSize
+        with get() = x.GetPropertyValue("inline-size")
+        and set v  = x.SetProperty("inline-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inset
+    member x.Inset
+        with get() = x.GetPropertyValue("inset")
+        and set v  = x.SetProperty("inset", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inset-block
+    member x.InsetBlock
+        with get() = x.GetPropertyValue("inset-block")
+        and set v  = x.SetProperty("inset-block", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inset-block-end
+    member x.InsetBlockEnd
+        with get() = x.GetPropertyValue("inset-block-end")
+        and set v  = x.SetProperty("inset-block-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inset-block-start
+    member x.InsetBlockStart
+        with get() = x.GetPropertyValue("inset-block-start")
+        and set v  = x.SetProperty("inset-block-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inset-inline
+    member x.InsetInline
+        with get() = x.GetPropertyValue("inset-inline")
+        and set v  = x.SetProperty("inset-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inset-inline-end
+    member x.InsetInlineEnd
+        with get() = x.GetPropertyValue("inset-inline-end")
+        and set v  = x.SetProperty("inset-inline-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/inset-inline-start
+    member x.InsetInlineStart
+        with get() = x.GetPropertyValue("inset-inline-start")
+        and set v  = x.SetProperty("inset-inline-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/isolation
+    member x.Isolation
+        with get() = x.GetPropertyValue("isolation")
+        and set v  = x.SetProperty("isolation", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/justify-content
+    member x.JustifyContent
+        with get() = x.GetPropertyValue("justify-content")
+        and set v  = x.SetProperty("justify-content", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/justify-items
+    member x.JustifyItems
+        with get() = x.GetPropertyValue("justify-items")
+        and set v  = x.SetProperty("justify-items", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/justify-self
+    member x.JustifySelf
+        with get() = x.GetPropertyValue("justify-self")
+        and set v  = x.SetProperty("justify-self", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/left
+    member x.Left
+        with get() = x.GetPropertyValue("left")
+        and set v  = x.SetProperty("left", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/letter-spacing
+    member x.LetterSpacing
+        with get() = x.GetPropertyValue("letter-spacing")
+        and set v  = x.SetProperty("letter-spacing", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/line-break
+    member x.LineBreak
+        with get() = x.GetPropertyValue("line-break")
+        and set v  = x.SetProperty("line-break", v)
+
+    member x.LineClamp
+        with get() = x.GetPropertyValue("line-clamp")
+        and set v  = x.SetProperty("line-clamp", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/line-height
+    member x.LineHeight
+        with get() = x.GetPropertyValue("line-height")
+        and set v  = x.SetProperty("line-height", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/line-height-step
+    member x.LineHeightStep
+        with get() = x.GetPropertyValue("line-height-step")
+        and set v  = x.SetProperty("line-height-step", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/list-style
+    member x.ListStyle
+        with get() = x.GetPropertyValue("list-style")
+        and set v  = x.SetProperty("list-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/list-style-image
+    member x.ListStyleImage
+        with get() = x.GetPropertyValue("list-style-image")
+        and set v  = x.SetProperty("list-style-image", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/list-style-position
+    member x.ListStylePosition
+        with get() = x.GetPropertyValue("list-style-position")
+        and set v  = x.SetProperty("list-style-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/list-style-type
+    member x.ListStyleType
+        with get() = x.GetPropertyValue("list-style-type")
+        and set v  = x.SetProperty("list-style-type", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin
+    member x.Margin
+        with get() = x.GetPropertyValue("margin")
+        and set v  = x.SetProperty("margin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-block
+    member x.MarginBlock
+        with get() = x.GetPropertyValue("margin-block")
+        and set v  = x.SetProperty("margin-block", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-block-end
+    member x.MarginBlockEnd
+        with get() = x.GetPropertyValue("margin-block-end")
+        and set v  = x.SetProperty("margin-block-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-block-start
+    member x.MarginBlockStart
+        with get() = x.GetPropertyValue("margin-block-start")
+        and set v  = x.SetProperty("margin-block-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-bottom
+    member x.MarginBottom
+        with get() = x.GetPropertyValue("margin-bottom")
+        and set v  = x.SetProperty("margin-bottom", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-inline
+    member x.MarginInline
+        with get() = x.GetPropertyValue("margin-inline")
+        and set v  = x.SetProperty("margin-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-inline-end
+    member x.MarginInlineEnd
+        with get() = x.GetPropertyValue("margin-inline-end")
+        and set v  = x.SetProperty("margin-inline-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-inline-start
+    member x.MarginInlineStart
+        with get() = x.GetPropertyValue("margin-inline-start")
+        and set v  = x.SetProperty("margin-inline-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-left
+    member x.MarginLeft
+        with get() = x.GetPropertyValue("margin-left")
+        and set v  = x.SetProperty("margin-left", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-right
+    member x.MarginRight
+        with get() = x.GetPropertyValue("margin-right")
+        and set v  = x.SetProperty("margin-right", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-top
+    member x.MarginTop
+        with get() = x.GetPropertyValue("margin-top")
+        and set v  = x.SetProperty("margin-top", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/margin-trim
+    member x.MarginTrim
+        with get() = x.GetPropertyValue("margin-trim")
+        and set v  = x.SetProperty("margin-trim", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask
+    member x.Mask
+        with get() = x.GetPropertyValue("mask")
+        and set v  = x.SetProperty("mask", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-border
+    member x.MaskBorder
+        with get() = x.GetPropertyValue("mask-border")
+        and set v  = x.SetProperty("mask-border", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-border-mode
+    member x.MaskBorderMode
+        with get() = x.GetPropertyValue("mask-border-mode")
+        and set v  = x.SetProperty("mask-border-mode", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-border-outset
+    member x.MaskBorderOutset
+        with get() = x.GetPropertyValue("mask-border-outset")
+        and set v  = x.SetProperty("mask-border-outset", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-border-repeat
+    member x.MaskBorderRepeat
+        with get() = x.GetPropertyValue("mask-border-repeat")
+        and set v  = x.SetProperty("mask-border-repeat", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-border-slice
+    member x.MaskBorderSlice
+        with get() = x.GetPropertyValue("mask-border-slice")
+        and set v  = x.SetProperty("mask-border-slice", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-border-source
+    member x.MaskBorderSource
+        with get() = x.GetPropertyValue("mask-border-source")
+        and set v  = x.SetProperty("mask-border-source", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-border-width
+    member x.MaskBorderWidth
+        with get() = x.GetPropertyValue("mask-border-width")
+        and set v  = x.SetProperty("mask-border-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-clip
+    member x.MaskClip
+        with get() = x.GetPropertyValue("mask-clip")
+        and set v  = x.SetProperty("mask-clip", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-composite
+    member x.MaskComposite
+        with get() = x.GetPropertyValue("mask-composite")
+        and set v  = x.SetProperty("mask-composite", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-image
+    member x.MaskImage
+        with get() = x.GetPropertyValue("mask-image")
+        and set v  = x.SetProperty("mask-image", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-mode
+    member x.MaskMode
+        with get() = x.GetPropertyValue("mask-mode")
+        and set v  = x.SetProperty("mask-mode", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-origin
+    member x.MaskOrigin
+        with get() = x.GetPropertyValue("mask-origin")
+        and set v  = x.SetProperty("mask-origin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-position
+    member x.MaskPosition
+        with get() = x.GetPropertyValue("mask-position")
+        and set v  = x.SetProperty("mask-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-repeat
+    member x.MaskRepeat
+        with get() = x.GetPropertyValue("mask-repeat")
+        and set v  = x.SetProperty("mask-repeat", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-size
+    member x.MaskSize
+        with get() = x.GetPropertyValue("mask-size")
+        and set v  = x.SetProperty("mask-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mask-type
+    member x.MaskType
+        with get() = x.GetPropertyValue("mask-type")
+        and set v  = x.SetProperty("mask-type", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/max-block-size
+    member x.MaxBlockSize
+        with get() = x.GetPropertyValue("max-block-size")
+        and set v  = x.SetProperty("max-block-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/max-height
+    member x.MaxHeight
+        with get() = x.GetPropertyValue("max-height")
+        and set v  = x.SetProperty("max-height", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/max-inline-size
+    member x.MaxInlineSize
+        with get() = x.GetPropertyValue("max-inline-size")
+        and set v  = x.SetProperty("max-inline-size", v)
+
+    member x.MaxLines
+        with get() = x.GetPropertyValue("max-lines")
+        and set v  = x.SetProperty("max-lines", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/max-width
+    member x.MaxWidth
+        with get() = x.GetPropertyValue("max-width")
+        and set v  = x.SetProperty("max-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/min-block-size
+    member x.MinBlockSize
+        with get() = x.GetPropertyValue("min-block-size")
+        and set v  = x.SetProperty("min-block-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/min-height
+    member x.MinHeight
+        with get() = x.GetPropertyValue("min-height")
+        and set v  = x.SetProperty("min-height", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/min-inline-size
+    member x.MinInlineSize
+        with get() = x.GetPropertyValue("min-inline-size")
+        and set v  = x.SetProperty("min-inline-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/min-width
+    member x.MinWidth
+        with get() = x.GetPropertyValue("min-width")
+        and set v  = x.SetProperty("min-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/mix-blend-mode
+    member x.MixBlendMode
+        with get() = x.GetPropertyValue("mix-blend-mode")
+        and set v  = x.SetProperty("mix-blend-mode", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/object-fit
+    member x.ObjectFit
+        with get() = x.GetPropertyValue("object-fit")
+        and set v  = x.SetProperty("object-fit", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/object-position
+    member x.ObjectPosition
+        with get() = x.GetPropertyValue("object-position")
+        and set v  = x.SetProperty("object-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/offset
+    member x.Offset
+        with get() = x.GetPropertyValue("offset")
+        and set v  = x.SetProperty("offset", v)
+
+    member x.OffsetAnchor
+        with get() = x.GetPropertyValue("offset-anchor")
+        and set v  = x.SetProperty("offset-anchor", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/offset-distance
+    member x.OffsetDistance
+        with get() = x.GetPropertyValue("offset-distance")
+        and set v  = x.SetProperty("offset-distance", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/offset-path
+    member x.OffsetPath
+        with get() = x.GetPropertyValue("offset-path")
+        and set v  = x.SetProperty("offset-path", v)
+
+    member x.OffsetPosition
+        with get() = x.GetPropertyValue("offset-position")
+        and set v  = x.SetProperty("offset-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/offset-rotate
+    member x.OffsetRotate
+        with get() = x.GetPropertyValue("offset-rotate")
+        and set v  = x.SetProperty("offset-rotate", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/opacity
+    member x.Opacity
+        with get() = x.GetPropertyValue("opacity")
+        and set v  = x.SetProperty("opacity", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/order
+    member x.Order
+        with get() = x.GetPropertyValue("order")
+        and set v  = x.SetProperty("order", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/orphans
+    member x.Orphans
+        with get() = x.GetPropertyValue("orphans")
+        and set v  = x.SetProperty("orphans", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/outline
+    member x.Outline
+        with get() = x.GetPropertyValue("outline")
+        and set v  = x.SetProperty("outline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/outline-color
+    member x.OutlineColor
+        with get() = x.GetPropertyValue("outline-color")
+        and set v  = x.SetProperty("outline-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/outline-offset
+    member x.OutlineOffset
+        with get() = x.GetPropertyValue("outline-offset")
+        and set v  = x.SetProperty("outline-offset", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/outline-style
+    member x.OutlineStyle
+        with get() = x.GetPropertyValue("outline-style")
+        and set v  = x.SetProperty("outline-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/outline-width
+    member x.OutlineWidth
+        with get() = x.GetPropertyValue("outline-width")
+        and set v  = x.SetProperty("outline-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overflow
+    member x.Overflow
+        with get() = x.GetPropertyValue("overflow")
+        and set v  = x.SetProperty("overflow", v)
+
+    member x.OverflowAnchor
+        with get() = x.GetPropertyValue("overflow-anchor")
+        and set v  = x.SetProperty("overflow-anchor", v)
+
+    member x.OverflowBlock
+        with get() = x.GetPropertyValue("overflow-block")
+        and set v  = x.SetProperty("overflow-block", v)
+
+    /// https://developer.mozilla.org/docs/Mozilla/CSS/overflow-clip-box
+    member x.OverflowClipBox
+        with get() = x.GetPropertyValue("overflow-clip-box")
+        and set v  = x.SetProperty("overflow-clip-box", v)
+
+    member x.OverflowInline
+        with get() = x.GetPropertyValue("overflow-inline")
+        and set v  = x.SetProperty("overflow-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overflow-wrap
+    member x.OverflowWrap
+        with get() = x.GetPropertyValue("overflow-wrap")
+        and set v  = x.SetProperty("overflow-wrap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overflow-x
+    member x.OverflowX
+        with get() = x.GetPropertyValue("overflow-x")
+        and set v  = x.SetProperty("overflow-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overflow-y
+    member x.OverflowY
+        with get() = x.GetPropertyValue("overflow-y")
+        and set v  = x.SetProperty("overflow-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior
+    member x.OverscrollBehavior
+        with get() = x.GetPropertyValue("overscroll-behavior")
+        and set v  = x.SetProperty("overscroll-behavior", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-block
+    member x.OverscrollBehaviorBlock
+        with get() = x.GetPropertyValue("overscroll-behavior-block")
+        and set v  = x.SetProperty("overscroll-behavior-block", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-inline
+    member x.OverscrollBehaviorInline
+        with get() = x.GetPropertyValue("overscroll-behavior-inline")
+        and set v  = x.SetProperty("overscroll-behavior-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-x
+    member x.OverscrollBehaviorX
+        with get() = x.GetPropertyValue("overscroll-behavior-x")
+        and set v  = x.SetProperty("overscroll-behavior-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-y
+    member x.OverscrollBehaviorY
+        with get() = x.GetPropertyValue("overscroll-behavior-y")
+        and set v  = x.SetProperty("overscroll-behavior-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding
+    member x.Padding
+        with get() = x.GetPropertyValue("padding")
+        and set v  = x.SetProperty("padding", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-block
+    member x.PaddingBlock
+        with get() = x.GetPropertyValue("padding-block")
+        and set v  = x.SetProperty("padding-block", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-block-end
+    member x.PaddingBlockEnd
+        with get() = x.GetPropertyValue("padding-block-end")
+        and set v  = x.SetProperty("padding-block-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-block-start
+    member x.PaddingBlockStart
+        with get() = x.GetPropertyValue("padding-block-start")
+        and set v  = x.SetProperty("padding-block-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-bottom
+    member x.PaddingBottom
+        with get() = x.GetPropertyValue("padding-bottom")
+        and set v  = x.SetProperty("padding-bottom", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-inline
+    member x.PaddingInline
+        with get() = x.GetPropertyValue("padding-inline")
+        and set v  = x.SetProperty("padding-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-inline-end
+    member x.PaddingInlineEnd
+        with get() = x.GetPropertyValue("padding-inline-end")
+        and set v  = x.SetProperty("padding-inline-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-inline-start
+    member x.PaddingInlineStart
+        with get() = x.GetPropertyValue("padding-inline-start")
+        and set v  = x.SetProperty("padding-inline-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-left
+    member x.PaddingLeft
+        with get() = x.GetPropertyValue("padding-left")
+        and set v  = x.SetProperty("padding-left", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-right
+    member x.PaddingRight
+        with get() = x.GetPropertyValue("padding-right")
+        and set v  = x.SetProperty("padding-right", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/padding-top
+    member x.PaddingTop
+        with get() = x.GetPropertyValue("padding-top")
+        and set v  = x.SetProperty("padding-top", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/page-break-after
+    member x.PageBreakAfter
+        with get() = x.GetPropertyValue("page-break-after")
+        and set v  = x.SetProperty("page-break-after", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/page-break-before
+    member x.PageBreakBefore
+        with get() = x.GetPropertyValue("page-break-before")
+        and set v  = x.SetProperty("page-break-before", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/page-break-inside
+    member x.PageBreakInside
+        with get() = x.GetPropertyValue("page-break-inside")
+        and set v  = x.SetProperty("page-break-inside", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/paint-order
+    member x.PaintOrder
+        with get() = x.GetPropertyValue("paint-order")
+        and set v  = x.SetProperty("paint-order", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/perspective
+    member x.Perspective
+        with get() = x.GetPropertyValue("perspective")
+        and set v  = x.SetProperty("perspective", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/perspective-origin
+    member x.PerspectiveOrigin
+        with get() = x.GetPropertyValue("perspective-origin")
+        and set v  = x.SetProperty("perspective-origin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/place-content
+    member x.PlaceContent
+        with get() = x.GetPropertyValue("place-content")
+        and set v  = x.SetProperty("place-content", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/place-items
+    member x.PlaceItems
+        with get() = x.GetPropertyValue("place-items")
+        and set v  = x.SetProperty("place-items", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/place-self
+    member x.PlaceSelf
+        with get() = x.GetPropertyValue("place-self")
+        and set v  = x.SetProperty("place-self", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/pointer-events
+    member x.PointerEvents
+        with get() = x.GetPropertyValue("pointer-events")
+        and set v  = x.SetProperty("pointer-events", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/position
+    member x.Position
+        with get() = x.GetPropertyValue("position")
+        and set v  = x.SetProperty("position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/quotes
+    member x.Quotes
+        with get() = x.GetPropertyValue("quotes")
+        and set v  = x.SetProperty("quotes", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/resize
+    member x.Resize
+        with get() = x.GetPropertyValue("resize")
+        and set v  = x.SetProperty("resize", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/right
+    member x.Right
+        with get() = x.GetPropertyValue("right")
+        and set v  = x.SetProperty("right", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/rotate
+    member x.Rotate
+        with get() = x.GetPropertyValue("rotate")
+        and set v  = x.SetProperty("rotate", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/row-gap
+    member x.RowGap
+        with get() = x.GetPropertyValue("row-gap")
+        and set v  = x.SetProperty("row-gap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/ruby-align
+    member x.RubyAlign
+        with get() = x.GetPropertyValue("ruby-align")
+        and set v  = x.SetProperty("ruby-align", v)
+
+    member x.RubyMerge
+        with get() = x.GetPropertyValue("ruby-merge")
+        and set v  = x.SetProperty("ruby-merge", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/ruby-position
+    member x.RubyPosition
+        with get() = x.GetPropertyValue("ruby-position")
+        and set v  = x.SetProperty("ruby-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scale
+    member x.Scale
+        with get() = x.GetPropertyValue("scale")
+        and set v  = x.SetProperty("scale", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scrollbar-color
+    member x.ScrollbarColor
+        with get() = x.GetPropertyValue("scrollbar-color")
+        and set v  = x.SetProperty("scrollbar-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scrollbar-width
+    member x.ScrollbarWidth
+        with get() = x.GetPropertyValue("scrollbar-width")
+        and set v  = x.SetProperty("scrollbar-width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-behavior
+    member x.ScrollBehavior
+        with get() = x.GetPropertyValue("scroll-behavior")
+        and set v  = x.SetProperty("scroll-behavior", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin
+    member x.ScrollMargin
+        with get() = x.GetPropertyValue("scroll-margin")
+        and set v  = x.SetProperty("scroll-margin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block
+    member x.ScrollMarginBlock
+        with get() = x.GetPropertyValue("scroll-margin-block")
+        and set v  = x.SetProperty("scroll-margin-block", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block-start
+    member x.ScrollMarginBlockStart
+        with get() = x.GetPropertyValue("scroll-margin-block-start")
+        and set v  = x.SetProperty("scroll-margin-block-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block-end
+    member x.ScrollMarginBlockEnd
+        with get() = x.GetPropertyValue("scroll-margin-block-end")
+        and set v  = x.SetProperty("scroll-margin-block-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-bottom
+    member x.ScrollMarginBottom
+        with get() = x.GetPropertyValue("scroll-margin-bottom")
+        and set v  = x.SetProperty("scroll-margin-bottom", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline
+    member x.ScrollMarginInline
+        with get() = x.GetPropertyValue("scroll-margin-inline")
+        and set v  = x.SetProperty("scroll-margin-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline-start
+    member x.ScrollMarginInlineStart
+        with get() = x.GetPropertyValue("scroll-margin-inline-start")
+        and set v  = x.SetProperty("scroll-margin-inline-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline-end
+    member x.ScrollMarginInlineEnd
+        with get() = x.GetPropertyValue("scroll-margin-inline-end")
+        and set v  = x.SetProperty("scroll-margin-inline-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-left
+    member x.ScrollMarginLeft
+        with get() = x.GetPropertyValue("scroll-margin-left")
+        and set v  = x.SetProperty("scroll-margin-left", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-right
+    member x.ScrollMarginRight
+        with get() = x.GetPropertyValue("scroll-margin-right")
+        and set v  = x.SetProperty("scroll-margin-right", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-margin-top
+    member x.ScrollMarginTop
+        with get() = x.GetPropertyValue("scroll-margin-top")
+        and set v  = x.SetProperty("scroll-margin-top", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding
+    member x.ScrollPadding
+        with get() = x.GetPropertyValue("scroll-padding")
+        and set v  = x.SetProperty("scroll-padding", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block
+    member x.ScrollPaddingBlock
+        with get() = x.GetPropertyValue("scroll-padding-block")
+        and set v  = x.SetProperty("scroll-padding-block", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block-start
+    member x.ScrollPaddingBlockStart
+        with get() = x.GetPropertyValue("scroll-padding-block-start")
+        and set v  = x.SetProperty("scroll-padding-block-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block-end
+    member x.ScrollPaddingBlockEnd
+        with get() = x.GetPropertyValue("scroll-padding-block-end")
+        and set v  = x.SetProperty("scroll-padding-block-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-bottom
+    member x.ScrollPaddingBottom
+        with get() = x.GetPropertyValue("scroll-padding-bottom")
+        and set v  = x.SetProperty("scroll-padding-bottom", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline
+    member x.ScrollPaddingInline
+        with get() = x.GetPropertyValue("scroll-padding-inline")
+        and set v  = x.SetProperty("scroll-padding-inline", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline-start
+    member x.ScrollPaddingInlineStart
+        with get() = x.GetPropertyValue("scroll-padding-inline-start")
+        and set v  = x.SetProperty("scroll-padding-inline-start", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline-end
+    member x.ScrollPaddingInlineEnd
+        with get() = x.GetPropertyValue("scroll-padding-inline-end")
+        and set v  = x.SetProperty("scroll-padding-inline-end", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-left
+    member x.ScrollPaddingLeft
+        with get() = x.GetPropertyValue("scroll-padding-left")
+        and set v  = x.SetProperty("scroll-padding-left", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-right
+    member x.ScrollPaddingRight
+        with get() = x.GetPropertyValue("scroll-padding-right")
+        and set v  = x.SetProperty("scroll-padding-right", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-padding-top
+    member x.ScrollPaddingTop
+        with get() = x.GetPropertyValue("scroll-padding-top")
+        and set v  = x.SetProperty("scroll-padding-top", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-align
+    member x.ScrollSnapAlign
+        with get() = x.GetPropertyValue("scroll-snap-align")
+        and set v  = x.SetProperty("scroll-snap-align", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-coordinate
+    member x.ScrollSnapCoordinate
+        with get() = x.GetPropertyValue("scroll-snap-coordinate")
+        and set v  = x.SetProperty("scroll-snap-coordinate", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-destination
+    member x.ScrollSnapDestination
+        with get() = x.GetPropertyValue("scroll-snap-destination")
+        and set v  = x.SetProperty("scroll-snap-destination", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-points-x
+    member x.ScrollSnapPointsX
+        with get() = x.GetPropertyValue("scroll-snap-points-x")
+        and set v  = x.SetProperty("scroll-snap-points-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-points-y
+    member x.ScrollSnapPointsY
+        with get() = x.GetPropertyValue("scroll-snap-points-y")
+        and set v  = x.SetProperty("scroll-snap-points-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-stop
+    member x.ScrollSnapStop
+        with get() = x.GetPropertyValue("scroll-snap-stop")
+        and set v  = x.SetProperty("scroll-snap-stop", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-type
+    member x.ScrollSnapType
+        with get() = x.GetPropertyValue("scroll-snap-type")
+        and set v  = x.SetProperty("scroll-snap-type", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-type-x
+    member x.ScrollSnapTypeX
+        with get() = x.GetPropertyValue("scroll-snap-type-x")
+        and set v  = x.SetProperty("scroll-snap-type-x", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/scroll-snap-type-y
+    member x.ScrollSnapTypeY
+        with get() = x.GetPropertyValue("scroll-snap-type-y")
+        and set v  = x.SetProperty("scroll-snap-type-y", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/shape-image-threshold
+    member x.ShapeImageThreshold
+        with get() = x.GetPropertyValue("shape-image-threshold")
+        and set v  = x.SetProperty("shape-image-threshold", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/shape-margin
+    member x.ShapeMargin
+        with get() = x.GetPropertyValue("shape-margin")
+        and set v  = x.SetProperty("shape-margin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/shape-outside
+    member x.ShapeOutside
+        with get() = x.GetPropertyValue("shape-outside")
+        and set v  = x.SetProperty("shape-outside", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/tab-size
+    member x.TabSize
+        with get() = x.GetPropertyValue("tab-size")
+        and set v  = x.SetProperty("tab-size", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/table-layout
+    member x.TableLayout
+        with get() = x.GetPropertyValue("table-layout")
+        and set v  = x.SetProperty("table-layout", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-align
+    member x.TextAlign
+        with get() = x.GetPropertyValue("text-align")
+        and set v  = x.SetProperty("text-align", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-align-last
+    member x.TextAlignLast
+        with get() = x.GetPropertyValue("text-align-last")
+        and set v  = x.SetProperty("text-align-last", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-combine-upright
+    member x.TextCombineUpright
+        with get() = x.GetPropertyValue("text-combine-upright")
+        and set v  = x.SetProperty("text-combine-upright", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-decoration
+    member x.TextDecoration
+        with get() = x.GetPropertyValue("text-decoration")
+        and set v  = x.SetProperty("text-decoration", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-decoration-color
+    member x.TextDecorationColor
+        with get() = x.GetPropertyValue("text-decoration-color")
+        and set v  = x.SetProperty("text-decoration-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-decoration-line
+    member x.TextDecorationLine
+        with get() = x.GetPropertyValue("text-decoration-line")
+        and set v  = x.SetProperty("text-decoration-line", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-decoration-skip
+    member x.TextDecorationSkip
+        with get() = x.GetPropertyValue("text-decoration-skip")
+        and set v  = x.SetProperty("text-decoration-skip", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-decoration-skip-ink
+    member x.TextDecorationSkipInk
+        with get() = x.GetPropertyValue("text-decoration-skip-ink")
+        and set v  = x.SetProperty("text-decoration-skip-ink", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-decoration-style
+    member x.TextDecorationStyle
+        with get() = x.GetPropertyValue("text-decoration-style")
+        and set v  = x.SetProperty("text-decoration-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-decoration-thickness
+    member x.TextDecorationThickness
+        with get() = x.GetPropertyValue("text-decoration-thickness")
+        and set v  = x.SetProperty("text-decoration-thickness", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-emphasis
+    member x.TextEmphasis
+        with get() = x.GetPropertyValue("text-emphasis")
+        and set v  = x.SetProperty("text-emphasis", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-emphasis-color
+    member x.TextEmphasisColor
+        with get() = x.GetPropertyValue("text-emphasis-color")
+        and set v  = x.SetProperty("text-emphasis-color", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-emphasis-position
+    member x.TextEmphasisPosition
+        with get() = x.GetPropertyValue("text-emphasis-position")
+        and set v  = x.SetProperty("text-emphasis-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-emphasis-style
+    member x.TextEmphasisStyle
+        with get() = x.GetPropertyValue("text-emphasis-style")
+        and set v  = x.SetProperty("text-emphasis-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-indent
+    member x.TextIndent
+        with get() = x.GetPropertyValue("text-indent")
+        and set v  = x.SetProperty("text-indent", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-justify
+    member x.TextJustify
+        with get() = x.GetPropertyValue("text-justify")
+        and set v  = x.SetProperty("text-justify", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-orientation
+    member x.TextOrientation
+        with get() = x.GetPropertyValue("text-orientation")
+        and set v  = x.SetProperty("text-orientation", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-overflow
+    member x.TextOverflow
+        with get() = x.GetPropertyValue("text-overflow")
+        and set v  = x.SetProperty("text-overflow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-rendering
+    member x.TextRendering
+        with get() = x.GetPropertyValue("text-rendering")
+        and set v  = x.SetProperty("text-rendering", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-shadow
+    member x.TextShadow
+        with get() = x.GetPropertyValue("text-shadow")
+        and set v  = x.SetProperty("text-shadow", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-size-adjust
+    member x.TextSizeAdjust
+        with get() = x.GetPropertyValue("text-size-adjust")
+        and set v  = x.SetProperty("text-size-adjust", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-transform
+    member x.TextTransform
+        with get() = x.GetPropertyValue("text-transform")
+        and set v  = x.SetProperty("text-transform", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-underline-offset
+    member x.TextUnderlineOffset
+        with get() = x.GetPropertyValue("text-underline-offset")
+        and set v  = x.SetProperty("text-underline-offset", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/text-underline-position
+    member x.TextUnderlinePosition
+        with get() = x.GetPropertyValue("text-underline-position")
+        and set v  = x.SetProperty("text-underline-position", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/top
+    member x.Top
+        with get() = x.GetPropertyValue("top")
+        and set v  = x.SetProperty("top", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/touch-action
+    member x.TouchAction
+        with get() = x.GetPropertyValue("touch-action")
+        and set v  = x.SetProperty("touch-action", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transform
+    member x.Transform
+        with get() = x.GetPropertyValue("transform")
+        and set v  = x.SetProperty("transform", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transform-box
+    member x.TransformBox
+        with get() = x.GetPropertyValue("transform-box")
+        and set v  = x.SetProperty("transform-box", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transform-origin
+    member x.TransformOrigin
+        with get() = x.GetPropertyValue("transform-origin")
+        and set v  = x.SetProperty("transform-origin", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transform-style
+    member x.TransformStyle
+        with get() = x.GetPropertyValue("transform-style")
+        and set v  = x.SetProperty("transform-style", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transition
+    member x.Transition
+        with get() = x.GetPropertyValue("transition")
+        and set v  = x.SetProperty("transition", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transition-delay
+    member x.TransitionDelay
+        with get() = x.GetPropertyValue("transition-delay")
+        and set v  = x.SetProperty("transition-delay", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transition-duration
+    member x.TransitionDuration
+        with get() = x.GetPropertyValue("transition-duration")
+        and set v  = x.SetProperty("transition-duration", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transition-property
+    member x.TransitionProperty
+        with get() = x.GetPropertyValue("transition-property")
+        and set v  = x.SetProperty("transition-property", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/transition-timing-function
+    member x.TransitionTimingFunction
+        with get() = x.GetPropertyValue("transition-timing-function")
+        and set v  = x.SetProperty("transition-timing-function", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/translate
+    member x.Translate
+        with get() = x.GetPropertyValue("translate")
+        and set v  = x.SetProperty("translate", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/unicode-bidi
+    member x.UnicodeBidi
+        with get() = x.GetPropertyValue("unicode-bidi")
+        and set v  = x.SetProperty("unicode-bidi", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/user-select
+    member x.UserSelect
+        with get() = x.GetPropertyValue("user-select")
+        and set v  = x.SetProperty("user-select", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/vertical-align
+    member x.VerticalAlign
+        with get() = x.GetPropertyValue("vertical-align")
+        and set v  = x.SetProperty("vertical-align", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/visibility
+    member x.Visibility
+        with get() = x.GetPropertyValue("visibility")
+        and set v  = x.SetProperty("visibility", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/white-space
+    member x.WhiteSpace
+        with get() = x.GetPropertyValue("white-space")
+        and set v  = x.SetProperty("white-space", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/widows
+    member x.Widows
+        with get() = x.GetPropertyValue("widows")
+        and set v  = x.SetProperty("widows", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/width
+    member x.Width
+        with get() = x.GetPropertyValue("width")
+        and set v  = x.SetProperty("width", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/will-change
+    member x.WillChange
+        with get() = x.GetPropertyValue("will-change")
+        and set v  = x.SetProperty("will-change", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/word-break
+    member x.WordBreak
+        with get() = x.GetPropertyValue("word-break")
+        and set v  = x.SetProperty("word-break", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/word-spacing
+    member x.WordSpacing
+        with get() = x.GetPropertyValue("word-spacing")
+        and set v  = x.SetProperty("word-spacing", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/overflow-wrap
+    member x.WordWrap
+        with get() = x.GetPropertyValue("word-wrap")
+        and set v  = x.SetProperty("word-wrap", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/writing-mode
+    member x.WritingMode
+        with get() = x.GetPropertyValue("writing-mode")
+        and set v  = x.SetProperty("writing-mode", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/z-index
+    member x.ZIndex
+        with get() = x.GetPropertyValue("z-index")
+        and set v  = x.SetProperty("z-index", v)
+
+    /// https://developer.mozilla.org/docs/Web/CSS/zoom
+    member x.Zoom
+        with get() = x.GetPropertyValue("zoom")
+        and set v  = x.SetProperty("zoom", v)
+
 [<AllowNullLiteral>]
 type HTMLCollection(r : JSObject) =
     inherit JsObj(r)
 
+    member x.Length : int =
+        r.GetObjectProperty("length") |> convert
+        
+    member x.Item
+        with get(i : int) : Element = r.Invoke("item", i) |> convert
+        
+    interface System.Collections.IEnumerable with
+        member x.GetEnumerator() = (Seq.init x.Length (fun i -> x.[i])).GetEnumerator() :> _
+        
+    interface System.Collections.Generic.IEnumerable<Element> with
+        member x.GetEnumerator() = (Seq.init x.Length (fun i -> x.[i])).GetEnumerator()
+
+    new (o : JsObj) = HTMLCollection o.Reference
+
 [<AllowNullLiteral>]
 type Blob(r : JSObject) =
-    inherit JsObj(r)
-
-
-[<AllowNullLiteral>]
-type CSSStyleDeclaration(r : JSObject) =
     inherit JsObj(r)
 
 [<AllowNullLiteral>]
@@ -1486,6 +4653,11 @@ type TouchList(r : JSObject) =
 [<AllowNullLiteral>]
 type Gamepad(r : JSObject) =
     inherit JsObj(r)
+
+
+
+
+
 
 [<AllowNullLiteral>]
 type NodeList(r : JSObject) =

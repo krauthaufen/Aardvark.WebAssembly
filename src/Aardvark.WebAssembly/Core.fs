@@ -4,7 +4,7 @@ open System
 open WebAssembly
 
 [<AutoOpen>]
-module private Interop =
+module internal Interop =
     open System.Reflection
     open System.Reflection.Emit
 

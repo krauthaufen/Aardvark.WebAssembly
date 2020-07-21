@@ -285,150 +285,6 @@ type WebGLRenderingContext(ref : JSObject) =
     new(o : JsObj) = WebGLRenderingContext(o.Reference)
 
 
-type CSSStyleDeclaration(r : JSObject) =
-    inherit JsObj(r)
-
-
-    member x.Width
-        with get() : string = r.GetObjectProperty("width") |> unbox<string>
-        and set (v : string) = r.SetObjectProperty("width", v)
-
-    member x.Height
-        with get() : string = r.GetObjectProperty("height") |> unbox<string>
-        and set (v : string) = r.SetObjectProperty("height", v)
-
-    member x.BackgroundColor
-        with get() : string = r.GetObjectProperty("background-color") |> unbox<string>
-        and set (v : string) = r.SetObjectProperty("background-color", v)
-        
-    new(o : JsObj) = CSSStyleDeclaration(o.Reference)
-
-type HTMLElement(r : JSObject) =
-    inherit Element(r)
-
-    
-     
-    /// Is a DOMString representing the id of the element.
-    member x.Id
-        with get() = r.GetObjectProperty("id") |> unbox<string>
-        and set (id : string) = r.SetObjectProperty("id", id)
-     
-    /// Is a DOMString representing the class of the element.
-    member x.Class
-        with get() = r.GetObjectProperty("className") |> unbox<string>
-        and set (id : string) = r.SetObjectProperty("className", id)
-         
-    /// Returns a Number representing the inner height of the element.
-    member x.ClientHeight = r.GetObjectProperty("clientHeight") |> unbox<float>
-    /// Returns a Number representing the inner width of the element.
-    member x.ClientWidth = r.GetObjectProperty("clientWidth") |> unbox<float>
-    /// Returns a Number representing the width of the left border of the element.
-    member x.ClientLeft = r.GetObjectProperty("clientLeft") |> unbox<float>
-    /// Returns a Number representing the width of the top border of the element.
-    member x.ClientTop = r.GetObjectProperty("clientTop") |> unbox<float>
-
-    
-    
-    /// Is a DOMString representing the markup of the element's content.
-    member x.InnerHTML
-        with get() = r.GetObjectProperty("innerHTML") |> unbox<string>
-        and set (id : string) = r.SetObjectProperty("innerHTML", id)
-        
-    /// A DOMString representing the local part of the qualified name of the element.
-    member x.LocalName = r.GetObjectProperty("localName") |> unbox<string>
-
-
-    /// Returns a String containing the element's assigned access key.
-    member x.AccessKeyLabel = r.GetObjectProperty("accessKeyLabel") |> unbox<string>
-    /// Returns a String containing the element's assigned access key.
-    member x.NamespaceURI = r.GetObjectProperty("namespaceURI") |> unbox<string>
-
-    
-    /// Is a DOMString representing the markup of the element's content.
-    member x.OuterHTML
-        with get() = r.GetObjectProperty("outerHTML") |> unbox<string>
-        and set (id : string) = r.SetObjectProperty("outerHTML", id)
-        
-        
-    /// Returns a String with the name of the tag for the given element.
-    member x.TagName = r.GetObjectProperty("tagName") |> unbox<string>
-
-    /// Is a String, where a value of true means the element is editable and a value of false means it isn't.
-    member x.ContentEditable 
-        with get() = r.GetObjectProperty("contentEditable") |> unbox<string>
-        and set (v : string) = r.SetObjectProperty("contentEditable", v)
-
-    /// Returns a Boolean that indicates whether or not the content of the element can be edited.
-    member x.IsContentEditable = r.GetObjectProperty("isContentEditable") |> unbox<bool>
-    
-    /// Is a String, reflecting the dir global attribute, representing the directionality of the element. Possible values are "ltr", "rtl", and "auto".
-    member x.Dir 
-        with get() = r.GetObjectProperty("dir") |> unbox<string>
-        and set (v : string) = r.SetObjectProperty("dir", v)
-        
-    /// Is a Boolean indicating if the element is hidden or not.
-    member x.Hidden 
-        with get() = r.GetObjectProperty("hidden") |> unbox<bool>
-        and set (v : bool) = r.SetObjectProperty("hidden", v)
-        
-    /// Is a Boolean indicating whether the user agent must act as though the given node is absent for the purposes of user interaction events, in-page text searches ("find in page"), and text selection.
-    member x.Inert 
-        with get() = r.GetObjectProperty("inert") |> unbox<bool>
-        and set (v : bool) = r.SetObjectProperty("inert", v)
-
-    /// Represents the "rendered" text content of a node and its descendants. As a getter, it approximates the text the user would get if they highlighted the contents of the element with the cursor and then copied it to the clipboard.
-    member x.InnerText
-        with get() = r.GetObjectProperty("innerText") |> unbox<string>
-        and set (v : string) = r.SetObjectProperty("innerText", v)
-
-    /// Is a String representing the language of an element's attributes, text, and element contents.
-    member x.Lang
-        with get() = r.GetObjectProperty("lang") |> unbox<string>
-        and set (v : string) = r.SetObjectProperty("lang", v)
-
-    /// Returns the cryptographic number used once that is used by Content Security Policy to determine whether a given fetch will be allowed to proceed.
-    member x.Nonce
-        with get() = r.GetObjectProperty("nonce") |> unbox<int>
-        and set (v : int) = r.SetObjectProperty("nonce", v)
-        
-
-        
-    /// Returns a double, the distance from this element's left border to its offsetParent's left border.
-    member x.OffsetLeft = r.GetObjectProperty("offsetLeft") |> unbox<float>
-    /// Returns a double, the distance from this element's top border to its offsetParent's top border.
-    member x.OffsetTop = r.GetObjectProperty("offsetTop") |> unbox<float>
-    /// Returns a double containing the width of an element, relative to the layout.
-    member x.OffsetWidth = r.GetObjectProperty("offsetWidth") |> unbox<float>
-    /// Returns a double containing the height of an element, relative to the layout.
-    member x.OffsetHeight = r.GetObjectProperty("offsetHeight") |> unbox<float>
-
-    /// Is a CSSStyleDeclaration, an object representing the declarations of an element's style attributes.
-    member x.Style =
-        r.GetObjectProperty("style") |> unbox<JSObject> |> CSSStyleDeclaration
-
-    /// Is a long representing the position of the element in the tabbing order.
-    member x.TabIndex
-        with get() = r.GetObjectProperty("tabIndex") |> unbox<int>
-        and set (id : int) = r.SetObjectProperty("tabIndex", id)
-        
-    /// Is a String containing the text that appears in a popup box when mouse is over the element.
-    member x.Title
-        with get() = r.GetObjectProperty("title") |> unbox<string>
-        and set (id : string) = r.SetObjectProperty("title", id)
-
-    member x.GetSize() =
-        if r.IsDisposed then failwith "r disposed"
-        let o = r.Invoke("getBoundingClientRect") |> unbox<JSObject>
-        if o.IsDisposed then failwith "o disposed"
-        
-        let w = (o.GetObjectProperty("width")) |> System.Convert.ToDouble
-        let h = (o.GetObjectProperty("height")) |> System.Convert.ToDouble
-        V2d(w, h)
-
-    new(o : JsObj) = HTMLElement(o.Reference)
-
-
-
 type HTMLCanvasElement(r : JSObject) =
     inherit HTMLElement(r)
     
@@ -447,7 +303,7 @@ type HTMLCanvasElement(r : JSObject) =
 
 
 type HTMLDocument(r : JSObject) =
-    inherit JsObj(r)
+    inherit Element(r)
 
     member x.Body = r.GetObjectProperty("body") |> unbox<JSObject> |> HTMLElement
 
@@ -455,6 +311,8 @@ type HTMLDocument(r : JSObject) =
     
     member x.CreateCanvasElement() = r.Invoke("createElement", "canvas") |> unbox<JSObject> |> HTMLCanvasElement
     
+    member x.GetElementById(id : string) = r.Invoke("getElementById", id) |> convert<Element>
+
     new(o : JsObj) = HTMLDocument(o.Reference)
     
 
@@ -574,14 +432,37 @@ let main _argv =
     //c.Height <- 600
     c.Style.Width <- "100%"
     c.Style.Height <- "100%"
-    c.Class <- "hans hugo"
+    c.ClassName <- "hans hugo"
+    //c.Style.Transform <- "rotate(20deg)"
 
-    for a in c.Attributes do
-        printfn "%s: %A" a.Name a.Value
+
+    printfn "%A" c.Style.CssText
+
+    c.ClassList.Add "franz"
+
+    for c in c.ClassList do
+        printfn "%s" c
 
     Document.Body.AppendChild c
     let gl = c.GetWebGLContext()
      
+    let d = Document.CreateElement "button"
+    d.InnerText <- "Clicky"
+    
+    d.OnContextMenu.Add (fun e ->
+        Document.Body.RequestFullscreen() |> ignore
+        e.PreventDefault()
+        e.StopImmediatePropagation()
+        d.Remove()
+    )
+
+
+    c.InsertAdjacentElement(InsertMode.BeforeBegin, d)
+
+    
+
+    let e = Document.GetElementById "bla"
+    printfn "%s" e.OuterHTML
 
     gl.ClearColor(0.0, 0.0, 0.0, 1.0)
     gl.Clear ClearBuffers.Color
@@ -698,11 +579,11 @@ let main _argv =
 
         cnt <- cnt + 1 
 
-        let s = c.GetSize()
-        c.Width <- int s.X
-        c.Height <- int s.Y
+        let s = c.GetBoundingClientRect()
+        c.Width <- int s.Size.X
+        c.Height <- int s.Size.Y
 
-        gl.Viewport(0,0,int s.X, int s.Y)
+        gl.Viewport(0,0,int s.Size.X, int s.Size.Y)
         gl.BindBuffer(BufferTarget.Uniform, ub)
         gl.BufferData(BufferTarget.Uniform, Float32Array.op_Implicit (Span (Array.create 64 (float32 t / 1000.0f))), BufferUsage.DynamicDraw)
         gl.BindBuffer(BufferTarget.Uniform, null)
