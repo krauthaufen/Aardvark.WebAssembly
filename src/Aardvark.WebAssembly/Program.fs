@@ -104,6 +104,75 @@ type BlendFactor =
     | OneMinusConstantAlpha = 0x8004
     | SrcAlphaSaturate = 0x0308
 
+type CompressedFormat =
+    | RgbDxt1 = 0x83F0
+    | RgbaDxt1 = 0x83F1
+    | RgbaDxt3 = 0x83F2
+    | RgbaDxt5 = 0x83F3
+    | SRgbDxt1 = 0x8C4C
+    | SRgbaDxt1 = 0x8C4D
+    | SRgbaDxt3 = 0x8C4E
+    | SRgbaDxt5 = 0x8C4F
+    | R11Eac = 0x9270
+    | SignedR11Eac = 0x9271
+    | Rg11Eac = 0x9272
+    | SignedRg11Eac = 0x9273
+    | Rgb8Etc2 = 0x9274
+    | SRgb8Etc2 = 0x9275
+    | Rgba8Etc2 = 0x9278
+    | SRgba8Etc2 = 0x9279
+    | Rgb8A1Etc2 = 0x9276
+    | SRgb8A1Etc2 = 0x9277
+    | RgbPvrtc4 = 0x8C00
+    | RgbaPvrtc4 = 0x8C02
+    | RgbPvrtc2 = 0x8C01
+    | RgbaPvrtc2 = 0x8C03
+    | RgbEtc1 = 0x8D64
+
+    
+type InternalFormat =
+    | A = 0
+     
+type PixelFormat =
+    | Alpha = 0x1906
+    | Rgb = 0x1907
+    | Rgba = 0x1908
+    | Luminance = 0x1909
+    | LuminanceAlpha = 0x190A
+
+type PixelType =
+    | A = 0
+
+type CullFaceMode =
+    | Front = 0x0404
+    | Back = 0x0405
+    | FrontAndBack = 0x0408
+
+type DepthFunc =
+    | Never     = 0x0200
+    | Less      = 0x0201
+    | Equal     = 0x0202
+    | Lequal    = 0x0203
+    | Greater   = 0x0204
+    | NotEqual  = 0x0205
+    | Gequal    = 0x0206
+    | Always    = 0x0207
+
+type EnableCap =
+    | Blend                     = 0x0BE2
+    | CullFace                  = 0x0B44
+    | DepthTest                 = 0x0B71
+    | Dither                    = 0x0BD0
+    | PolygonOffsetFill         = 0x8037
+    | SampleAlphaToCoverage     = 0x809E
+    | ScissorTest               = 0x0C11
+    | StencilTest               = 0x0B90
+    | RasterizerDiscard         = 0x8C89
+
+type IndexType =
+    | Byte      = 0x1401
+    | Short     = 0x1403
+    | Int       = 0x1405
 
 [<AllowNullLiteral>]
 type WebGLProgram(ref : JSObject) =
@@ -225,21 +294,184 @@ type WebGLRenderingContext(ref : JSObject) =
     member x.BufferSubData(target : BufferTarget, offset : int, data : TypedArray<_,_>) =
         ref.Invoke("bufferSubData", int target, offset, data) |> ignore
 
-    /// The WebGLRenderingContext.createBuffer() method of the WebGL API creates and initializes a WebGLBuffer storing data such as vertices or colors.
-    member x.CreateBuffer() =
-        ref.Invoke("createBuffer") |> unbox<JSObject> |> WebGLBuffer
+    /// The WebGLRenderingContext.checkFramebufferStatus() method of the WebGL API returns the completeness status of the WebGLFramebuffer object.
+    member x.CheckFramebuferStatus(target : FramebufferTarget) =
+        ref.Invoke("checkFramebufferStatus", int target) |> ignore
+        
+    /// The WebGLRenderingContext.clear() method of the WebGL API clears buffers to preset values.
+    member x.Clear(flags : ClearBuffers) =
+        ref.Invoke("clear", int flags) |> ignore
+        
+    /// The WebGLRenderingContext.clearColor() method of the WebGL API specifies the color values used when clearing color buffers.
+    member x.ClearColor(r : float, g : float, b : float, a : float) =
+        ref.Invoke("clearColor", r, g, b, a) |> ignore
 
-    member x.CreateShader(typ : ShaderType) =
-        ref.Invoke("createShader", int typ) |> unbox<JSObject> |> WebGLShader
+    /// The WebGLRenderingContext.clearDepth() method of the WebGL API specifies the clear value for the depth buffer.
+    member x.ClearDepth(d : float) =
+        ref.Invoke("clearDepth", d) |> ignore
         
-    member x.ShaderSource(shader : WebGLShader, source : string) =
-        ref.Invoke("shaderSource", shader.Reference, source) |> ignore
+    /// The WebGLRenderingContext.clearStencil() method of the WebGL API specifies the clear value for the stencil buffer.
+    member x.ClearStencil(s : int) =
+        ref.Invoke("clearStencil", s) |> ignore
+
+    /// The WebGLRenderingContext.colorMask() method of the WebGL API sets which color components to enable or to disable when drawing or rendering to a WebGLFramebuffer.
+    member x.ColorMask(r : bool, g : bool, b : bool, a : bool) =
+        ref.Invoke("colorMask", r, g, b, a) |> ignore
         
+    /// The WebGLRenderingContext.commit() method pushes frames back to the original HTMLCanvasElement, if the context is not directly fixed to a specific canvas.
+    member x.Commit() =
+        ref.Invoke("commit") |> ignore
+        
+    /// The WebGLRenderingContext.compileShader() method of the WebGL API compiles a GLSL shader into binary data so that it can be used by a WebGLProgram.
     member x.CompileShader(shader : WebGLShader) =
         ref.Invoke("compileShader", shader.Reference) |> ignore
         
+    /// The WebGLRenderingContext.compressedTexImage2D()  and WebGL2RenderingContext.compressedTexImage3D() methods of the WebGL API specify a two- or three-dimensional texture image in a compressed format.
+    member x.CompressedTexImage2D(target : TextureTarget, level : int, internalFormat : CompressedFormat, width : int, height : int, border : int, data : ArrayBuffer) =
+        ref.Invoke("compressedTexImage2D", int target, level, int internalFormat, width, height, border, data) |> ignore
+        
+    /// The WebGLRenderingContext.compressedTexImage2D()  and WebGL2RenderingContext.compressedTexImage3D() methods of the WebGL API specify a two- or three-dimensional texture image in a compressed format.
+    member x.CompressedTexImage2D(target : TextureTarget, level : int, internalFormat : CompressedFormat, width : int, height : int, border : int, imageSize : int, offset : int) =
+        ref.Invoke("compressedTexImage2D", int target, level, int internalFormat, width, height, border, imageSize, offset) |> ignore
+        
+    /// The WebGLRenderingContext.compressedTexImage2D()  and WebGL2RenderingContext.compressedTexImage3D() methods of the WebGL API specify a two- or three-dimensional texture image in a compressed format.
+    member x.CompressedTexImage2D(target : TextureTarget, level : int, internalFormat : CompressedFormat, width : int, height : int, border : int, data : TypedArray<_,_>, srcOffset : int, srcLength : int) =
+        ref.Invoke("compressedTexImage2D", int target, level, int internalFormat, width, height, border, data, srcOffset, srcLength) |> ignore
+        
+    /// The WebGLRenderingContext.compressedTexImage2D()  and WebGL2RenderingContext.compressedTexImage3D() methods of the WebGL API specify a two- or three-dimensional texture image in a compressed format.
+    member x.CompressedTexImage3D(target : TextureTarget, level : int, internalFormat : CompressedFormat, width : int, height : int, depth : int, border : int, imageSize : int, offset : int) =
+        ref.Invoke("compressedTexImage3D", int target, level, int internalFormat, width, height, depth, border, imageSize, offset) |> ignore
+        
+    /// The WebGLRenderingContext.compressedTexImage2D()  and WebGL2RenderingContext.compressedTexImage3D() methods of the WebGL API specify a two- or three-dimensional texture image in a compressed format.
+    member x.CompressedTexImage3D(target : TextureTarget, level : int, internalFormat : CompressedFormat, width : int, height : int, depth : int, border : int, data : TypedArray<_,_>, srcOffset : int, srcLength : int) =
+        ref.Invoke("compressedTexImage3D", int target, level, int internalFormat, width, height, depth, border, data, srcOffset, srcLength) |> ignore
+        
+    /// The WebGLRenderingContext.compressedTexSubImage2D() method of the WebGL API specifies a two-dimensional sub-rectangle for a texture image in a compressed format.
+    member x.CompressedTexSubImage2D(target : TextureTarget, level : int, xOffset : int, yOffset : int, width : int, height : int, format : CompressedFormat, data : TypedArray<_,_>) =
+        ref.Invoke("compressedTexSubImage2D", int target, level, xOffset, yOffset, width, height, int format, data)
+        
+    /// The WebGLRenderingContext.compressedTexSubImage2D() method of the WebGL API specifies a two-dimensional sub-rectangle for a texture image in a compressed format.
+    member x.CompressedTexSubImage2D(target : TextureTarget, level : int, xOffset : int, yOffset : int, width : int, height : int, format : CompressedFormat, imageSize : int, offset : int) =
+        ref.Invoke("compressedTexSubImage2D", int target, level, xOffset, yOffset, width, height, int format, imageSize, offset)
+        
+    /// The WebGLRenderingContext.compressedTexSubImage2D() method of the WebGL API specifies a two-dimensional sub-rectangle for a texture image in a compressed format.
+    member x.CompressedTexSubImage2D(target : TextureTarget, level : int, xOffset : int, yOffset : int, width : int, height : int, format : CompressedFormat, data : TypedArray<_,_>, srcOffset : int, srcLength : int) =
+        ref.Invoke("compressedTexSubImage2D", int target, level, xOffset, yOffset, width, height, int format, data, srcOffset, srcLength)
+
+    /// The WebGLRenderingContext.copyTexImage2D() method of the WebGL API copies pixels from the current WebGLFramebuffer into a 2D texture image.
+    member _.CopyTexImage2D(target : TextureTarget, level : int, format : PixelFormat, x : int, y : int, width : int, height : int) =    
+        ref.Invoke("copyTexImage2D", int target, level, int format, x, y, width, height)
+        
+    /// The WebGLRenderingContext.copyTexSubImage2D() method of the WebGL API copies pixels from the current WebGLFramebuffer into an existing 2D texture sub-image.
+    member _.CopyTexSubImage2D(target : TextureTarget, level : int, xOffset : int, yOffset : int, x : int, y : int, width : int, height : int) =    
+        ref.Invoke("copyTexSubImage2D", int target, level, xOffset, yOffset, x, y, width, height)
+
+    /// The WebGLRenderingContext.createBuffer() method of the WebGL API creates and initializes a WebGLBuffer storing data such as vertices or colors.
+    member x.CreateBuffer() =
+        ref.Invoke("createBuffer") |> unbox<JSObject> |> WebGLBuffer
+        
+    /// The WebGLRenderingContext.createFramebuffer() method of the WebGL API creates and initializes a WebGLFramebuffer object.
+    member x.CreateFramebuffer() =
+        ref.Invoke("createFramebuffer") |> unbox<JSObject> |> WebGLFramebuffer
+
+    /// The WebGLRenderingContext.createProgram() method of the WebGL API creates and initializes a WebGLProgram object.
     member x.CreateProgram() =
         ref.Invoke("createProgram") |> unbox<JSObject> |> WebGLProgram
+
+    /// The WebGLRenderingContext.createRenderbuffer() method of the WebGL API creates and initializes a WebGLRenderbuffer object.
+    member x.CreateRenderbuffer() =
+        ref.Invoke("createRenderbuffer") |> unbox<JSObject> |> WebGLRenderbuffer
+        
+    /// The WebGLRenderingContext method createShader() of the WebGL API creates a WebGLShader that can then be configured further using WebGLRenderingContext.shaderSource() and WebGLRenderingContext.compileShader().
+    member x.CreateShader(typ : ShaderType) =
+        ref.Invoke("createShader", int typ) |> unbox<JSObject> |> WebGLShader
+
+    /// The WebGLRenderingContext.createTexture() method of the WebGL API creates and initializes a WebGLTexture object.
+    member x.CreateTexture() =
+        ref.Invoke("createTexture") |> unbox<JSObject> |> WebGLTexture
+        
+    /// The WebGLRenderingContext.cullFace() method of the WebGL API specifies whether or not front- and/or back-facing polygons can be culled.
+    member x.CullFace(mode : CullFaceMode) =
+        ref.Invoke("cullFace", int mode) |> ignore 
+    
+    /// The WebGLRenderingContext.deleteBuffer() method of the WebGL API deletes a given WebGLBuffer. This method has no effect if the buffer has already been deleted.
+    member x.DeleteBuffer(buffer : WebGLBuffer) =
+        ref.Invoke("deleteBuffer", js buffer)
+
+    /// The WebGLRenderingContext.deleteFramebuffer() method of the WebGL API deletes a given WebGLFramebuffer object. This method has no effect if the frame buffer has already been deleted.
+    member x.DeleteFramebuffer(buffer : WebGLFramebuffer) =
+        ref.Invoke("deleteFramebuffer", js buffer)
+
+    /// The WebGLRenderingContext.deleteProgram() method of the WebGL API deletes a given WebGLProgram object. This method has no effect if the program has already been deleted.
+    member x.DeleteProgram(buffer : WebGLProgram) =
+        ref.Invoke("deleteProgram", js buffer)
+
+    /// The WebGLRenderingContext.deleteRenderbuffer() method of the WebGL API deletes a given WebGLRenderbuffer object. This method has no effect if the render buffer has already been deleted.
+    member x.DeleteRenderbuffer(buffer : WebGLRenderbuffer) =
+        ref.Invoke("deleteRenderbuffer", js buffer)
+
+    /// The WebGLRenderingContext.deleteShader() method of the WebGL API marks a given WebGLShader object for deletion. It will then be deleted whenever the shader is no longer in use. This method has no effect if the shader has already been deleted, and the WebGLShader is automatically marked for deletion when it is destroyed by the garbage collector.
+    member x.DeleteShader(shader : WebGLShader) =
+        ref.Invoke("deleteShader", js shader)
+
+    /// The WebGLRenderingContext.deleteTexture() method of the WebGL API deletes a given WebGLTexture object. This method has no effect if the texture has already been deleted.
+    member x.DeleteTexture(shader : WebGLTexture) =
+        ref.Invoke("deleteTexture", js shader)
+
+    /// The WebGLRenderingContext.depthFunc() method of the WebGL API specifies a function that compares incoming pixel depth to the current depth buffer value.
+    member x.DepthFunc(func : DepthFunc) =
+        ref.Invoke("depthFunc", int func)
+        
+    /// The WebGLRenderingContext.depthMask() method of the WebGL API sets whether writing into the depth buffer is enabled or disabled.
+    member x.DepthMask(mask : bool) =
+        ref.Invoke("depthMask", mask)
+        
+    /// The WebGLRenderingContext.depthRange() method of the WebGL API specifies the depth range mapping from normalized device coordinates to window or viewport coordinates.
+    member x.DepthRange(zNear : float, zFar : float) =
+        ref.Invoke("depthRange", zNear, zFar)
+        
+    /// The WebGLRenderingContext.detachShader() method of the WebGL API detaches a previously attached WebGLShader from a WebGLProgram.
+    member x.DetachShader(program : WebGLProgram, shader : WebGLShader) =
+        ref.Invoke("detachShader", js program, js shader)
+        
+    /// The WebGLRenderingContext.disable() method of the WebGL API disables specific WebGL capabilities for this context.
+    member x.Disable(cap : EnableCap) =
+        ref.Invoke("disable", int cap)
+        
+    /// The WebGLRenderingContext.disableVertexAttribArray() method of the WebGL API turns the generic vertex attribute array off at a given index position.
+    member x.DisableVertexAttribArray(index : int) =
+        ref.Invoke("disableVertexAttribArray", index) |> ignore
+        
+    /// The WebGLRenderingContext.drawArrays() method of the WebGL API renders primitives from array data.
+    member x.DrawArrays(mode : PrimitiveTopology, first : int, count : int) =
+        ref.Invoke("drawArrays", int mode, first, count) |> ignore
+
+    /// The WebGLRenderingContext.drawElements() method of the WebGL API renders primitives from array data.
+    member x.DrawElements(mode : PrimitiveTopology, count : int, typ : IndexType, offset : int) =
+        ref.Invoke("drawArrays", int mode, count, int typ, offset) |> ignore
+
+    /// The WebGLRenderingContext.enable() method of the WebGL API enables specific WebGL capabilities for this context.
+    member x.Enable(cap : EnableCap) =
+        ref.Invoke("enable", int cap)
+    
+    /// The WebGLRenderingContext method enableVertexAttribArray(), part of the WebGL API, turns on the generic vertex attribute array at the specified index into the list of attribute arrays.
+    member x.EnableVertexAttribArray(index : int) =
+        ref.Invoke("enableVertexAttribArray", index) |> ignore
+
+    /// The WebGLRenderingContext.finish() method of the WebGL API blocks execution until all previously called commands are finished.
+    member x.Finish() =
+        ref.Invoke("finish") |> ignore
+        
+    /// The WebGLRenderingContext.flush() method of the WebGL API empties different buffer commands, causing all commands to be executed as quickly as possible.
+    member x.Flush() =
+        ref.Invoke("flush") |> ignore
+        
+
+
+
+
+    member x.ShaderSource(shader : WebGLShader, source : string) =
+        ref.Invoke("shaderSource", shader.Reference, source) |> ignore
         
     member x.LinkProgram(program : WebGLProgram) =
         ref.Invoke("linkProgram", program.Reference) |> ignore
@@ -254,26 +486,11 @@ type WebGLRenderingContext(ref : JSObject) =
         if isNull program then ref.Invoke("useProgram", [| null |]) |> ignore
         else ref.Invoke("useProgram", program.Reference) |> ignore
     
-    member x.EnableVertexAttribArray(index : int) =
-        ref.Invoke("enableVertexAttribArray", index) |> ignore
-
-    member x.DisableVertexAttribArray(index : int) =
-        ref.Invoke("disableVertexAttribArray", index) |> ignore
-
     member x.VertexAttribPointer(index : int, size : int, typ : VertexAttribType, normalized : bool, stride : int, offset : int) =
         ref.Invoke("vertexAttribPointer", index, size, int typ, normalized, stride, offset) |> ignore
         
     member x.Uniform(location : int, value : int) =
         ref.Invoke("uniform1i", location, value) |> ignore
-
-    member x.DrawArrays(mode : PrimitiveTopology, first : int, count : int) =
-        ref.Invoke("drawArrays", int mode, first, count) |> ignore
-
-    member x.ClearColor(r : float, g : float, b : float, a : float) =
-        ref.Invoke("clearColor", r, g, b, a) |> ignore
-
-    member x.Clear(flags : ClearBuffers) =
-        ref.Invoke("clear", int flags) |> ignore
 
     member x.BindBufferRange(target : BufferTarget, index : int, buffer : WebGLBuffer, offset : int, size : int) =
         if isNull buffer then ref.Invoke("bindBufferRange", int target, index, null, offset, size) |> ignore
@@ -312,6 +529,14 @@ type HTMLDocument(r : JSObject) =
     member x.CreateCanvasElement() = r.Invoke("createElement", "canvas") |> unbox<JSObject> |> HTMLCanvasElement
     
     member x.GetElementById(id : string) = r.Invoke("getElementById", id) |> convert<Element>
+
+
+    /// The Document method exitFullscreen() requests that the element on this document which is currently being presented in full-screen mode be taken out of full-screen mode, restoring the previous state of the screen. This usually reverses the effects of a previous call to Element.requestFullscreen().
+    member x.ExitFullscreen() =
+        r.Invoke("exitFullscreen") |> ignore
+
+    member x.FullscreenElement =
+        r.GetObjectProperty("fullscreenElement") |> convert<Element>
 
     new(o : JsObj) = HTMLDocument(o.Reference)
     
@@ -400,8 +625,11 @@ let main _argv =
     testAdaptive()
     testAardvarkBase()
 
-    Document.Body.Style.Reference.SetObjectProperty("margin", "0")
-    Document.Body.Style.Reference.SetObjectProperty("padding", "0")
+    Document.Body.Style.Background <- "w3-win8-cobalt"
+    Document.Body.Style.Margin <- "0"
+    Document.Body.Style.Padding <- "0"
+
+
 
     let c = Document.CreateCanvasElement()
 
@@ -422,6 +650,8 @@ let main _argv =
         Console.Log("meta", e.Meta)
         Console.Log("shift", e.Shift)
         Console.End()
+        if isNull Document.FullscreenElement then c.RequestFullscreen().ContinueWith (fun _ -> Console.Warn("done")) |> ignore
+        else Document.ExitFullscreen()
     )
     //let d = c.SubscribeEventListener("pointermove", fun e -> Console.Log("mouse", e?clientX, e?clientY))
     
@@ -448,12 +678,15 @@ let main _argv =
      
     let d = Document.CreateElement "button"
     d.InnerText <- "Clicky"
-    
-    d.OnContextMenu.Add (fun e ->
-        Document.Body.RequestFullscreen() |> ignore
+    d.Style.Position <- "absolute"
+    d.Style.Left <- "0"
+    d.Style.Top <- "0"
+    d.Style.ZIndex <- "100"
+    d.OnClick.Add (fun e ->
+        c.RequestFullscreen() |> ignore
+        
         e.PreventDefault()
         e.StopImmediatePropagation()
-        d.Remove()
     )
 
 
@@ -572,7 +805,8 @@ let main _argv =
         
         let dt = t - lastPrint
         if dt > 2000.0 then
-            let fps = 1000.0 * float cnt / dt
+            let fps = ((1000.0 * float cnt / dt) * 100.0 |> round) / 100.0
+            d.InnerHTML <- fps.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             //Console.Log("fps", fps.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))
             lastPrint <- t 
             cnt <- 0
