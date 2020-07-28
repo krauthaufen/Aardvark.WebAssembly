@@ -1,12 +1,10 @@
-open System.Net
-
-
 #r "paket: groupref Build //"
 #r "netstandard"
 #r "System.Xml"
 #r "System.Net.Http"
 #load ".fake/build.fsx/intellisense.fsx"
 
+open System.Net
 open System
 open System.IO
 open Fake
@@ -401,16 +399,30 @@ type EntryPoint =
         Class : string
         Name : string
     }
-
+    
+type AotProfile = 
+    | Full
 type PackagerConfig =
     {
         Output : string
         CopyMode : CopyMode
         SearchPaths : list<string>
         Assets : list<string>
+        Aot : option<AotProfile>
         Threads : bool
         DynamicRuntime : bool
+        FileSystem : bool
         ZLib : bool
+        Debug : bool
+        DebugRuntime : bool
+        Linker : bool
+        Binding : bool
+        LinkICalls : bool
+        ILStrip : bool
+        LinkerVerbose : bool
+        NativeStrip : bool
+        Simd : bool
+        Collation : bool
         References : list<string>
         EntryPoint : EntryPoint
     }
@@ -420,10 +432,39 @@ type PackagerProjectConfig =
         Project : string
         OutputPath : string
         Output : string
+
+        Aot : option<AotProfile>
+        /// Set the type of copy to perform.
         CopyMode : CopyMode
+        /// enable threads
         Threads : bool
+        /// enable dynamic runtime (support for Emscripten's dlopen
         DynamicRuntime : bool
+        /// (enable filesystem support (through Emscripten's file_packager.py in a later phase)
+        FileSystem : bool
+        /// enable the use of zlib for System.IO.Compression support
         ZLib : bool
+        /// enable c# debugging
+        Debug : bool
+        /// enable debug runtime
+        DebugRuntime : bool
+        /// enable the linker
+        Linker : bool
+        /// enable the binding engine
+        Binding : bool
+        /// link away unused icalls
+        LinkICalls : bool
+        /// strip IL code from assemblies in AOT mode
+        ILStrip : bool
+        /// set verbose option on linker
+        LinkerVerbose : bool
+        /// strip final executable
+        NativeStrip : bool
+        /// enable SIMD support
+        Simd : bool
+        /// enable unicode collation support
+        Collation : bool
+
         EntryPoint : EntryPoint
     }
 
@@ -501,25 +542,48 @@ module Packager =
                 | IfNewer -> "--copy=ifnewer"
                 | Always -> "--copy=always"
 
-                sprintf "--appdir=\"%s\"" (Path.GetFullPath config.Output)
+                sprintf "--appdir=%s" (Path.GetFullPath config.Output)
                 
                 for p in config.SearchPaths do
-                    sprintf "--search-path:\"%s\"" (Path.GetFullPath p)
+                    sprintf "--search-path:%s" (Path.GetFullPath p)
 
                 for a in config.Assets do
-                    sprintf "--asset=\"%s\"" (Path.GetFullPath a)
+                    sprintf "--asset=%s" (Path.GetFullPath a)
+
+                match config.Aot with
+                | Some mode ->
+                    match mode with
+                    | AotProfile.Full -> 
+                        "--emscripten-sdkdir=C:\Users\Schorsch\Development\emsdk"
+                        "--mono-sdkdir=."
+                        "--aot"
+                        "-link-mode=SdkOnly"
+                        //"--aot-profile=full"
+                | None ->
+                    ()
 
                 if config.Threads then "--threads"
                 if config.DynamicRuntime then "--dynamic-runtime"
                 if config.ZLib then "--zlib"
-                "--enable-fs"
+                if config.FileSystem then "--enable-fs"
+                if config.Debug then "--debug"
+                if config.DebugRuntime then "--debugrt"
+                if config.Linker then "--linker"
+                if config.Binding then "--binding"
+                if config.LinkICalls then "--link-icalls"
+                if config.Linker then "--linker"
+                if config.ILStrip then "--il-strip"
+                if config.LinkerVerbose then "--linker-verbose"
+                if config.NativeStrip then "--native-strip"
+                if config.Simd then "--simd"
+                if config.Collation then "--collation"
 
                 for r in config.References do
                     let r = Path.GetFullPath r
                     if not (File.Exists r) then
                         Trace.traceErrorfn "not found: %A" r
                     else
-                        sprintf "\"%s\"" (Path.GetFullPath r)
+                        Path.GetFullPath r
 
                 for s in systemLibs do
                     s
@@ -534,14 +598,37 @@ module Packager =
         if not (Directory.Exists config.Output) then Directory.CreateDirectory config.Output |> ignore
         if not (Directory.Exists mm) then Directory.CreateDirectory mm |> ignore
 
-        Fake.Core.Process.shellExec {
-            ExecParams.Program = path
-            ExecParams.Args = []
-            ExecParams.CommandLine = String.concat " " (additional @ args)
-            ExecParams.WorkingDir = "tools"
-        } |> ignore
+        //Trace.traceStartTaskUnsafe "mono-packager" "running mono packager"
+
+        let cmd =
+            //Command.ShellCommand (sprintf "\"%s\" %s" (Path.GetFullPath path) (String.concat " " (additional @ args)))
+            Command.RawCommand(path, Arguments.ofList (additional @ args))
 
 
+        let res = 
+            Trace.traceStartTaskUnsafe "mono-packager" "running mono-wasm-packager"
+            try
+        
+                CreateProcess.fromCommand cmd
+                |> CreateProcess.redirectOutput
+                |> CreateProcess.withOutputEvents Trace.traceVerbose Trace.traceError
+                |> CreateProcess.ensureExitCode
+                |> CreateProcess.redirectOutput
+                |> CreateProcess.disableTraceCommand
+                |> CreateProcess.withWorkingDirectory "tools"
+                |> Proc.run
+            with exn ->
+                Trace.traceErrorfn "%A" exn
+                { ExitCode = -1; Result = { Output = ""; Error = "" }}
+
+        if res.ExitCode <> 0 then
+            Trace.traceEndTaskUnsafeEx TagStatus.Failed "mono-packager"
+            //Trace.traceError res.Result.Error
+            failwith "mono-packager failed"
+            
+
+        //Trace.tracefn "%s" res.Result.Output
+        Trace.traceEndTaskUnsafeEx TagStatus.Success "mono-packager"
         let indexHtml = 
             let allNames = 
                 "mscorlib.dll"::"System.dll"::"netstandard.dll"::"WebAssembly.Bindings.dll":: systemLibs @ (config.References |> List.map Path.GetFileName)
@@ -593,10 +680,22 @@ module Packager =
             Output = config.Output
             CopyMode = config.CopyMode
             SearchPaths = references |> List.map Path.GetDirectoryName
+            Aot = config.Aot
             Assets = []
             Threads = config.Threads
             DynamicRuntime = config.DynamicRuntime
+            FileSystem = config.FileSystem
             ZLib = config.ZLib
+            Debug = config.Debug
+            DebugRuntime = config.DebugRuntime
+            Linker = config.Linker
+            Binding = config.Binding
+            LinkICalls = config.LinkICalls
+            ILStrip = config.ILStrip
+            LinkerVerbose = config.LinkerVerbose
+            NativeStrip = config.NativeStrip
+            Simd = config.Simd
+            Collation = config.Collation
             References = config.OutputPath :: references
             EntryPoint = config.EntryPoint
         }
@@ -778,10 +877,22 @@ Target.create "Packager" (fun _ ->
         Project = Path.Combine("src", "Aardvark.WebAssembly", "Aardvark.WebAssembly.fsproj")
         OutputPath = Path.Combine("bin", configName, "netstandard2.0", "Aardvark.WebAssembly.dll")
         Output = Path.Combine("bin", "wasm")
+        Aot = None //Some AotProfile.Full
         CopyMode = IfNewer
         Threads = true
         DynamicRuntime = true
+        FileSystem = true
         ZLib = true
+        Debug = false
+        DebugRuntime = false
+        Linker = false
+        Binding = false
+        LinkICalls = false
+        ILStrip = false
+        LinkerVerbose = false
+        NativeStrip = false
+        Simd = false
+        Collation = false
         EntryPoint =
             {
                 Assembly = "Aardvark.WebAssembly"
@@ -870,6 +981,10 @@ Target.create "Watch" (fun _ ->
 "Build" ==> "Packager"
 "Packager" ==> "Default"
 "Packager" ==> "Watch"
+
+Target.create "Help" (fun _ ->
+    Trace.traceErrorfn "bad target"    
+)
 
 do
     Environment.SetEnvironmentVariable("Platform", "Any CPU")

@@ -2,6 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
+    <MonoRuntimeDebuggerEnabled>true</MonoRuntimeDebuggerEnabled>
+
     <TargetFramework>netstandard2.0</TargetFramework>
     <!--<PostBuildEvent>call "$(MSBuildThisFileDirectory)package.bat" "$(Configuration)"</PostBuildEvent>-->
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
