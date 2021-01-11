@@ -18,9 +18,13 @@
     <OutputPath>..\..\bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Generator.fsx" />
     <None Include="paket.references" />
     <Compile Include="Core.fs" />
     <Compile Include="Browser.fs" />
+    <Compile Include="WebGL.fs" />
+    <Compile Include="WebGPU.fs" />
+    <Compile Include="WebGPUExtensions.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

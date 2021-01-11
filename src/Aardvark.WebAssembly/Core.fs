@@ -3,6 +3,10 @@
 open System
 open WebAssembly
 
+type JsValueAttribute(name : string) =
+    inherit Attribute()
+    member x.Name = name
+
 [<AutoOpen>]
 module internal Interop =
     open System.Reflection
@@ -12,6 +16,8 @@ module internal Interop =
         match o with
         | null -> null
         | :? JsObj as o -> o.Reference :> obj
+        | :? nativeint as o -> int o :> obj
+        | :? unativeint as o -> uint32 o :> obj
         | _ -> o
 
     let net (o : obj) =
@@ -66,7 +72,7 @@ module internal Interop =
                 let d = m.CreateDelegate(typeof<Func<JSObject, 'a>>) |> unbox<Func<JSObject, 'a>>
                 fun (o : obj) ->
                     match o with
-                    | null -> printfn "o is null"; Unchecked.defaultof<'a>
+                    | null -> Unchecked.defaultof<'a>
                     | :? JsObj as o -> d.Invoke(o.Reference)
                     | :? JSObject as o -> d.Invoke(o)
                     | o -> failwithf "cannot create object from %A" o
@@ -129,11 +135,19 @@ module internal Interop =
             Runtime.NewJSObject(ctor, Array.map js args) |> JsObj
         | _ ->
             failwithf "could not get constructor %A" typ
+            
+    let newArray (length : int) =
+        let ctor = Runtime.GetGlobalObject("Array")
+        match ctor with
+        | :? JSObject as ctor ->
+            Runtime.NewJSObject(ctor, [| length :> obj |]) |> JsArray
+        | _ ->
+            failwithf "could not get constructor Array"
 
 [<AllowNullLiteral>]
 type JsObj(r : JSObject) =
     member x.Reference = r
-
+    
     member x.Call(meth : string, a0 : 'a) =
         r.Invoke(meth, js a0) |> net
         
@@ -168,6 +182,18 @@ type JsObj(r : JSObject) =
         use c = p.GetObjectProperty("constructor") |> unbox<JSObject>
         let n = c.GetObjectProperty("name") |> unbox<string>
         n
+
+[<AllowNullLiteral>]
+type JsArray(r : JSObject) =
+    inherit JsObj(r)
+
+    member x.Length = r.GetObjectProperty "length" |> convert<int>
+    member x.Push(o : obj) = r.Invoke("push", [| js o |]) |> ignore
+
+    member x.Item
+        with get(i : int) = r.GetObjectProperty(string i) |> net
+        and set(i : int) (value : obj) = r.SetObjectProperty(string i, js value)
+
 
 type Iterator<'a>(getIterator : unit -> JSObject, extract : obj -> 'a) =
     let mutable iterator : JSObject = null

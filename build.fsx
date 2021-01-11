@@ -244,11 +244,14 @@ module Server =
                 let content = File.ReadAllText (Path.Combine(folder, "index.html")) 
                 let content = reloadScript + content
 
-
-
                 return! OK content ctx
             }
-
+            
+        let prelude (ctx : HttpContext) = 
+            async {
+                let content = File.ReadAllText (Path.Combine(folder, "prelude.js")) 
+                return! OK content ctx
+            }
 
         let sockets = System.Collections.Concurrent.ConcurrentDictionary<string, WebSocket>()
 
@@ -302,11 +305,13 @@ module Server =
             WebPart.choose [
                 GET >=> path "/" >=> index
                 GET >=> path "/index.html" >=> index
+                GET >=> path "/prelude.js" >=> prelude
                 path "/ws" >=> handShake socket
                 GET >=> Files.browse (Path.GetFullPath "./bin/wasm")
                 RequestErrors.NOT_FOUND "Page not found." 
 
-            ]
+            ] >=> Writers.setHeader "Cross-Origin-Opener-Policy" "same-origin"
+              >=> Writers.setHeader "Cross-Origin-Embedder-Policy" "require-corp"
 
         let defaultMimeTypesMap = function
           | ".css" -> createMimeType "text/css" true
@@ -332,7 +337,10 @@ module Server =
                 homeFolder = Some (Path.GetFullPath "./bin/wasm")
                 mimeTypesMap = defaultMimeTypesMap
             }
+
+
         let config = config.withCancellationToken(cancel.Token)
+
 
         let start, stopped = startWebServerAsync config part
         Async.StartAsTask start |> ignore
@@ -497,6 +505,7 @@ module Packager =
             "};"
             "</script>"
             "<script async src=\"dotnet.js\"></script>"
+            "<script src=\"prelude.js\"></script>"
         ]
 
     let private systemLibs =
@@ -504,6 +513,7 @@ module Packager =
             "System.IO.dll"
             "System.ValueTuple.dll"
             "System.Reflection.dll"
+            "System.Reflection.Primitives.dll"
             "System.Threading.dll"
             "System.Reflection.Emit.Lightweight.dll"
             "System.Reflection.Emit.ILGeneration.dll"
@@ -638,6 +648,7 @@ module Packager =
             index.Replace("{{ASSEMBLIES}}", allNames).Replace("{{ASSEMBLYNAME}}", config.EntryPoint.Assembly).Replace("{{CLASS}}", config.EntryPoint.Class).Replace("{{METHOD}}", config.EntryPoint.Name)
 
         File.WriteAllText(Path.Combine(config.Output, "index.html"), indexHtml)
+        File.Copy(Path.Combine(__SOURCE_DIRECTORY__, "src", "Aardvark.WebAssembly", "prelude.js"), Path.Combine(config.Output, "prelude.js"), true)
 
         Threading.Thread.Sleep 300
 

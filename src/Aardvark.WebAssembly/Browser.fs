@@ -2114,7 +2114,6 @@ type HTMLElement(r : JSObject) =
     new (o : JsObj) =
         HTMLElement o.Reference
     
-
 /// The CSSStyleDeclaration interface represents an object that is a CSS declaration block, and exposes style information and various style-related methods and properties.
 [<AllowNullLiteral>]
 type CSSStyleDeclaration(r : JSObject) =
@@ -4612,6 +4611,93 @@ type CSSStyleDeclaration(r : JSObject) =
         with get() = x.GetPropertyValue("zoom")
         and set v  = x.SetProperty("zoom", v)
 
+
+/// The HTMLCanvasElement interface provides properties and methods for manipulating the layout and presentation of <canvas> elements. The HTMLCanvasElement interface also inherits the properties and methods of the HTMLElement interface.
+[<AllowNullLiteral>]
+type HTMLCanvasElement(r : JSObject) =
+    inherit HTMLElement(r)
+    
+    /// The HTMLCanvasElement.width property is a positive integer reflecting the width HTML attribute of the <canvas> element interpreted in CSS pixels. When the attribute is not specified, or if it is set to an invalid value, like a negative, the default value of 300 is used.
+    member x.Width
+        with get() = r.GetObjectProperty("width") |> convert<int>
+        and set (id : int) = r.SetObjectProperty("width", id)
+
+    /// The HTMLCanvasElement.height property is a positive integer reflecting the height HTML attribute of the <canvas> element interpreted in CSS pixels. When the attribute is not specified, or if it is set to an invalid value, like a negative, the default value of 150 is used.
+    member x.Height
+        with get() = r.GetObjectProperty("height") |> convert<int>
+        and set (id : int) = r.SetObjectProperty("height", id)
+
+    /// The HTMLCanvasElement.getContext() method returns a drawing context on the canvas, or null if the context identifier is not supported.
+    member x.GetContext(contextType : string, ?contextAttributes : JsObj) =
+        match contextAttributes with
+        | Some contextAttributes -> r.Invoke("getContext", contextType, js contextAttributes) |> convert<JsObj>
+        | None -> r.Invoke("getContext", contextType) |> convert<JsObj>
+
+
+    new (o : JsObj) =
+        HTMLCanvasElement o.Reference
+    
+/// The Document interface represents any web page loaded in the browser and serves as an entry point into the web page's content, which is the DOM tree. The DOM tree includes elements such as <body> and <table>, among many others. It provides functionality globally to the document, like how to obtain the page's URL and create new elements in the document.
+[<AllowNullLiteral>]
+type HTMLDocument(r : JSObject) =
+    inherit Node(r)
+
+    /// The Document.body property represents the <body> or <frameset> node of the current document, or null if no such element exists.
+    member x.Body 
+        with get() = r.GetObjectProperty("body") |> convert<HTMLElement>
+        and set (e : HTMLElement) = r.SetObjectProperty("body", js e)
+
+    /// The Document.characterSet read-only property returns the character encoding of the document that it's currently rendered with. (A character encoding is a set of characters and how to interpret bytes into those characters.)
+    member x.CharacterSet =
+        r.GetObjectProperty("characterSet") |> convert<string>
+
+    /// Document.documentElement returns the Element that is the root element of the document (for example, the <html> element for HTML documents).
+    member x.DocumentElement =
+        r.GetObjectProperty("documentElement") |> convert<HTMLElement>
+
+
+    
+    member x.CreateElement(tagName : string) = r.Invoke("createElement", tagName) |> convert<HTMLElement>
+    
+    member x.CreateCanvasElement() = 
+        r.Invoke("createElement", "canvas") |> convert<HTMLCanvasElement>
+    
+    member x.GetElementById(id : string) = 
+        r.Invoke("getElementById", id) |> convert<HTMLElement>
+
+    member x.GetElementsByClassName(className : string) = 
+        let q = r.Invoke("getElementsByClassName", className) |> unbox<JSObject>
+        let l = q.GetObjectProperty("length") |> convert<int>
+        Seq.init l (fun i ->
+            q.GetObjectProperty(string i) |> convert<HTMLElement>
+        )
+        
+    member x.GetElementsByTagName(tagName : string) = 
+        let q = r.Invoke("getElementsByTagName", tagName) |> unbox<JSObject>
+        let l = q.GetObjectProperty("length") |> convert<int>
+        Seq.init l (fun i ->
+            q.GetObjectProperty(string i) |> convert<HTMLElement>
+        )
+
+
+
+
+
+    /// The Document method exitFullscreen() requests that the element on this document which is currently being presented in full-screen mode be taken out of full-screen mode, restoring the previous state of the screen. This usually reverses the effects of a previous call to Element.requestFullscreen().
+    member x.ExitFullscreen() =
+        r.Invoke("exitFullscreen") |> ignore
+
+    member x.FullscreenElement =
+        r.GetObjectProperty("fullscreenElement") |> convert<Element>
+
+
+    // TODO: way more properties
+
+    new(o : JsObj) = HTMLDocument(o.Reference)
+
+
+
+
 [<AllowNullLiteral>]
 type HTMLCollection(r : JSObject) =
     inherit JsObj(r)
@@ -4775,3 +4861,47 @@ type NamedNodeMap(r : JSObject) =
 
     new (o : JsObj) =
         NamedNodeMap o.Reference
+
+type JSConsole(r : JSObject) =
+    inherit JsObj(r)
+
+    member x.Begin(name : string) =
+        r.Invoke("group", name) |> ignore
+        
+    member x.BeginCollapsed(name : string) =
+        r.Invoke("groupCollapsed", name) |> ignore
+
+    member x.End() =
+        r.Invoke("groupEnd") |> ignore
+
+    member x.Log([<ParamArray>] values : obj[]) =
+        r.Invoke("log", values) |> ignore
+    
+    member x.Warn([<ParamArray>] values : obj[]) =
+        r.Invoke("warn", values) |> ignore
+        
+    new(o : JsObj) = JSConsole(o.Reference)
+    
+type JSWindow(o : JSObject) =
+    inherit JsObj(o)
+
+    member x.Document = o.GetObjectProperty("document") |> convert<HTMLDocument>
+    member x.Console = o.GetObjectProperty("console") |> convert<JSConsole>
+    member x.RequestAnimationFrame(callback : float -> unit) = 
+        o.Invoke("requestAnimationFrame", System.Action<float>(callback)) |> ignore
+
+    member x.RequestAnimationFrame(callback : float -> Async<unit>) = 
+        let real (dt : float) =
+            callback(dt) |> Async.StartAsTask :> Task
+        o.Invoke("requestAnimationFrame", System.Func<float, Task>(real)) |> ignore
+    
+    new(o : JsObj) = JSWindow(o.Reference)
+    
+
+
+
+[<AutoOpen>]
+module RuntimeValues = 
+    let Window = JSWindow (unbox<JSObject> (Runtime.GetGlobalObject "window"))
+    let Document = HTMLDocument (unbox<JSObject> (Runtime.GetGlobalObject "document"))
+    let Console = JSConsole (unbox<JSObject> (Runtime.GetGlobalObject "console"))
