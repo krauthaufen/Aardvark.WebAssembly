@@ -389,6 +389,7 @@ module rec Ast =
         | Struct(name,_,_) ->
             "DawnRaw.WGPU" + name
         | Object(name,_) ->
+            //"JSObject"
             name + "Handle"
         | Unit ->
             "unit"
@@ -871,7 +872,7 @@ module rec Ast =
                     sprintf "%s" (indent (indent inner))
                     sprintf "    else"
                     indent (indent (pinStruct device nativeElement (sprintf "_%sinputs.[_%si]" name name) "n" ext fields [
-                        sprintf "_%soutputs.[_%si] <- _n" name name
+                        sprintf "_%soutputs.[_%si] <- js _n" name name
                         sprintf "_%sCont _%sinputs _%soutputs (_%si + 1)" name name name name
                     ]))
                     //sprintf "        inputs.[i].Pin(fun n -> outputs.[i] <- n; _%sCont inputs outputs (i + 1))" name
@@ -883,8 +884,8 @@ module rec Ast =
                 let typeName = nativeName typ
 
                 String.concat "\r\n" [
-                    sprintf "use _%s = %s.op_Implicit(Span(%s))" name typeName (access name)
-                    sprintf "let _%sCount = %s.Length" name (access name)
+                    sprintf "let _%s = if isNull %s then null else %s.op_Implicit(Span(%s))" name (access name) typeName (access name)
+                    sprintf "let _%sCount = if isNull %s then 0 else %s.Length" name (access name) (access name)
                     inner
                 ]
 
@@ -1124,6 +1125,8 @@ module rec Ast =
         printfn "#nowarn \"9\""
         printfn "#nowarn \"49\""
         printfn ""
+
+
         
         // all handles
         for e in defs do
@@ -1201,6 +1204,24 @@ module rec Ast =
                     for (c, _, r) in values do
                         printfn "        | %s.%s -> \"%s\" :> obj" name c r
                     printfn "        | %s.Stencil c -> c :> obj" name
+
+                elif name = "BindingResource" then
+                    printfn "[<RequireQualifiedAccess>]"
+                    printfn "type BindingResource ="
+                    printfn "| Sampler of Sampler"
+                    printfn "| TextureView of TextureView"
+                    printfn "| Buffer of Buffer * uint64 * uint64"
+                    printfn "    member internal x.GetValue() = "
+                    printfn "        match x with"
+                    printfn "        | BindingResource.Sampler s -> s.Handle.Reference :> obj"
+                    printfn "        | BindingResource.TextureView s -> s.Handle.Reference :> obj"
+                    printfn "        | BindingResource.Buffer(b, off, size) ->"
+                    printfn "            let o = new JSObject()"
+                    printfn "            o.SetObjectProperty(\"buffer\", b.Handle.Reference)"
+                    printfn "            o.SetObjectProperty(\"offset\", int off)"
+                    printfn "            o.SetObjectProperty(\"size\", int size)"
+                    printfn "            o :> obj"
+                    ()
 
                 else
                     
@@ -1431,7 +1452,7 @@ module rec Ast =
                     printfn "    member x.Device = device"
 
                 printfn "    member x.ReferenceCount = !refCount"
-                printfn "    member x.Handle = handle"
+                printfn "    member x.Handle : %sHandle = handle" name
                 printfn "    member x.IsDisposed = isDisposed"
 
                 printfn "    member private x.Dispose(disposing : bool) ="
@@ -1563,12 +1584,14 @@ module rec Ast =
                                         ]
 
                                     String.concat "\r\n" [
-                                        print
-                                        sprintf "try"
-                                        sprintf "x.Handle.Reference.Invoke(%s)" ((sprintf "\"%s\"" realName :: List.rev args) |> String.concat ", ") |> wrap |> sprintf "    %s"
-                                        sprintf "with e ->"
-                                        sprintf "    console.Invoke(\"error\", string e) |> ignore"
-                                        sprintf "    Unchecked.defaultof<_>"
+                                        sprintf "x.Handle.Reference.Invoke(%s)" ((sprintf "\"%s\"" realName :: List.rev args) |> String.concat ", ") |> wrap
+                                        
+                                        //print
+                                        //sprintf "try"
+                                        //sprintf "x.Handle.Reference.Invoke(%s)" ((sprintf "\"%s\"" realName :: List.rev args) |> String.concat ", ") |> wrap |> sprintf "    %s"
+                                        //sprintf "with e ->"
+                                        //sprintf "    console.Invoke(\"error\", string e) |> ignore"
+                                        //sprintf "    Unchecked.defaultof<_>"
                                         //sprintf "DawnRaw.%s(%s)" nativeFunctionName ("x.Handle" :: (List.rev args) |> String.concat ", ") |> wrap
                                     ]
 

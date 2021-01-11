@@ -160,6 +160,21 @@ type BackendType =
             | "opengles" -> BackendType.OpenGLES
             | str -> BackendType.Custom str
 [<RequireQualifiedAccess>]
+type BindingResource =
+| Sampler of Sampler
+| TextureView of TextureView
+| Buffer of Buffer * uint64 * uint64
+    member internal x.GetValue() = 
+        match x with
+        | BindingResource.Sampler s -> s.Handle.Reference :> obj
+        | BindingResource.TextureView s -> s.Handle.Reference :> obj
+        | BindingResource.Buffer(b, off, size) ->
+            let o = new JSObject()
+            o.SetObjectProperty("buffer", b.Handle.Reference)
+            o.SetObjectProperty("offset", int off)
+            o.SetObjectProperty("size", int size)
+            o :> obj
+[<RequireQualifiedAccess>]
 type BindingType = 
 | UniformBuffer
 | StorageBuffer
@@ -1297,6 +1312,16 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("backendType") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("backendType", v)
     [<AllowNullLiteral>]
+    type WGPUBindGroupEntry(h : JSObject) =
+        inherit JsObj(h)
+        new() = WGPUBindGroupEntry(new JSObject())
+        member x.Binding
+            with get() : int = h.GetObjectProperty("binding") |> convert<int>
+            and set (v : int) = h.SetObjectProperty("binding", js v)
+        member x.Resource
+            with get() : obj = h.GetObjectProperty("resource") |> convert<obj>
+            and set (v : obj) = h.SetObjectProperty("resource", v)
+    [<AllowNullLiteral>]
     type WGPUBindGroupLayoutEntry(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUBindGroupLayoutEntry(new JSObject())
@@ -1613,27 +1638,18 @@ module DawnRaw =
             with get() : int = h.GetObjectProperty("shaderLocation") |> convert<int>
             and set (v : int) = h.SetObjectProperty("shaderLocation", js v)
     [<AllowNullLiteral>]
-    type WGPUBindGroupEntry(h : JSObject) =
+    type WGPUBindGroupDescriptor(h : JSObject) =
         inherit JsObj(h)
-        new() = WGPUBindGroupEntry(new JSObject())
-        member x.Binding
-            with get() : int = h.GetObjectProperty("binding") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("binding", js v)
-        member x.Buffer
-            with get() : BufferHandle = h.GetObjectProperty("buffer") |> convert<BufferHandle>
-            and set (v : BufferHandle) = h.SetObjectProperty("buffer", js v)
-        member x.Offset
-            with get() : int = h.GetObjectProperty("offset") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("offset", js v)
-        member x.Size
-            with get() : int = h.GetObjectProperty("size") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("size", js v)
-        member x.Sampler
-            with get() : SamplerHandle = h.GetObjectProperty("sampler") |> convert<SamplerHandle>
-            and set (v : SamplerHandle) = h.SetObjectProperty("sampler", js v)
-        member x.TextureView
-            with get() : TextureViewHandle = h.GetObjectProperty("textureView") |> convert<TextureViewHandle>
-            and set (v : TextureViewHandle) = h.SetObjectProperty("textureView", js v)
+        new() = WGPUBindGroupDescriptor(new JSObject())
+        member x.Label
+            with get() : string = h.GetObjectProperty("label") |> convert<string>
+            and set (v : string) = h.SetObjectProperty("label", js v)
+        member x.Layout
+            with get() : BindGroupLayoutHandle = h.GetObjectProperty("layout") |> convert<BindGroupLayoutHandle>
+            and set (v : BindGroupLayoutHandle) = h.SetObjectProperty("layout", js v)
+        member x.Entries
+            with get() : JSObject = h.GetObjectProperty("entries") |> convert<JSObject>
+            and set (v : JSObject) = h.SetObjectProperty("entries", js v)
     [<AllowNullLiteral>]
     type WGPUBindGroupLayoutDescriptor(h : JSObject) =
         inherit JsObj(h)
@@ -1744,19 +1760,6 @@ module DawnRaw =
         member x.Attributes
             with get() : JSObject = h.GetObjectProperty("attributes") |> convert<JSObject>
             and set (v : JSObject) = h.SetObjectProperty("attributes", js v)
-    [<AllowNullLiteral>]
-    type WGPUBindGroupDescriptor(h : JSObject) =
-        inherit JsObj(h)
-        new() = WGPUBindGroupDescriptor(new JSObject())
-        member x.Label
-            with get() : string = h.GetObjectProperty("label") |> convert<string>
-            and set (v : string) = h.SetObjectProperty("label", js v)
-        member x.Layout
-            with get() : BindGroupLayoutHandle = h.GetObjectProperty("layout") |> convert<BindGroupLayoutHandle>
-            and set (v : BindGroupLayoutHandle) = h.SetObjectProperty("layout", js v)
-        member x.Entries
-            with get() : JSObject = h.GetObjectProperty("entries") |> convert<JSObject>
-            and set (v : JSObject) = h.SetObjectProperty("entries", js v)
     [<AllowNullLiteral>]
     type WGPUTextureCopyView(h : JSObject) =
         inherit JsObj(h)
@@ -2020,8 +2023,8 @@ type ShaderModuleSPIRVDescriptor =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUShaderModuleSPIRVDescriptor -> 'a) : 'a = 
         let x = x
-        use _Code = Uint32Array.op_Implicit(Span(x.Code))
-        let _CodeCount = x.Code.Length
+        let _Code = if isNull x.Code then null else Uint32Array.op_Implicit(Span(x.Code))
+        let _CodeCount = if isNull x.Code then 0 else x.Code.Length
         let native = DawnRaw.WGPUShaderModuleSPIRVDescriptor()
         native.Code <- _Code
         callback native
@@ -2164,6 +2167,20 @@ type AdapterProperties =
         native.DriverDescription <- _DriverDescription
         native.AdapterType <- _AdapterType
         native.BackendType <- _BackendType
+        callback native
+type BindGroupEntry =
+    {
+        Binding : int
+        Resource : BindingResource
+    }
+
+    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUBindGroupEntry -> 'a) : 'a = 
+        let x = x
+        let _Binding = int (x.Binding)
+        let _Resource = x.Resource.GetValue()
+        let native = DawnRaw.WGPUBindGroupEntry()
+        native.Binding <- _Binding
+        native.Resource <- _Resource
         callback native
 type BindGroupLayoutEntry =
     {
@@ -2680,41 +2697,42 @@ type VertexAttributeDescriptor =
         native.Offset <- _Offset
         native.ShaderLocation <- _ShaderLocation
         callback native
-type BindGroupEntry =
+type BindGroupDescriptor =
     {
-        Binding : int
-        Buffer : Buffer
-        Offset : uint64
-        Size : uint64
-        Sampler : Sampler
-        TextureView : TextureView
+        Label : string
+        Layout : BindGroupLayout
+        Entries : array<BindGroupEntry>
     }
-    static member Default(Binding: int, Buffer: Buffer, Size: uint64, Sampler: Sampler, TextureView: TextureView) : BindGroupEntry =
+    static member Default(Layout: BindGroupLayout, Entries: array<BindGroupEntry>) : BindGroupDescriptor =
         {
-            Binding = Binding
-            Buffer = Buffer
-            Offset = 0UL
-            Size = Size
-            Sampler = Sampler
-            TextureView = TextureView
+            Label = null
+            Layout = Layout
+            Entries = Entries
         }
 
-    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUBindGroupEntry -> 'a) : 'a = 
+    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUBindGroupDescriptor -> 'a) : 'a = 
         let x = x
-        let _Binding = int (x.Binding)
-        let _Buffer = (if isNull x.Buffer then null else x.Buffer.Handle)
-        let _Offset = int (x.Offset)
-        let _Size = int (x.Size)
-        let _Sampler = (if isNull x.Sampler then null else x.Sampler.Handle)
-        let _TextureView = (if isNull x.TextureView then null else x.TextureView.Handle)
-        let native = DawnRaw.WGPUBindGroupEntry()
-        native.Binding <- _Binding
-        native.Buffer <- _Buffer
-        native.Offset <- _Offset
-        native.Size <- _Size
-        native.Sampler <- _Sampler
-        native.TextureView <- _TextureView
-        callback native
+        let _Label = x.Label
+        let _Layout = (if isNull x.Layout then null else x.Layout.Handle)
+        let _EntriesCount = if isNull x.Entries then 0 else x.Entries.Length
+        let rec _EntriesCont (_Entriesinputs : array<BindGroupEntry>) (_Entriesoutputs : JsArray) (_Entriesi : int) =
+            if _Entriesi >= _EntriesCount then
+                let _Entries = _Entriesoutputs.Reference
+                let native = DawnRaw.WGPUBindGroupDescriptor()
+                native.Label <- _Label
+                native.Layout <- _Layout
+                native.Entries <- _Entries
+                callback native
+            else
+                let _Binding = int (_Entriesinputs.[_Entriesi].Binding)
+                let _Resource = _Entriesinputs.[_Entriesi].Resource.GetValue()
+                let _n = new DawnRaw.WGPUBindGroupEntry()
+                _n.Binding <- _Binding
+                _n.Resource <- _Resource
+                let _n = _n
+                _Entriesoutputs.[_Entriesi] <- js _n
+                _EntriesCont _Entriesinputs _Entriesoutputs (_Entriesi + 1)
+        _EntriesCont x.Entries (if _EntriesCount > 0 then newArray _EntriesCount else null) 0
 type BindGroupLayoutDescriptor =
     {
         Label : string
@@ -2758,7 +2776,7 @@ type BindGroupLayoutDescriptor =
                 _n.TextureComponentType <- _TextureComponentType
                 _n.StorageTextureFormat <- _StorageTextureFormat
                 let _n = _n
-                _Entriesoutputs.[_Entriesi] <- _n
+                _Entriesoutputs.[_Entriesi] <- js _n
                 _EntriesCont _Entriesinputs _Entriesoutputs (_Entriesi + 1)
         _EntriesCont x.Entries (if _EntriesCount > 0 then newArray _EntriesCount else null) 0
 type BufferCopyView =
@@ -2969,7 +2987,7 @@ type RenderPassDescriptor =
                 _n.LoadValue <- _LoadValue
                 _n.StoreOp <- _StoreOp
                 let _n = _n
-                _ColorAttachmentsoutputs.[_ColorAttachmentsi] <- _n
+                _ColorAttachmentsoutputs.[_ColorAttachmentsi] <- js _n
                 _ColorAttachmentsCont _ColorAttachmentsinputs _ColorAttachmentsoutputs (_ColorAttachmentsi + 1)
         _ColorAttachmentsCont x.ColorAttachments (if _ColorAttachmentsCount > 0 then newArray _ColorAttachmentsCount else null) 0
 type RenderPipelineDescriptorDummyExtension =
@@ -3023,53 +3041,9 @@ type VertexBufferLayoutDescriptor =
                 _n.Offset <- _Offset
                 _n.ShaderLocation <- _ShaderLocation
                 let _n = _n
-                _Attributesoutputs.[_Attributesi] <- _n
+                _Attributesoutputs.[_Attributesi] <- js _n
                 _AttributesCont _Attributesinputs _Attributesoutputs (_Attributesi + 1)
         _AttributesCont x.Attributes (if _AttributesCount > 0 then newArray _AttributesCount else null) 0
-type BindGroupDescriptor =
-    {
-        Label : string
-        Layout : BindGroupLayout
-        Entries : array<BindGroupEntry>
-    }
-    static member Default(Layout: BindGroupLayout, Entries: array<BindGroupEntry>) : BindGroupDescriptor =
-        {
-            Label = null
-            Layout = Layout
-            Entries = Entries
-        }
-
-    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUBindGroupDescriptor -> 'a) : 'a = 
-        let x = x
-        let _Label = x.Label
-        let _Layout = (if isNull x.Layout then null else x.Layout.Handle)
-        let _EntriesCount = if isNull x.Entries then 0 else x.Entries.Length
-        let rec _EntriesCont (_Entriesinputs : array<BindGroupEntry>) (_Entriesoutputs : JsArray) (_Entriesi : int) =
-            if _Entriesi >= _EntriesCount then
-                let _Entries = _Entriesoutputs.Reference
-                let native = DawnRaw.WGPUBindGroupDescriptor()
-                native.Label <- _Label
-                native.Layout <- _Layout
-                native.Entries <- _Entries
-                callback native
-            else
-                let _Binding = int (_Entriesinputs.[_Entriesi].Binding)
-                let _Buffer = (if isNull _Entriesinputs.[_Entriesi].Buffer then null else _Entriesinputs.[_Entriesi].Buffer.Handle)
-                let _Offset = int (_Entriesinputs.[_Entriesi].Offset)
-                let _Size = int (_Entriesinputs.[_Entriesi].Size)
-                let _Sampler = (if isNull _Entriesinputs.[_Entriesi].Sampler then null else _Entriesinputs.[_Entriesi].Sampler.Handle)
-                let _TextureView = (if isNull _Entriesinputs.[_Entriesi].TextureView then null else _Entriesinputs.[_Entriesi].TextureView.Handle)
-                let _n = new DawnRaw.WGPUBindGroupEntry()
-                _n.Binding <- _Binding
-                _n.Buffer <- _Buffer
-                _n.Offset <- _Offset
-                _n.Size <- _Size
-                _n.Sampler <- _Sampler
-                _n.TextureView <- _TextureView
-                let _n = _n
-                _Entriesoutputs.[_Entriesi] <- _n
-                _EntriesCont _Entriesinputs _Entriesoutputs (_Entriesi + 1)
-        _EntriesCont x.Entries (if _EntriesCount > 0 then newArray _EntriesCount else null) 0
 type TextureCopyView =
     {
         Texture : Texture
@@ -3138,7 +3112,7 @@ type VertexStateDescriptor =
                         _n.StepMode <- _StepMode
                         _n.Attributes <- _Attributes
                         let _n = _n
-                        _VertexBuffersoutputs.[_VertexBuffersi] <- _n
+                        _VertexBuffersoutputs.[_VertexBuffersi] <- js _n
                         _VertexBuffersCont _VertexBuffersinputs _VertexBuffersoutputs (_VertexBuffersi + 1)
                     else
                         let _Format = _Attributesinputs.[_Attributesi].Format.GetValue()
@@ -3149,7 +3123,7 @@ type VertexStateDescriptor =
                         _n.Offset <- _Offset
                         _n.ShaderLocation <- _ShaderLocation
                         let _n = _n
-                        _Attributesoutputs.[_Attributesi] <- _n
+                        _Attributesoutputs.[_Attributesi] <- js _n
                         _AttributesCont _Attributesinputs _Attributesoutputs (_Attributesi + 1)
                 _AttributesCont _VertexBuffersinputs.[_VertexBuffersi].Attributes (if _AttributesCount > 0 then newArray _AttributesCount else null) 0
         _VertexBuffersCont x.VertexBuffers (if _VertexBuffersCount > 0 then newArray _VertexBuffersCount else null) 0
@@ -3245,7 +3219,7 @@ type RenderPipelineDescriptor =
                                 _n.ColorBlend <- _ColorBlend
                                 _n.WriteMask <- _WriteMask
                                 let _n = _n
-                                _ColorStatesoutputs.[_ColorStatesi] <- _n
+                                _ColorStatesoutputs.[_ColorStatesi] <- js _n
                                 _ColorStatesCont _ColorStatesinputs _ColorStatesoutputs (_ColorStatesi + 1)
                         _ColorStatesCont x.ColorStates (if _ColorStatesCount > 0 then newArray _ColorStatesCount else null) 0
                     match x.DepthStencilState with
@@ -3326,7 +3300,7 @@ type RenderPipelineDescriptor =
                                 _n.StepMode <- _StepMode
                                 _n.Attributes <- _Attributes
                                 let _n = _n
-                                _VertexBuffersoutputs.[_VertexBuffersi] <- _n
+                                _VertexBuffersoutputs.[_VertexBuffersi] <- js _n
                                 _VertexBuffersCont _VertexBuffersinputs _VertexBuffersoutputs (_VertexBuffersi + 1)
                             else
                                 let _Format = _Attributesinputs.[_Attributesi].Format.GetValue()
@@ -3337,7 +3311,7 @@ type RenderPipelineDescriptor =
                                 _n.Offset <- _Offset
                                 _n.ShaderLocation <- _ShaderLocation
                                 let _n = _n
-                                _Attributesoutputs.[_Attributesi] <- _n
+                                _Attributesoutputs.[_Attributesi] <- js _n
                                 _AttributesCont _Attributesinputs _Attributesoutputs (_Attributesi + 1)
                         _AttributesCont _VertexBuffersinputs.[_VertexBuffersi].Attributes (if _AttributesCount > 0 then newArray _AttributesCount else null) 0
                 _VertexBuffersCont v.VertexBuffers (if _VertexBuffersCount > 0 then newArray _VertexBuffersCount else null) 0
@@ -3359,7 +3333,7 @@ type BindGroup(device : Device, handle : BindGroupHandle, refCount : ref<int>) =
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : BindGroupHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3383,7 +3357,7 @@ type BindGroupLayout(device : Device, handle : BindGroupLayoutHandle, refCount :
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : BindGroupLayoutHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3407,7 +3381,7 @@ type CommandBuffer(device : Device, handle : CommandBufferHandle, refCount : ref
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : CommandBufferHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3431,7 +3405,7 @@ type PipelineLayout(device : Device, handle : PipelineLayoutHandle, refCount : r
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : PipelineLayoutHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3455,7 +3429,7 @@ type QuerySet(device : Device, handle : QuerySetHandle, refCount : ref<int>) =
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : QuerySetHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3475,20 +3449,13 @@ type QuerySet(device : Device, handle : QuerySetHandle, refCount : ref<int>) =
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : QuerySetHandle) = new QuerySet(device, handle, ref 1)
     member x.Destroy() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "destroy") |> ignore
-        try
-            x.Handle.Reference.Invoke("destroy") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("destroy") |> ignore
 [<AllowNullLiteral>]
 type RenderBundle(device : Device, handle : RenderBundleHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : RenderBundleHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3512,7 +3479,7 @@ type Sampler(device : Device, handle : SamplerHandle, refCount : ref<int>) =
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : SamplerHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3536,7 +3503,7 @@ type ShaderModule(device : Device, handle : ShaderModuleHandle, refCount : ref<i
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : ShaderModuleHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3560,7 +3527,7 @@ type Surface(device : Device, handle : SurfaceHandle, refCount : ref<int>) =
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : SurfaceHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3584,7 +3551,7 @@ type TextureView(device : Device, handle : TextureViewHandle, refCount : ref<int
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : TextureViewHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3608,7 +3575,7 @@ type Buffer(device : Device, handle : BufferHandle, refCount : ref<int>) =
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : BufferHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3631,98 +3598,35 @@ type Buffer(device : Device, handle : BufferHandle, refCount : ref<int>) =
         let _Mode = int (Mode)
         let _Offset = int (Offset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "mapAsync", js _Mode, js _Offset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("mapAsync", js _Mode, js _Offset, js _Size) |> convert<System.Threading.Tasks.Task>
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("mapAsync", js _Mode, js _Offset, js _Size) |> convert<System.Threading.Tasks.Task>
     member x.GetMappedRange() : ArrayBuffer = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getMappedRange") |> ignore
-        try
-            x.Handle.Reference.Invoke("getMappedRange") |> unbox<ArrayBuffer>
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("getMappedRange") |> unbox<ArrayBuffer>
     member x.GetMappedRange(Offset : unativeint) : ArrayBuffer = 
         let _Offset = int (Offset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getMappedRange", js _Offset) |> ignore
-        try
-            x.Handle.Reference.Invoke("getMappedRange", js _Offset) |> unbox<ArrayBuffer>
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("getMappedRange", js _Offset) |> unbox<ArrayBuffer>
     member x.GetMappedRange(Offset : unativeint, Size : unativeint) : ArrayBuffer = 
         let _Offset = int (Offset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getMappedRange", js _Offset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("getMappedRange", js _Offset, js _Size) |> unbox<ArrayBuffer>
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("getMappedRange", js _Offset, js _Size) |> unbox<ArrayBuffer>
     member x.GetConstMappedRange() : ArrayBuffer = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getConstMappedRange") |> ignore
-        try
-            x.Handle.Reference.Invoke("getConstMappedRange") |> unbox<ArrayBuffer>
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("getConstMappedRange") |> unbox<ArrayBuffer>
     member x.GetConstMappedRange(Offset : unativeint) : ArrayBuffer = 
         let _Offset = int (Offset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getConstMappedRange", js _Offset) |> ignore
-        try
-            x.Handle.Reference.Invoke("getConstMappedRange", js _Offset) |> unbox<ArrayBuffer>
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("getConstMappedRange", js _Offset) |> unbox<ArrayBuffer>
     member x.GetConstMappedRange(Offset : unativeint, Size : unativeint) : ArrayBuffer = 
         let _Offset = int (Offset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getConstMappedRange", js _Offset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("getConstMappedRange", js _Offset, js _Size) |> unbox<ArrayBuffer>
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("getConstMappedRange", js _Offset, js _Size) |> unbox<ArrayBuffer>
     member x.Unmap() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "unmap") |> ignore
-        try
-            x.Handle.Reference.Invoke("unmap") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("unmap") |> ignore
     member x.Destroy() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "destroy") |> ignore
-        try
-            x.Handle.Reference.Invoke("destroy") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("destroy") |> ignore
 [<AllowNullLiteral>]
 type ComputePipeline(device : Device, handle : ComputePipelineHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : ComputePipelineHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3743,20 +3647,13 @@ type ComputePipeline(device : Device, handle : ComputePipelineHandle, refCount :
     new(device : Device, handle : ComputePipelineHandle) = new ComputePipeline(device, handle, ref 1)
     member x.GetBindGroupLayout(GroupIndex : int) : BindGroupLayout = 
         let _GroupIndex = int (GroupIndex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getBindGroupLayout", js _GroupIndex) |> ignore
-        try
-            new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex)))
 [<AllowNullLiteral>]
 type Instance(device : Device, handle : InstanceHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : InstanceHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3776,33 +3673,19 @@ type Instance(device : Device, handle : InstanceHandle, refCount : ref<int>) =
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : InstanceHandle) = new Instance(device, handle, ref 1)
     member x.CreateSurface() : Surface = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createSurface") |> ignore
-        try
-            new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface")))
     member x.CreateSurface(Descriptor : SurfaceDescriptor) : Surface = 
         let _Label = Descriptor.Label
         let _Descriptor = new DawnRaw.WGPUSurfaceDescriptor()
         _Descriptor.Label <- _Label
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createSurface", js _Descriptor) |> ignore
-        try
-            new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface", js _Descriptor)))
 [<AllowNullLiteral>]
 type RenderPipeline(device : Device, handle : RenderPipelineHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : RenderPipelineHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3823,20 +3706,13 @@ type RenderPipeline(device : Device, handle : RenderPipelineHandle, refCount : r
     new(device : Device, handle : RenderPipelineHandle) = new RenderPipeline(device, handle, ref 1)
     member x.GetBindGroupLayout(GroupIndex : int) : BindGroupLayout = 
         let _GroupIndex = int (GroupIndex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getBindGroupLayout", js _GroupIndex) |> ignore
-        try
-            new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex)))
 [<AllowNullLiteral>]
 type SwapChain(device : Device, handle : SwapChainHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : SwapChainHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3860,38 +3736,17 @@ type SwapChain(device : Device, handle : SwapChainHandle, refCount : ref<int>) =
         let _AllowedUsage = int (AllowedUsage)
         let _Width = int (Width)
         let _Height = int (Height)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "configure", js _Format, js _AllowedUsage, js _Width, js _Height) |> ignore
-        try
-            x.Handle.Reference.Invoke("configure", js _Format, js _AllowedUsage, js _Width, js _Height) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("configure", js _Format, js _AllowedUsage, js _Width, js _Height) |> ignore
     member x.GetCurrentTextureView() : TextureView = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getCurrentTextureView") |> ignore
-        try
-            new TextureView(x.Device, convert(x.Handle.Reference.Invoke("getCurrentTextureView")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new TextureView(x.Device, convert(x.Handle.Reference.Invoke("getCurrentTextureView")))
     member x.Present() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "present") |> ignore
-        try
-            x.Handle.Reference.Invoke("present") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("present") |> ignore
 [<AllowNullLiteral>]
 type ComputePassEncoder(device : Device, handle : ComputePassEncoderHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : ComputePassEncoderHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -3912,126 +3767,49 @@ type ComputePassEncoder(device : Device, handle : ComputePassEncoderHandle, refC
     new(device : Device, handle : ComputePassEncoderHandle) = new ComputePassEncoder(device, handle, ref 1)
     member x.InsertDebugMarker(MarkerLabel : string) : unit = 
         let _MarkerLabel = MarkerLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "insertDebugMarker", js _MarkerLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
     member x.PopDebugGroup() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "popDebugGroup") |> ignore
-        try
-            x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
     member x.PushDebugGroup(GroupLabel : string) : unit = 
         let _GroupLabel = GroupLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "pushDebugGroup", js _GroupLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
     member x.SetPipeline(Pipeline : ComputePipeline) : unit = 
         let _Pipeline = (if isNull Pipeline then null else Pipeline.Handle)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setPipeline", js _Pipeline) |> ignore
-        try
-            x.Handle.Reference.Invoke("setPipeline", js _Pipeline) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setPipeline", js _Pipeline) |> ignore
     member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
         let _GroupIndex = int (GroupIndex)
         let _Group = (if isNull Group then null else Group.Handle)
-        use _DynamicOffsets = Uint32Array.op_Implicit(Span(DynamicOffsets))
-        let _DynamicOffsetsCount = DynamicOffsets.Length
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
-        try
-            x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        let _DynamicOffsets = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
+        let _DynamicOffsetsCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
+        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
     member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
         let _QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
         let _QueryIndex = int (QueryIndex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
-        try
-            x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
     member x.Dispatch(X : int) : unit = 
         let _X = int (X)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "dispatch", js _X) |> ignore
-        try
-            x.Handle.Reference.Invoke("dispatch", js _X) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("dispatch", js _X) |> ignore
     member x.Dispatch(X : int, Y : int) : unit = 
         let _X = int (X)
         let _Y = int (Y)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "dispatch", js _X, js _Y) |> ignore
-        try
-            x.Handle.Reference.Invoke("dispatch", js _X, js _Y) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("dispatch", js _X, js _Y) |> ignore
     member x.Dispatch(X : int, Y : int, Z : int) : unit = 
         let _X = int (X)
         let _Y = int (Y)
         let _Z = int (Z)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "dispatch", js _X, js _Y, js _Z) |> ignore
-        try
-            x.Handle.Reference.Invoke("dispatch", js _X, js _Y, js _Z) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("dispatch", js _X, js _Y, js _Z) |> ignore
     member x.DispatchIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
         let _IndirectBuffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
         let _IndirectOffset = int (IndirectOffset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "dispatchIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        try
-            x.Handle.Reference.Invoke("dispatchIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("dispatchIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
     member x.EndPass() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "endPass") |> ignore
-        try
-            x.Handle.Reference.Invoke("endPass") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("endPass") |> ignore
 [<AllowNullLiteral>]
 type Fence(device : Device, handle : FenceHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : FenceHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -4051,14 +3829,7 @@ type Fence(device : Device, handle : FenceHandle, refCount : ref<int>) =
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : FenceHandle) = new Fence(device, handle, ref 1)
     member x.GetCompletedValue() : uint64 = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "getCompletedValue") |> ignore
-        try
-            x.Handle.Reference.Invoke("getCompletedValue") |> convert
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("getCompletedValue") |> convert
     member x.OnCompletion(Value : uint64, Callback : FenceOnCompletionCallback) : unit = 
         let _Value = int (Value)
         let mutable _CallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
@@ -4070,14 +3841,7 @@ type Fence(device : Device, handle : FenceHandle, refCount : ref<int>) =
         let _CallbackDel = WGPUFenceOnCompletionCallback(_CallbackFunction)
         _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "onCompletion", js _Value, js _Callback) |> ignore
-        try
-            x.Handle.Reference.Invoke("onCompletion", js _Value, js _Callback) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("onCompletion", js _Value, js _Callback) |> ignore
     member x.OnCompletion(Value : uint64, Callback : FenceOnCompletionCallback, Userdata : nativeint) : unit = 
         let _Value = int (Value)
         let mutable _CallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
@@ -4090,20 +3854,13 @@ type Fence(device : Device, handle : FenceHandle, refCount : ref<int>) =
         _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
         let _Userdata = int (Userdata)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "onCompletion", js _Value, js _Callback, js _Userdata) |> ignore
-        try
-            x.Handle.Reference.Invoke("onCompletion", js _Value, js _Callback, js _Userdata) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("onCompletion", js _Value, js _Callback, js _Userdata) |> ignore
 [<AllowNullLiteral>]
 type RenderBundleEncoder(device : Device, handle : RenderBundleEncoderHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : RenderBundleEncoderHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -4124,284 +3881,116 @@ type RenderBundleEncoder(device : Device, handle : RenderBundleEncoderHandle, re
     new(device : Device, handle : RenderBundleEncoderHandle) = new RenderBundleEncoder(device, handle, ref 1)
     member x.SetPipeline(Pipeline : RenderPipeline) : unit = 
         let _Pipeline = (if isNull Pipeline then null else Pipeline.Handle)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setPipeline", js _Pipeline) |> ignore
-        try
-            x.Handle.Reference.Invoke("setPipeline", js _Pipeline) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setPipeline", js _Pipeline) |> ignore
     member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
         let _GroupIndex = int (GroupIndex)
         let _Group = (if isNull Group then null else Group.Handle)
-        use _DynamicOffsets = Uint32Array.op_Implicit(Span(DynamicOffsets))
-        let _DynamicOffsetsCount = DynamicOffsets.Length
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
-        try
-            x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        let _DynamicOffsets = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
+        let _DynamicOffsetsCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
+        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
     member x.Draw(VertexCount : int) : unit = 
         let _VertexCount = int (VertexCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount) |> ignore
     member x.Draw(VertexCount : int, InstanceCount : int) : unit = 
         let _VertexCount = int (VertexCount)
         let _InstanceCount = int (InstanceCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount, js _InstanceCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount) |> ignore
     member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int) : unit = 
         let _VertexCount = int (VertexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstVertex = int (FirstVertex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount, js _InstanceCount, js _FirstVertex) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex) |> ignore
     member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int, FirstInstance : int) : unit = 
         let _VertexCount = int (VertexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstVertex = int (FirstVertex)
         let _FirstInstance = int (FirstInstance)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount, js _InstanceCount, js _FirstVertex, js _FirstInstance) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex, js _FirstInstance) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex, js _FirstInstance) |> ignore
     member x.DrawIndexed(IndexCount : int) : unit = 
         let _IndexCount = int (IndexCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstIndex = int (FirstIndex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstIndex = int (FirstIndex)
         let _BaseVertex = int (BaseVertex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32, FirstInstance : int) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstIndex = int (FirstIndex)
         let _BaseVertex = int (BaseVertex)
         let _FirstInstance = int (FirstInstance)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex, js _FirstInstance) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex, js _FirstInstance) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex, js _FirstInstance) |> ignore
     member x.DrawIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
         let _IndirectBuffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
         let _IndirectOffset = int (IndirectOffset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
     member x.DrawIndexedIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
         let _IndirectBuffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
         let _IndirectOffset = int (IndirectOffset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexedIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
     member x.InsertDebugMarker(MarkerLabel : string) : unit = 
         let _MarkerLabel = MarkerLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "insertDebugMarker", js _MarkerLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
     member x.PopDebugGroup() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "popDebugGroup") |> ignore
-        try
-            x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
     member x.PushDebugGroup(GroupLabel : string) : unit = 
         let _GroupLabel = GroupLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "pushDebugGroup", js _GroupLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
     member x.SetVertexBuffer(Slot : int, Buffer : Buffer) : unit = 
         let _Slot = int (Slot)
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setVertexBuffer", js _Slot, js _Buffer) |> ignore
-        try
-            x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer) |> ignore
     member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64) : unit = 
         let _Slot = int (Slot)
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Offset = int (Offset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setVertexBuffer", js _Slot, js _Buffer, js _Offset) |> ignore
-        try
-            x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset) |> ignore
     member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64, Size : uint64) : unit = 
         let _Slot = int (Slot)
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Offset = int (Offset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setVertexBuffer", js _Slot, js _Buffer, js _Offset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset, js _Size) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset, js _Size) |> ignore
     member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat) : unit = 
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Format = Format.GetValue()
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setIndexBuffer", js _Buffer, js _Format) |> ignore
-        try
-            x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format) |> ignore
     member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64) : unit = 
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Format = Format.GetValue()
         let _Offset = int (Offset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setIndexBuffer", js _Buffer, js _Format, js _Offset) |> ignore
-        try
-            x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset) |> ignore
     member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64, Size : uint64) : unit = 
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Format = Format.GetValue()
         let _Offset = int (Offset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setIndexBuffer", js _Buffer, js _Format, js _Offset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset, js _Size) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset, js _Size) |> ignore
     member x.Finish() : RenderBundle = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "finish") |> ignore
-        try
-            new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish")))
     member x.Finish(Descriptor : RenderBundleDescriptor) : RenderBundle = 
         let _Label = Descriptor.Label
         let _Descriptor = new DawnRaw.WGPURenderBundleDescriptor()
         _Descriptor.Label <- _Label
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "finish", js _Descriptor) |> ignore
-        try
-            new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor)))
 [<AllowNullLiteral>]
 type RenderPassEncoder(device : Device, handle : RenderPassEncoderHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : RenderPassEncoderHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -4422,155 +4011,64 @@ type RenderPassEncoder(device : Device, handle : RenderPassEncoderHandle, refCou
     new(device : Device, handle : RenderPassEncoderHandle) = new RenderPassEncoder(device, handle, ref 1)
     member x.SetPipeline(Pipeline : RenderPipeline) : unit = 
         let _Pipeline = (if isNull Pipeline then null else Pipeline.Handle)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setPipeline", js _Pipeline) |> ignore
-        try
-            x.Handle.Reference.Invoke("setPipeline", js _Pipeline) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setPipeline", js _Pipeline) |> ignore
     member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
         let _GroupIndex = int (GroupIndex)
         let _Group = (if isNull Group then null else Group.Handle)
-        use _DynamicOffsets = Uint32Array.op_Implicit(Span(DynamicOffsets))
-        let _DynamicOffsetsCount = DynamicOffsets.Length
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
-        try
-            x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        let _DynamicOffsets = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
+        let _DynamicOffsetsCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
+        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex, js _Group, js _DynamicOffsets) |> ignore
     member x.Draw(VertexCount : int) : unit = 
         let _VertexCount = int (VertexCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount) |> ignore
     member x.Draw(VertexCount : int, InstanceCount : int) : unit = 
         let _VertexCount = int (VertexCount)
         let _InstanceCount = int (InstanceCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount, js _InstanceCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount) |> ignore
     member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int) : unit = 
         let _VertexCount = int (VertexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstVertex = int (FirstVertex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount, js _InstanceCount, js _FirstVertex) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex) |> ignore
     member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int, FirstInstance : int) : unit = 
         let _VertexCount = int (VertexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstVertex = int (FirstVertex)
         let _FirstInstance = int (FirstInstance)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "draw", js _VertexCount, js _InstanceCount, js _FirstVertex, js _FirstInstance) |> ignore
-        try
-            x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex, js _FirstInstance) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("draw", js _VertexCount, js _InstanceCount, js _FirstVertex, js _FirstInstance) |> ignore
     member x.DrawIndexed(IndexCount : int) : unit = 
         let _IndexCount = int (IndexCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstIndex = int (FirstIndex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstIndex = int (FirstIndex)
         let _BaseVertex = int (BaseVertex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex) |> ignore
     member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32, FirstInstance : int) : unit = 
         let _IndexCount = int (IndexCount)
         let _InstanceCount = int (InstanceCount)
         let _FirstIndex = int (FirstIndex)
         let _BaseVertex = int (BaseVertex)
         let _FirstInstance = int (FirstInstance)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex, js _FirstInstance) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex, js _FirstInstance) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount, js _InstanceCount, js _FirstIndex, js _BaseVertex, js _FirstInstance) |> ignore
     member x.DrawIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
         let _IndirectBuffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
         let _IndirectOffset = int (IndirectOffset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
     member x.DrawIndexedIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
         let _IndirectBuffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
         let _IndirectOffset = int (IndirectOffset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "drawIndexedIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        try
-            x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer, js _IndirectOffset) |> ignore
     member x.ExecuteBundles(Bundles : array<RenderBundle>) : unit = 
         let _BundlesCount = Bundles.Length
         let _BundlesArray = newArray _BundlesCount
@@ -4578,53 +4076,18 @@ type RenderPassEncoder(device : Device, handle : RenderPassEncoderHandle, refCou
             if isNull Bundles.[i] then _BundlesArray.[i] <- null
             else _BundlesArray.[i] <- Bundles.[i].Handle
         let _Bundles = _BundlesArray.Reference
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "executeBundles", js _Bundles) |> ignore
-        try
-            x.Handle.Reference.Invoke("executeBundles", js _Bundles) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("executeBundles", js _Bundles) |> ignore
     member x.InsertDebugMarker(MarkerLabel : string) : unit = 
         let _MarkerLabel = MarkerLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "insertDebugMarker", js _MarkerLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
     member x.PopDebugGroup() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "popDebugGroup") |> ignore
-        try
-            x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
     member x.PushDebugGroup(GroupLabel : string) : unit = 
         let _GroupLabel = GroupLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "pushDebugGroup", js _GroupLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
     member x.SetStencilReference(Reference : int) : unit = 
         let _Reference = int (Reference)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setStencilReference", js _Reference) |> ignore
-        try
-            x.Handle.Reference.Invoke("setStencilReference", js _Reference) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setStencilReference", js _Reference) |> ignore
     member x.SetBlendColor(Color : Color) : unit = 
         let _R = (Color.R)
         let _G = (Color.G)
@@ -4636,14 +4099,7 @@ type RenderPassEncoder(device : Device, handle : RenderPassEncoderHandle, refCou
         _Color.B <- _B
         _Color.A <- _A
         let _Color = _Color
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setBlendColor", js _Color) |> ignore
-        try
-            x.Handle.Reference.Invoke("setBlendColor", js _Color) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setBlendColor", js _Color) |> ignore
     member x.SetViewport(X : float32, Y : float32, Width : float32, Height : float32, MinDepth : float32, MaxDepth : float32) : unit = 
         let _X = (X)
         let _Y = (Y)
@@ -4651,125 +4107,55 @@ type RenderPassEncoder(device : Device, handle : RenderPassEncoderHandle, refCou
         let _Height = (Height)
         let _MinDepth = (MinDepth)
         let _MaxDepth = (MaxDepth)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setViewport", js _X, js _Y, js _Width, js _Height, js _MinDepth, js _MaxDepth) |> ignore
-        try
-            x.Handle.Reference.Invoke("setViewport", js _X, js _Y, js _Width, js _Height, js _MinDepth, js _MaxDepth) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setViewport", js _X, js _Y, js _Width, js _Height, js _MinDepth, js _MaxDepth) |> ignore
     member x.SetScissorRect(X : int, Y : int, Width : int, Height : int) : unit = 
         let _X = int (X)
         let _Y = int (Y)
         let _Width = int (Width)
         let _Height = int (Height)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setScissorRect", js _X, js _Y, js _Width, js _Height) |> ignore
-        try
-            x.Handle.Reference.Invoke("setScissorRect", js _X, js _Y, js _Width, js _Height) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setScissorRect", js _X, js _Y, js _Width, js _Height) |> ignore
     member x.SetVertexBuffer(Slot : int, Buffer : Buffer) : unit = 
         let _Slot = int (Slot)
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setVertexBuffer", js _Slot, js _Buffer) |> ignore
-        try
-            x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer) |> ignore
     member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64) : unit = 
         let _Slot = int (Slot)
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Offset = int (Offset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setVertexBuffer", js _Slot, js _Buffer, js _Offset) |> ignore
-        try
-            x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset) |> ignore
     member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64, Size : uint64) : unit = 
         let _Slot = int (Slot)
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Offset = int (Offset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setVertexBuffer", js _Slot, js _Buffer, js _Offset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset, js _Size) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot, js _Buffer, js _Offset, js _Size) |> ignore
     member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat) : unit = 
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Format = Format.GetValue()
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setIndexBuffer", js _Buffer, js _Format) |> ignore
-        try
-            x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format) |> ignore
     member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64) : unit = 
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Format = Format.GetValue()
         let _Offset = int (Offset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setIndexBuffer", js _Buffer, js _Format, js _Offset) |> ignore
-        try
-            x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset) |> ignore
     member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64, Size : uint64) : unit = 
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _Format = Format.GetValue()
         let _Offset = int (Offset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setIndexBuffer", js _Buffer, js _Format, js _Offset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset, js _Size) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer, js _Format, js _Offset, js _Size) |> ignore
     member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
         let _QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
         let _QueryIndex = int (QueryIndex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
-        try
-            x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
     member x.EndPass() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "endPass") |> ignore
-        try
-            x.Handle.Reference.Invoke("endPass") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("endPass") |> ignore
 [<AllowNullLiteral>]
 type Texture(device : Device, handle : TextureHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : TextureHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -4789,14 +4175,7 @@ type Texture(device : Device, handle : TextureHandle, refCount : ref<int>) =
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : TextureHandle) = new Texture(device, handle, ref 1)
     member x.CreateView() : TextureView = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createView") |> ignore
-        try
-            new TextureView(x.Device, convert(x.Handle.Reference.Invoke("createView")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new TextureView(x.Device, convert(x.Handle.Reference.Invoke("createView")))
     member x.CreateView(Descriptor : TextureViewDescriptor) : TextureView = 
         let _Label = Descriptor.Label
         let _Format = Descriptor.Format.GetValue()
@@ -4816,29 +4195,15 @@ type Texture(device : Device, handle : TextureHandle, refCount : ref<int>) =
         _Descriptor.ArrayLayerCount <- _ArrayLayerCount
         _Descriptor.Aspect <- _Aspect
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createView", js _Descriptor) |> ignore
-        try
-            new TextureView(x.Device, convert(x.Handle.Reference.Invoke("createView", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new TextureView(x.Device, convert(x.Handle.Reference.Invoke("createView", js _Descriptor)))
     member x.Destroy() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "destroy") |> ignore
-        try
-            x.Handle.Reference.Invoke("destroy") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("destroy") |> ignore
 [<AllowNullLiteral>]
 type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : CommandEncoderHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -4858,49 +4223,21 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : CommandEncoderHandle) = new CommandEncoder(device, handle, ref 1)
     member x.Finish() : CommandBuffer = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "finish") |> ignore
-        try
-            new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish")))
     member x.Finish(Descriptor : CommandBufferDescriptor) : CommandBuffer = 
         let _Label = Descriptor.Label
         let _Descriptor = new DawnRaw.WGPUCommandBufferDescriptor()
         _Descriptor.Label <- _Label
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "finish", js _Descriptor) |> ignore
-        try
-            new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor)))
     member x.BeginComputePass() : ComputePassEncoder = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "beginComputePass") |> ignore
-        try
-            new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass")))
     member x.BeginComputePass(Descriptor : ComputePassDescriptor) : ComputePassEncoder = 
         let _Label = Descriptor.Label
         let _Descriptor = new DawnRaw.WGPUComputePassDescriptor()
         _Descriptor.Label <- _Label
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "beginComputePass", js _Descriptor) |> ignore
-        try
-            new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass", js _Descriptor)))
     member x.BeginRenderPass(Descriptor : RenderPassDescriptor) : RenderPassEncoder = 
         let _Label = Descriptor.Label
         let _ColorAttachmentsCount = if isNull Descriptor.ColorAttachments then 0 else Descriptor.ColorAttachments.Length
@@ -4915,14 +4252,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
                     _Descriptor.DepthStencilAttachment <- _DepthStencilAttachment
                     _Descriptor.OcclusionQuerySet <- _OcclusionQuerySet
                     let _Descriptor = _Descriptor
-                    let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-                    let console = window.GetObjectProperty("console") |> unbox<JSObject>
-                    console.Invoke("debug", "beginRenderPass", js _Descriptor) |> ignore
-                    try
-                        new RenderPassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginRenderPass", js _Descriptor)))
-                    with e ->
-                        console.Invoke("error", string e) |> ignore
-                        Unchecked.defaultof<_>
+                    new RenderPassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginRenderPass", js _Descriptor)))
                 match Descriptor.DepthStencilAttachment with
                 | Some v ->
                     let _Attachment = (if isNull v.Attachment then null else v.Attachment.Handle)
@@ -4954,7 +4284,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
                 _n.LoadValue <- _LoadValue
                 _n.StoreOp <- _StoreOp
                 let _n = _n
-                _ColorAttachmentsoutputs.[_ColorAttachmentsi] <- _n
+                _ColorAttachmentsoutputs.[_ColorAttachmentsi] <- js _n
                 _ColorAttachmentsCont _ColorAttachmentsinputs _ColorAttachmentsoutputs (_ColorAttachmentsi + 1)
         _ColorAttachmentsCont Descriptor.ColorAttachments (if _ColorAttachmentsCount > 0 then newArray _ColorAttachmentsCount else null) 0
     member x.CopyBufferToBuffer(Source : Buffer, SourceOffset : uint64, Destination : Buffer, DestinationOffset : uint64, Size : uint64) : unit = 
@@ -4963,14 +4293,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         let _Destination = (if isNull Destination then null else Destination.Handle)
         let _DestinationOffset = int (DestinationOffset)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "copyBufferToBuffer", js _Source, js _SourceOffset, js _Destination, js _DestinationOffset, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("copyBufferToBuffer", js _Source, js _SourceOffset, js _Destination, js _DestinationOffset, js _Size) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("copyBufferToBuffer", js _Source, js _SourceOffset, js _Destination, js _DestinationOffset, js _Size) |> ignore
     member x.CopyBufferToTexture(Source : BufferCopyView, Destination : TextureCopyView) : unit = 
         let _Offset = int (Source.Layout.Offset)
         let _BytesPerRow = int (Source.Layout.BytesPerRow)
@@ -5002,14 +4325,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         _Destination.Origin <- _Origin
         _Destination.Aspect <- _Aspect
         let _Destination = _Destination
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "copyBufferToTexture", js _Source, js _Destination) |> ignore
-        try
-            x.Handle.Reference.Invoke("copyBufferToTexture", js _Source, js _Destination) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("copyBufferToTexture", js _Source, js _Destination) |> ignore
     member x.CopyBufferToTexture(Source : BufferCopyView, Destination : TextureCopyView, CopySize : Extent3D) : unit = 
         let _Offset = int (Source.Layout.Offset)
         let _BytesPerRow = int (Source.Layout.BytesPerRow)
@@ -5049,14 +4365,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         _CopySize.Height <- _Height
         _CopySize.Depth <- _Depth
         let _CopySize = _CopySize
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "copyBufferToTexture", js _Source, js _Destination, js _CopySize) |> ignore
-        try
-            x.Handle.Reference.Invoke("copyBufferToTexture", js _Source, js _Destination, js _CopySize) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("copyBufferToTexture", js _Source, js _Destination, js _CopySize) |> ignore
     member x.CopyTextureToBuffer(Source : TextureCopyView, Destination : BufferCopyView) : unit = 
         let _Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
         let _MipLevel = int (Source.MipLevel)
@@ -5088,14 +4397,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         _Destination.Layout <- _Layout
         _Destination.Buffer <- _Buffer
         let _Destination = _Destination
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "copyTextureToBuffer", js _Source, js _Destination) |> ignore
-        try
-            x.Handle.Reference.Invoke("copyTextureToBuffer", js _Source, js _Destination) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("copyTextureToBuffer", js _Source, js _Destination) |> ignore
     member x.CopyTextureToBuffer(Source : TextureCopyView, Destination : BufferCopyView, CopySize : Extent3D) : unit = 
         let _Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
         let _MipLevel = int (Source.MipLevel)
@@ -5135,14 +4437,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         _CopySize.Height <- _Height
         _CopySize.Depth <- _Depth
         let _CopySize = _CopySize
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "copyTextureToBuffer", js _Source, js _Destination, js _CopySize) |> ignore
-        try
-            x.Handle.Reference.Invoke("copyTextureToBuffer", js _Source, js _Destination, js _CopySize) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("copyTextureToBuffer", js _Source, js _Destination, js _CopySize) |> ignore
     member x.CopyTextureToTexture(Source : TextureCopyView, Destination : TextureCopyView) : unit = 
         let _Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
         let _MipLevel = int (Source.MipLevel)
@@ -5178,14 +4473,7 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         _Destination.Origin <- _Origin
         _Destination.Aspect <- _Aspect
         let _Destination = _Destination
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "copyTextureToTexture", js _Source, js _Destination) |> ignore
-        try
-            x.Handle.Reference.Invoke("copyTextureToTexture", js _Source, js _Destination) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("copyTextureToTexture", js _Source, js _Destination) |> ignore
     member x.CopyTextureToTexture(Source : TextureCopyView, Destination : TextureCopyView, CopySize : Extent3D) : unit = 
         let _Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
         let _MipLevel = int (Source.MipLevel)
@@ -5229,74 +4517,32 @@ type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : r
         _CopySize.Height <- _Height
         _CopySize.Depth <- _Depth
         let _CopySize = _CopySize
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "copyTextureToTexture", js _Source, js _Destination, js _CopySize) |> ignore
-        try
-            x.Handle.Reference.Invoke("copyTextureToTexture", js _Source, js _Destination, js _CopySize) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("copyTextureToTexture", js _Source, js _Destination, js _CopySize) |> ignore
     member x.InsertDebugMarker(MarkerLabel : string) : unit = 
         let _MarkerLabel = MarkerLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "insertDebugMarker", js _MarkerLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel) |> ignore
     member x.PopDebugGroup() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "popDebugGroup") |> ignore
-        try
-            x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
     member x.PushDebugGroup(GroupLabel : string) : unit = 
         let _GroupLabel = GroupLabel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "pushDebugGroup", js _GroupLabel) |> ignore
-        try
-            x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel) |> ignore
     member x.ResolveQuerySet(QuerySet : QuerySet, FirstQuery : int, QueryCount : int, Destination : Buffer, DestinationOffset : uint64) : unit = 
         let _QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
         let _FirstQuery = int (FirstQuery)
         let _QueryCount = int (QueryCount)
         let _Destination = (if isNull Destination then null else Destination.Handle)
         let _DestinationOffset = int (DestinationOffset)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "resolveQuerySet", js _QuerySet, js _FirstQuery, js _QueryCount, js _Destination, js _DestinationOffset) |> ignore
-        try
-            x.Handle.Reference.Invoke("resolveQuerySet", js _QuerySet, js _FirstQuery, js _QueryCount, js _Destination, js _DestinationOffset) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("resolveQuerySet", js _QuerySet, js _FirstQuery, js _QueryCount, js _Destination, js _DestinationOffset) |> ignore
     member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
         let _QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
         let _QueryIndex = int (QueryIndex)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
-        try
-            x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet, js _QueryIndex) |> ignore
 [<AllowNullLiteral>]
 type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : QueueHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -5322,34 +4568,13 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
             if isNull Commands.[i] then _CommandsArray.[i] <- null
             else _CommandsArray.[i] <- Commands.[i].Handle
         let _Commands = _CommandsArray.Reference
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "submit", js _Commands) |> ignore
-        try
-            x.Handle.Reference.Invoke("submit", js _Commands) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("submit", js _Commands) |> ignore
     member x.Signal(Fence : Fence, SignalValue : uint64) : unit = 
         let _Fence = (if isNull Fence then null else Fence.Handle)
         let _SignalValue = int (SignalValue)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "signal", js _Fence, js _SignalValue) |> ignore
-        try
-            x.Handle.Reference.Invoke("signal", js _Fence, js _SignalValue) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("signal", js _Fence, js _SignalValue) |> ignore
     member x.CreateFence() : Fence = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createFence") |> ignore
-        try
-            new Fence(x.Device, convert(x.Handle.Reference.Invoke("createFence")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Fence(x.Device, convert(x.Handle.Reference.Invoke("createFence")))
     member x.CreateFence(Descriptor : FenceDescriptor) : Fence = 
         let _Label = Descriptor.Label
         let _InitialValue = int (Descriptor.InitialValue)
@@ -5357,27 +4582,13 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _Descriptor.Label <- _Label
         _Descriptor.InitialValue <- _InitialValue
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createFence", js _Descriptor) |> ignore
-        try
-            new Fence(x.Device, convert(x.Handle.Reference.Invoke("createFence", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Fence(x.Device, convert(x.Handle.Reference.Invoke("createFence", js _Descriptor)))
     member x.WriteBuffer(Buffer : Buffer, BufferOffset : uint64, Data : nativeint, Size : unativeint) : unit = 
         let _Buffer = (if isNull Buffer then null else Buffer.Handle)
         let _BufferOffset = int (BufferOffset)
         let _Data = int (Data)
         let _Size = int (Size)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "writeBuffer", js _Buffer, js _BufferOffset, js _Data, js _Size) |> ignore
-        try
-            x.Handle.Reference.Invoke("writeBuffer", js _Buffer, js _BufferOffset, js _Data, js _Size) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("writeBuffer", js _Buffer, js _BufferOffset, js _Data, js _Size) |> ignore
     member x.WriteTexture(Destination : TextureCopyView, Data : nativeint, DataSize : unativeint, DataLayout : TextureDataLayout) : unit = 
         let _Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
         let _MipLevel = int (Destination.MipLevel)
@@ -5406,14 +4617,7 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _DataLayout.BytesPerRow <- _BytesPerRow
         _DataLayout.RowsPerImage <- _RowsPerImage
         let _DataLayout = _DataLayout
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "writeTexture", js _Destination, js _Data, js _DataSize, js _DataLayout) |> ignore
-        try
-            x.Handle.Reference.Invoke("writeTexture", js _Destination, js _Data, js _DataSize, js _DataLayout) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("writeTexture", js _Destination, js _Data, js _DataSize, js _DataLayout) |> ignore
     member x.WriteTexture(Destination : TextureCopyView, Data : nativeint, DataSize : unativeint, DataLayout : TextureDataLayout, WriteSize : Extent3D) : unit = 
         let _Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
         let _MipLevel = int (Destination.MipLevel)
@@ -5450,19 +4654,12 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _WriteSize.Height <- _Height
         _WriteSize.Depth <- _Depth
         let _WriteSize = _WriteSize
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "writeTexture", js _Destination, js _Data, js _DataSize, js _DataLayout, js _WriteSize) |> ignore
-        try
-            x.Handle.Reference.Invoke("writeTexture", js _Destination, js _Data, js _DataSize, js _DataLayout, js _WriteSize) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("writeTexture", js _Destination, js _Data, js _DataSize, js _DataLayout, js _WriteSize) |> ignore
 [<AllowNullLiteral>]
 type Device(handle : DeviceHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.ReferenceCount = !refCount
-    member x.Handle = handle
+    member x.Handle : DeviceHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -5493,30 +4690,15 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _Descriptor.Layout <- _Layout
                 _Descriptor.Entries <- _Entries
                 let _Descriptor = _Descriptor
-                let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-                let console = window.GetObjectProperty("console") |> unbox<JSObject>
-                console.Invoke("debug", "createBindGroup", js _Descriptor) |> ignore
-                try
-                    new BindGroup(x, convert(x.Handle.Reference.Invoke("createBindGroup", js _Descriptor)))
-                with e ->
-                    console.Invoke("error", string e) |> ignore
-                    Unchecked.defaultof<_>
+                new BindGroup(x, convert(x.Handle.Reference.Invoke("createBindGroup", js _Descriptor)))
             else
                 let _Binding = int (_Entriesinputs.[_Entriesi].Binding)
-                let _Buffer = (if isNull _Entriesinputs.[_Entriesi].Buffer then null else _Entriesinputs.[_Entriesi].Buffer.Handle)
-                let _Offset = int (_Entriesinputs.[_Entriesi].Offset)
-                let _Size = int (_Entriesinputs.[_Entriesi].Size)
-                let _Sampler = (if isNull _Entriesinputs.[_Entriesi].Sampler then null else _Entriesinputs.[_Entriesi].Sampler.Handle)
-                let _TextureView = (if isNull _Entriesinputs.[_Entriesi].TextureView then null else _Entriesinputs.[_Entriesi].TextureView.Handle)
+                let _Resource = _Entriesinputs.[_Entriesi].Resource.GetValue()
                 let _n = new DawnRaw.WGPUBindGroupEntry()
                 _n.Binding <- _Binding
-                _n.Buffer <- _Buffer
-                _n.Offset <- _Offset
-                _n.Size <- _Size
-                _n.Sampler <- _Sampler
-                _n.TextureView <- _TextureView
+                _n.Resource <- _Resource
                 let _n = _n
-                _Entriesoutputs.[_Entriesi] <- _n
+                _Entriesoutputs.[_Entriesi] <- js _n
                 _EntriesCont _Entriesinputs _Entriesoutputs (_Entriesi + 1)
         _EntriesCont Descriptor.Entries (if _EntriesCount > 0 then newArray _EntriesCount else null) 0
     member x.CreateBindGroupLayout(Descriptor : BindGroupLayoutDescriptor) : BindGroupLayout = 
@@ -5529,14 +4711,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _Descriptor.Label <- _Label
                 _Descriptor.Entries <- _Entries
                 let _Descriptor = _Descriptor
-                let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-                let console = window.GetObjectProperty("console") |> unbox<JSObject>
-                console.Invoke("debug", "createBindGroupLayout", js _Descriptor) |> ignore
-                try
-                    new BindGroupLayout(x, convert(x.Handle.Reference.Invoke("createBindGroupLayout", js _Descriptor)))
-                with e ->
-                    console.Invoke("error", string e) |> ignore
-                    Unchecked.defaultof<_>
+                new BindGroupLayout(x, convert(x.Handle.Reference.Invoke("createBindGroupLayout", js _Descriptor)))
             else
                 let _Binding = int (_Entriesinputs.[_Entriesi].Binding)
                 let _Visibility = int (_Entriesinputs.[_Entriesi].Visibility)
@@ -5558,7 +4733,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _n.TextureComponentType <- _TextureComponentType
                 _n.StorageTextureFormat <- _StorageTextureFormat
                 let _n = _n
-                _Entriesoutputs.[_Entriesi] <- _n
+                _Entriesoutputs.[_Entriesi] <- js _n
                 _EntriesCont _Entriesinputs _Entriesoutputs (_Entriesi + 1)
         _EntriesCont Descriptor.Entries (if _EntriesCount > 0 then newArray _EntriesCount else null) 0
     member x.CreateBuffer(Descriptor : BufferDescriptor) : Buffer = 
@@ -5572,45 +4747,17 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor.Size <- _Size
         _Descriptor.MappedAtCreation <- _MappedAtCreation
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createBuffer", js _Descriptor) |> ignore
-        try
-            new Buffer(x, convert(x.Handle.Reference.Invoke("createBuffer", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Buffer(x, convert(x.Handle.Reference.Invoke("createBuffer", js _Descriptor)))
     member x.CreateErrorBuffer() : Buffer = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createErrorBuffer") |> ignore
-        try
-            new Buffer(x, convert(x.Handle.Reference.Invoke("createErrorBuffer")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Buffer(x, convert(x.Handle.Reference.Invoke("createErrorBuffer")))
     member x.CreateCommandEncoder() : CommandEncoder = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createCommandEncoder") |> ignore
-        try
-            new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder")))
     member x.CreateCommandEncoder(Descriptor : CommandEncoderDescriptor) : CommandEncoder = 
         let _Label = Descriptor.Label
         let _Descriptor = new DawnRaw.WGPUCommandEncoderDescriptor()
         _Descriptor.Label <- _Label
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createCommandEncoder", js _Descriptor) |> ignore
-        try
-            new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder", js _Descriptor)))
     member x.CreateComputePipeline(Descriptor : ComputePipelineDescriptor) : ComputePipeline = 
         let _Label = Descriptor.Label
         let _Layout = (if isNull Descriptor.Layout then null else Descriptor.Layout.Handle)
@@ -5625,14 +4772,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor.Layout <- _Layout
         _Descriptor.ComputeStage <- _ComputeStage
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createComputePipeline", js _Descriptor) |> ignore
-        try
-            new ComputePipeline(x, convert(x.Handle.Reference.Invoke("createComputePipeline", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new ComputePipeline(x, convert(x.Handle.Reference.Invoke("createComputePipeline", js _Descriptor)))
     member x.CreateReadyComputePipeline(Descriptor : ComputePipelineDescriptor, Callback : CreateReadyComputePipelineCallback) : unit = 
         let _Label = Descriptor.Label
         let _Layout = (if isNull Descriptor.Layout then null else Descriptor.Layout.Handle)
@@ -5658,14 +4798,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _CallbackDel = WGPUCreateReadyComputePipelineCallback(_CallbackFunction)
         _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createReadyComputePipeline", js _Descriptor, js _Callback) |> ignore
-        try
-            x.Handle.Reference.Invoke("createReadyComputePipeline", js _Descriptor, js _Callback) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("createReadyComputePipeline", js _Descriptor, js _Callback) |> ignore
     member x.CreateReadyComputePipeline(Descriptor : ComputePipelineDescriptor, Callback : CreateReadyComputePipelineCallback, Userdata : nativeint) : unit = 
         let _Label = Descriptor.Label
         let _Layout = (if isNull Descriptor.Layout then null else Descriptor.Layout.Handle)
@@ -5692,14 +4825,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
         let _Userdata = int (Userdata)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createReadyComputePipeline", js _Descriptor, js _Callback, js _Userdata) |> ignore
-        try
-            x.Handle.Reference.Invoke("createReadyComputePipeline", js _Descriptor, js _Callback, js _Userdata) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("createReadyComputePipeline", js _Descriptor, js _Callback, js _Userdata) |> ignore
     member x.CreatePipelineLayout(Descriptor : PipelineLayoutDescriptor) : PipelineLayout = 
         let _Label = Descriptor.Label
         let _BindGroupLayoutsCount = Descriptor.BindGroupLayouts.Length
@@ -5712,14 +4838,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor.Label <- _Label
         _Descriptor.BindGroupLayouts <- _BindGroupLayouts
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createPipelineLayout", js _Descriptor) |> ignore
-        try
-            new PipelineLayout(x, convert(x.Handle.Reference.Invoke("createPipelineLayout", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new PipelineLayout(x, convert(x.Handle.Reference.Invoke("createPipelineLayout", js _Descriptor)))
     member x.CreateQuerySet(Descriptor : QuerySetDescriptor) : QuerySet = 
         let _Label = Descriptor.Label
         let _Type = Descriptor.Type.GetValue()
@@ -5733,14 +4852,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
             _Descriptor.PipelineStatistics <- _PipelineStatistics
             _Descriptor.PipelineStatisticsCount <- _PipelineStatisticsCount
             let _Descriptor = _Descriptor
-            let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-            let console = window.GetObjectProperty("console") |> unbox<JSObject>
-            console.Invoke("debug", "createQuerySet", js _Descriptor) |> ignore
-            try
-                new QuerySet(x, convert(x.Handle.Reference.Invoke("createQuerySet", js _Descriptor)))
-            with e ->
-                console.Invoke("error", string e) |> ignore
-                Unchecked.defaultof<_>
+            new QuerySet(x, convert(x.Handle.Reference.Invoke("createQuerySet", js _Descriptor)))
         match Descriptor.PipelineStatistics with
         | Some o ->
             _PipelineStatisticsCont(o.GetValue())
@@ -5792,14 +4904,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 let _CallbackDel = WGPUCreateReadyRenderPipelineCallback(_CallbackFunction)
                                 _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
                                 let _Callback = _CallbackDel
-                                let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-                                let console = window.GetObjectProperty("console") |> unbox<JSObject>
-                                console.Invoke("debug", "createReadyRenderPipeline", js _Descriptor, js _Callback) |> ignore
-                                try
-                                    x.Handle.Reference.Invoke("createReadyRenderPipeline", js _Descriptor, js _Callback) |> ignore
-                                with e ->
-                                    console.Invoke("error", string e) |> ignore
-                                    Unchecked.defaultof<_>
+                                x.Handle.Reference.Invoke("createReadyRenderPipeline", js _Descriptor, js _Callback) |> ignore
                             else
                                 let _Format = _ColorStatesinputs.[_ColorStatesi].Format.GetValue()
                                 let _Operation = _ColorStatesinputs.[_ColorStatesi].AlphaBlend.Operation.GetValue()
@@ -5825,7 +4930,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.ColorBlend <- _ColorBlend
                                 _n.WriteMask <- _WriteMask
                                 let _n = _n
-                                _ColorStatesoutputs.[_ColorStatesi] <- _n
+                                _ColorStatesoutputs.[_ColorStatesi] <- js _n
                                 _ColorStatesCont _ColorStatesinputs _ColorStatesoutputs (_ColorStatesi + 1)
                         _ColorStatesCont Descriptor.ColorStates (if _ColorStatesCount > 0 then newArray _ColorStatesCount else null) 0
                     match Descriptor.DepthStencilState with
@@ -5906,7 +5011,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.StepMode <- _StepMode
                                 _n.Attributes <- _Attributes
                                 let _n = _n
-                                _VertexBuffersoutputs.[_VertexBuffersi] <- _n
+                                _VertexBuffersoutputs.[_VertexBuffersi] <- js _n
                                 _VertexBuffersCont _VertexBuffersinputs _VertexBuffersoutputs (_VertexBuffersi + 1)
                             else
                                 let _Format = _Attributesinputs.[_Attributesi].Format.GetValue()
@@ -5917,7 +5022,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.Offset <- _Offset
                                 _n.ShaderLocation <- _ShaderLocation
                                 let _n = _n
-                                _Attributesoutputs.[_Attributesi] <- _n
+                                _Attributesoutputs.[_Attributesi] <- js _n
                                 _AttributesCont _Attributesinputs _Attributesoutputs (_Attributesi + 1)
                         _AttributesCont _VertexBuffersinputs.[_VertexBuffersi].Attributes (if _AttributesCount > 0 then newArray _AttributesCount else null) 0
                 _VertexBuffersCont v.VertexBuffers (if _VertexBuffersCount > 0 then newArray _VertexBuffersCount else null) 0
@@ -5979,14 +5084,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
                                 let _Callback = _CallbackDel
                                 let _Userdata = int (Userdata)
-                                let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-                                let console = window.GetObjectProperty("console") |> unbox<JSObject>
-                                console.Invoke("debug", "createReadyRenderPipeline", js _Descriptor, js _Callback, js _Userdata) |> ignore
-                                try
-                                    x.Handle.Reference.Invoke("createReadyRenderPipeline", js _Descriptor, js _Callback, js _Userdata) |> ignore
-                                with e ->
-                                    console.Invoke("error", string e) |> ignore
-                                    Unchecked.defaultof<_>
+                                x.Handle.Reference.Invoke("createReadyRenderPipeline", js _Descriptor, js _Callback, js _Userdata) |> ignore
                             else
                                 let _Format = _ColorStatesinputs.[_ColorStatesi].Format.GetValue()
                                 let _Operation = _ColorStatesinputs.[_ColorStatesi].AlphaBlend.Operation.GetValue()
@@ -6012,7 +5110,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.ColorBlend <- _ColorBlend
                                 _n.WriteMask <- _WriteMask
                                 let _n = _n
-                                _ColorStatesoutputs.[_ColorStatesi] <- _n
+                                _ColorStatesoutputs.[_ColorStatesi] <- js _n
                                 _ColorStatesCont _ColorStatesinputs _ColorStatesoutputs (_ColorStatesi + 1)
                         _ColorStatesCont Descriptor.ColorStates (if _ColorStatesCount > 0 then newArray _ColorStatesCount else null) 0
                     match Descriptor.DepthStencilState with
@@ -6093,7 +5191,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.StepMode <- _StepMode
                                 _n.Attributes <- _Attributes
                                 let _n = _n
-                                _VertexBuffersoutputs.[_VertexBuffersi] <- _n
+                                _VertexBuffersoutputs.[_VertexBuffersi] <- js _n
                                 _VertexBuffersCont _VertexBuffersinputs _VertexBuffersoutputs (_VertexBuffersi + 1)
                             else
                                 let _Format = _Attributesinputs.[_Attributesi].Format.GetValue()
@@ -6104,7 +5202,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.Offset <- _Offset
                                 _n.ShaderLocation <- _ShaderLocation
                                 let _n = _n
-                                _Attributesoutputs.[_Attributesi] <- _n
+                                _Attributesoutputs.[_Attributesi] <- js _n
                                 _AttributesCont _Attributesinputs _Attributesoutputs (_Attributesi + 1)
                         _AttributesCont _VertexBuffersinputs.[_VertexBuffersi].Attributes (if _AttributesCount > 0 then newArray _AttributesCount else null) 0
                 _VertexBuffersCont v.VertexBuffers (if _VertexBuffersCount > 0 then newArray _VertexBuffersCount else null) 0
@@ -6134,14 +5232,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor.DepthStencilFormat <- _DepthStencilFormat
         _Descriptor.SampleCount <- _SampleCount
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createRenderBundleEncoder", js _Descriptor) |> ignore
-        try
-            new RenderBundleEncoder(x, convert(x.Handle.Reference.Invoke("createRenderBundleEncoder", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new RenderBundleEncoder(x, convert(x.Handle.Reference.Invoke("createRenderBundleEncoder", js _Descriptor)))
     member x.CreateRenderPipeline(Descriptor : RenderPipelineDescriptor) : RenderPipeline = 
         let _Label = Descriptor.Label
         let _Layout = (if isNull Descriptor.Layout then null else Descriptor.Layout.Handle)
@@ -6177,14 +5268,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _Descriptor.SampleMask <- _SampleMask
                                 _Descriptor.AlphaToCoverageEnabled <- _AlphaToCoverageEnabled
                                 let _Descriptor = _Descriptor
-                                let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-                                let console = window.GetObjectProperty("console") |> unbox<JSObject>
-                                console.Invoke("debug", "createRenderPipeline", js _Descriptor) |> ignore
-                                try
-                                    new RenderPipeline(x, convert(x.Handle.Reference.Invoke("createRenderPipeline", js _Descriptor)))
-                                with e ->
-                                    console.Invoke("error", string e) |> ignore
-                                    Unchecked.defaultof<_>
+                                new RenderPipeline(x, convert(x.Handle.Reference.Invoke("createRenderPipeline", js _Descriptor)))
                             else
                                 let _Format = _ColorStatesinputs.[_ColorStatesi].Format.GetValue()
                                 let _Operation = _ColorStatesinputs.[_ColorStatesi].AlphaBlend.Operation.GetValue()
@@ -6210,7 +5294,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.ColorBlend <- _ColorBlend
                                 _n.WriteMask <- _WriteMask
                                 let _n = _n
-                                _ColorStatesoutputs.[_ColorStatesi] <- _n
+                                _ColorStatesoutputs.[_ColorStatesi] <- js _n
                                 _ColorStatesCont _ColorStatesinputs _ColorStatesoutputs (_ColorStatesi + 1)
                         _ColorStatesCont Descriptor.ColorStates (if _ColorStatesCount > 0 then newArray _ColorStatesCount else null) 0
                     match Descriptor.DepthStencilState with
@@ -6291,7 +5375,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.StepMode <- _StepMode
                                 _n.Attributes <- _Attributes
                                 let _n = _n
-                                _VertexBuffersoutputs.[_VertexBuffersi] <- _n
+                                _VertexBuffersoutputs.[_VertexBuffersi] <- js _n
                                 _VertexBuffersCont _VertexBuffersinputs _VertexBuffersoutputs (_VertexBuffersi + 1)
                             else
                                 let _Format = _Attributesinputs.[_Attributesi].Format.GetValue()
@@ -6302,7 +5386,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _n.Offset <- _Offset
                                 _n.ShaderLocation <- _ShaderLocation
                                 let _n = _n
-                                _Attributesoutputs.[_Attributesi] <- _n
+                                _Attributesoutputs.[_Attributesi] <- js _n
                                 _AttributesCont _Attributesinputs _Attributesoutputs (_Attributesi + 1)
                         _AttributesCont _VertexBuffersinputs.[_VertexBuffersi].Attributes (if _AttributesCount > 0 then newArray _AttributesCount else null) 0
                 _VertexBuffersCont v.VertexBuffers (if _VertexBuffersCount > 0 then newArray _VertexBuffersCount else null) 0
@@ -6318,14 +5402,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
             _FragmentStageCont _n
         | None -> _FragmentStageCont null
     member x.CreateSampler() : Sampler = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createSampler") |> ignore
-        try
-            new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler")))
     member x.CreateSampler(Descriptor : SamplerDescriptor) : Sampler = 
         let _Label = Descriptor.Label
         let _AddressModeU = Descriptor.AddressModeU.GetValue()
@@ -6349,36 +5426,15 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor.LodMaxClamp <- _LodMaxClamp
         _Descriptor.Compare <- _Compare
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createSampler", js _Descriptor) |> ignore
-        try
-            new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler", js _Descriptor)))
     member x.CreateShaderModule() : ShaderModule = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createShaderModule") |> ignore
-        try
-            new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule")))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule")))
     member x.CreateShaderModule(Descriptor : ShaderModuleDescriptor) : ShaderModule = 
         let _Label = Descriptor.Label
         let _Descriptor = new DawnRaw.WGPUShaderModuleDescriptor()
         _Descriptor.Label <- _Label
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createShaderModule", js _Descriptor) |> ignore
-        try
-            new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule", js _Descriptor)))
     member x.CreateSwapChain(Surface : Surface, Descriptor : SwapChainDescriptor) : SwapChain = 
         let _Surface = (if isNull Surface then null else Surface.Handle)
         let _Label = Descriptor.Label
@@ -6397,14 +5453,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor.PresentMode <- _PresentMode
         _Descriptor.Implementation <- _Implementation
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createSwapChain", js _Surface, js _Descriptor) |> ignore
-        try
-            new SwapChain(x, convert(x.Handle.Reference.Invoke("createSwapChain", js _Surface, js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new SwapChain(x, convert(x.Handle.Reference.Invoke("createSwapChain", js _Surface, js _Descriptor)))
     member x.CreateTexture(Descriptor : TextureDescriptor) : Texture = 
         let _Label = Descriptor.Label
         let _Usage = int (Descriptor.Usage)
@@ -6429,46 +5478,18 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor.MipLevelCount <- _MipLevelCount
         _Descriptor.SampleCount <- _SampleCount
         let _Descriptor = _Descriptor
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "createTexture", js _Descriptor) |> ignore
-        try
-            new Texture(x, convert(x.Handle.Reference.Invoke("createTexture", js _Descriptor)))
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        new Texture(x, convert(x.Handle.Reference.Invoke("createTexture", js _Descriptor)))
     member x.GetDefaultQueue() : Queue = 
         let handle = x.Handle.Reference.GetObjectProperty("defaultQueue") |> convert<QueueHandle>
         new Queue(x, handle)
     member x.InjectError(Type : ErrorType, Message : string) : unit = 
         let _Type = Type.GetValue()
         let _Message = Message
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "injectError", js _Type, js _Message) |> ignore
-        try
-            x.Handle.Reference.Invoke("injectError", js _Type, js _Message) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("injectError", js _Type, js _Message) |> ignore
     member x.LoseForTesting() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "loseForTesting") |> ignore
-        try
-            x.Handle.Reference.Invoke("loseForTesting") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("loseForTesting") |> ignore
     member x.Tick() : unit = 
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "tick") |> ignore
-        try
-            x.Handle.Reference.Invoke("tick") |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("tick") |> ignore
     member x.SetUncapturedErrorCallback(Callback : ErrorCallback) : unit = 
         let _CallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
             let _Type = Type
@@ -6478,14 +5499,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _CallbackDel = WGPUErrorCallback(_CallbackFunction)
         let _CallbackGC = System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setUncapturedErrorCallback", js _Callback) |> ignore
-        try
-            x.Handle.Reference.Invoke("setUncapturedErrorCallback", js _Callback) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setUncapturedErrorCallback", js _Callback) |> ignore
     member x.SetUncapturedErrorCallback(Callback : ErrorCallback, Userdata : nativeint) : unit = 
         let _CallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
             let _Type = Type
@@ -6496,14 +5510,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _CallbackGC = System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
         let _Userdata = int (Userdata)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setUncapturedErrorCallback", js _Callback, js _Userdata) |> ignore
-        try
-            x.Handle.Reference.Invoke("setUncapturedErrorCallback", js _Callback, js _Userdata) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setUncapturedErrorCallback", js _Callback, js _Userdata) |> ignore
     member x.SetDeviceLostCallback(Callback : DeviceLostCallback) : unit = 
         let _CallbackFunction (Message : string) (Userdata : int) = 
             let _Message = Message
@@ -6512,14 +5519,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _CallbackDel = WGPUDeviceLostCallback(_CallbackFunction)
         let _CallbackGC = System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setDeviceLostCallback", js _Callback) |> ignore
-        try
-            x.Handle.Reference.Invoke("setDeviceLostCallback", js _Callback) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setDeviceLostCallback", js _Callback) |> ignore
     member x.SetDeviceLostCallback(Callback : DeviceLostCallback, Userdata : nativeint) : unit = 
         let _CallbackFunction (Message : string) (Userdata : int) = 
             let _Message = Message
@@ -6529,24 +5529,10 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _CallbackGC = System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
         let _Userdata = int (Userdata)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "setDeviceLostCallback", js _Callback, js _Userdata) |> ignore
-        try
-            x.Handle.Reference.Invoke("setDeviceLostCallback", js _Callback, js _Userdata) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("setDeviceLostCallback", js _Callback, js _Userdata) |> ignore
     member x.PushErrorScope(Filter : ErrorFilter) : unit = 
         let _Filter = Filter.GetValue()
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "pushErrorScope", js _Filter) |> ignore
-        try
-            x.Handle.Reference.Invoke("pushErrorScope", js _Filter) |> ignore
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("pushErrorScope", js _Filter) |> ignore
     member x.PopErrorScope(Callback : ErrorCallback) : bool = 
         let mutable _CallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
         let _CallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
@@ -6558,14 +5544,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _CallbackDel = WGPUErrorCallback(_CallbackFunction)
         _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "popErrorScope", js _Callback) |> ignore
-        try
-            x.Handle.Reference.Invoke("popErrorScope", js _Callback) |> convert
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("popErrorScope", js _Callback) |> convert
     member x.PopErrorScope(Callback : ErrorCallback, Userdata : nativeint) : bool = 
         let mutable _CallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
         let _CallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
@@ -6578,11 +5557,4 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _CallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_CallbackDel)
         let _Callback = _CallbackDel
         let _Userdata = int (Userdata)
-        let window = Runtime.GetGlobalObject("window") |> unbox<JSObject>
-        let console = window.GetObjectProperty("console") |> unbox<JSObject>
-        console.Invoke("debug", "popErrorScope", js _Callback, js _Userdata) |> ignore
-        try
-            x.Handle.Reference.Invoke("popErrorScope", js _Callback, js _Userdata) |> convert
-        with e ->
-            console.Invoke("error", string e) |> ignore
-            Unchecked.defaultof<_>
+        x.Handle.Reference.Invoke("popErrorScope", js _Callback, js _Userdata) |> convert

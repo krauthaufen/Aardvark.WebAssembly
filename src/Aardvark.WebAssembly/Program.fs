@@ -395,330 +395,73 @@ type TypedArray private() =
     // TypedArray.CopyTo('a[])
     // ===============================================================================
     [<Extension>]
-    static member CopyTo(src : Uint8Array, dst : byte[], startIndex : int) =
+    static member CopyTo(src : TypedArray<_,'a>, dst : 'a[], startIndex : int) =
+        if startIndex < 0 then raise <| ArgumentException("startIndex")
+        if src.Length > dst.Length - startIndex then raise <| IndexOutOfRangeException()
         src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
         
     [<Extension>]
-    static member CopyTo(src : Uint8Array, dst : byte[]) =
-        src.CopyTo(Span dst) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Uint8ClampedArray, dst : byte[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Uint8ClampedArray, dst : byte[]) =
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : Int8Array, dst : int8[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Int8Array, dst : int8[]) =
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : Uint16Array, dst : uint16[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Uint16Array, dst : uint16[]) =
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : Int16Array, dst : int16[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Int16Array, dst : int16[]) =
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : Uint32Array, dst : uint32[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Uint32Array, dst : uint32[]) =
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : Int32Array, dst : int32[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Int32Array, dst : int32[]) =
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : Float32Array, dst : float32[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Float32Array, dst : float32[]) =
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : Float64Array, dst : float[], startIndex : int) =
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : Float64Array, dst : float[]) =
+    static member CopyTo(src : TypedArray<_,'a>, dst : 'a[]) =
+        if src.Length > dst.Length then raise <| IndexOutOfRangeException()
         src.CopyTo(Span dst) |> ignore
         
     // ===============================================================================
     // 'a[].CopyTo(TypedArray)
     // ===============================================================================
     [<Extension>]
-    static member CopyTo(src : uint8[], dst : Uint8Array, startIndex : int) =
+    static member CopyTo(src : 'a[], dst : TypedArray<_, 'a>, startIndex : int) =
+        if startIndex < 0 then raise <| ArgumentException("startIndex")
+        if src.Length > dst.Length - startIndex then raise <| IndexOutOfRangeException()
         dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
 
     [<Extension>]
-    static member CopyTo(src : uint8[], dst : Uint8Array) =
+    static member CopyTo(src : 'a[], dst : TypedArray<_, 'a>) =
+        if src.Length > dst.Length then raise <| IndexOutOfRangeException()
         dst.CopyFrom(ReadOnlySpan(src)) |> ignore
 
-    [<Extension>]
-    static member CopyTo(src : uint8[], dst : Uint8ClampedArray, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : uint8[], dst : Uint8ClampedArray) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-        
-    [<Extension>]
-    static member CopyTo(src : int8[], dst : Int8Array, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : int8[], dst : Int8Array) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : uint16[], dst : Uint16Array, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : uint16[], dst : Uint16Array) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : int16[], dst : Int16Array, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : int16[], dst : Int16Array) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : uint32[], dst : Uint32Array, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : uint32[], dst : Uint32Array) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : int32[], dst : Int32Array, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : int32[], dst : Int32Array) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : float32[], dst : Float32Array, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : float32[], dst : Float32Array) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : float[], dst : Float64Array, startIndex : int) =
-        dst.CopyFrom(ReadOnlySpan(src, startIndex, dst.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : float[], dst : Float64Array) =
-        dst.CopyFrom(ReadOnlySpan(src)) |> ignore
-
-   
 
     // ===============================================================================
     // 'a[].CopyTo(ArrayBuffer)
     // ===============================================================================
-
-         
     [<Extension>]
     static member CopyTo<'a when 'a : unmanaged>(src : 'a[], dst : ArrayBuffer, byteOffset : int) =
+        if byteOffset < 0 then raise <| ArgumentException("byteOffset")
+        let srcSize = sizeof<'a> * src.Length
+        if srcSize > dst.ByteLength - byteOffset then raise <| IndexOutOfRangeException()
+
         use ptr = fixed src
         use dst = new Uint8Array(dst, byteOffset)
-        let src = ReadOnlySpan<byte>(NativePtr.toVoidPtr ptr, sizeof<'a> * src.Length)
+        let src = ReadOnlySpan<byte>(NativePtr.toVoidPtr ptr, srcSize)
         dst.CopyFrom(src) |> ignore
 
+    [<Extension>]
+    static member CopyTo<'a when 'a : unmanaged>(src : 'a[], dst : ArrayBuffer) =
+        let srcSize = sizeof<'a> * src.Length
+        if srcSize > dst.ByteLength then raise <| IndexOutOfRangeException()
 
-    //[<Extension>]
-    //static member CopyTo(src : uint8[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Uint8Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-        
-    //[<Extension>]
-    //static member CopyTo(src : uint8[], dst : ArrayBuffer) =
-    //    use dst = new Uint8Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
+        use ptr = fixed src
+        use dst = new Uint8Array(dst)
+        let src = ReadOnlySpan<byte>(NativePtr.toVoidPtr ptr, srcSize)
+        dst.CopyFrom(src) |> ignore
 
-    //[<Extension>]
-    //static member CopyTo(src : int8[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Int8Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : int8[], dst : ArrayBuffer) =
-    //    use dst = new Int8Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-        
-    //[<Extension>]
-    //static member CopyTo(src : uint16[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Uint16Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-        
-    //[<Extension>]
-    //static member CopyTo(src : uint16[], dst : ArrayBuffer) =
-    //    use dst = new Uint16Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : int16[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Int16Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : int16[], dst : ArrayBuffer) =
-    //    use dst = new Int16Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : uint32[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Uint32Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-        
-    //[<Extension>]
-    //static member CopyTo(src : uint32[], dst : ArrayBuffer) =
-    //    use dst = new Uint32Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : int32[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Int32Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : int32[], dst : ArrayBuffer) =
-    //    use dst = new Int32Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : float32[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Float32Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-        
-    //[<Extension>]
-    //static member CopyTo(src : float32[], dst : ArrayBuffer) =
-    //    use dst = new Float32Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : float[], dst : ArrayBuffer, byteOffset : int) =
-    //    use dst = new Float64Array(dst, byteOffset)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-    //[<Extension>]
-    //static member CopyTo(src : float[], dst : ArrayBuffer) =
-    //    use dst = new Float64Array(dst)
-    //    dst.CopyFrom(ReadOnlySpan src) |> ignore
-
-        
     // ===============================================================================
     // ArrayBuffer.CopyTo('a[])
     // ===============================================================================
     [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : uint8[], startIndex : int) =
+    static member CopyTo<'a when 'a : unmanaged>(src : ArrayBuffer, dst : 'a[], startIndex : int) =
+        if startIndex < 0 then raise <| ArgumentException("startIndex")
+        if src.Length > dst.Length - startIndex then raise <| IndexOutOfRangeException()
         use src = new Uint8Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
+        use pDst = fixed dst
+        src.CopyTo(Span<byte>(NativePtr.toVoidPtr (NativePtr.add pDst startIndex), src.Length))
+        
     [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : uint8[]) =
+    static member CopyTo<'a when 'a : unmanaged>(src : ArrayBuffer, dst : 'a[]) =
+        if src.Length > dst.Length then raise <| IndexOutOfRangeException()
         use src = new Uint8Array(src)
-        src.CopyTo(Span dst) |> ignore
+        use pDst = fixed dst
+        src.CopyTo(Span<byte>(NativePtr.toVoidPtr pDst, src.Length))
 
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : int8[], startIndex : int) =
-        use src = new Int8Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : int8[]) =
-        use src = new Int8Array(src)
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : uint16[], startIndex : int) =
-        use src = new Uint16Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : uint16[]) =
-        use src = new Uint16Array(src)
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : int16[], startIndex : int) =
-        use src = new Int16Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : int16[]) =
-        use src = new Int16Array(src)
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : uint32[], startIndex : int) =
-        use src = new Uint32Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : uint32[]) =
-        use src = new Uint32Array(src)
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : int32[], startIndex : int) =
-        use src = new Int32Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : int32[]) =
-        use src = new Int32Array(src)
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : float32[], startIndex : int) =
-        use src = new Float32Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : float32[]) =
-        use src = new Float32Array(src)
-        src.CopyTo(Span dst) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : float[], startIndex : int) =
-        use src = new Float64Array(src)
-        src.CopyTo(Span(dst, startIndex, src.Length)) |> ignore
-
-    [<Extension>]
-    static member CopyTo(src : ArrayBuffer, dst : float[]) =
-        use src = new Float64Array(src)
-        src.CopyTo(Span dst) |> ignore
         
 
     static member ofArray(arr : uint8[]) = Uint8Array.op_Implicit (Span arr)
@@ -850,13 +593,29 @@ type Device with
             return real
         }
 
+    member x.Upload(dst : Buffer, data : 'a[]) =
+        async {
+            let sa = sizeof<'a> 
+            let byteSize = sa * data.Length
+        
+            let temp = x.GetTempWriteBuffer byteSize
+
+            let! ptr = temp.Map(MapMode.Write, 0un, unativeint byteSize)
+            data.CopyTo(ptr, 0)
+            temp.Unmap()
+
+            let queue = x.GetDefaultQueue()
+            let cmd = x.CreateCommandEncoder()
+            cmd.CopyBufferToBuffer(temp, 0UL, dst, 0UL, uint64 byteSize)
+            queue.Submit [| cmd.Finish() |]
+
+        }
+
 
 
 let testWebGPU() =
     async {
-
         Console.Begin "Buffer Roundtrip"
-
 
         let! gpu = Navigator.GPU.RequestAdapter()
         Console.Log("got Adapter")
@@ -864,10 +623,9 @@ let testWebGPU() =
         Console.Log("got Device")
         let queue = dev.GetDefaultQueue()
         
-        
         let canvas = Document.CreateCanvasElement()
-        canvas.Style.Width <- "1024px"
-        canvas.Style.Height <- "768px"
+        canvas.Style.Width <- "100%"
+        canvas.Style.Height <- "100%"
         canvas.Style.Background <- "red"
         canvas.Width <- 1024
         canvas.Height <- 768
@@ -877,6 +635,7 @@ let testWebGPU() =
         let ctx = canvas.GetGPUPresentContext()
         let! fmt = ctx.GetSwapChainPreferredFormat(gpu)
         let depthFormat = TextureFormat.Depth24PlusStencil8
+        let samples = 1
 
         Console.Log "got Context"
         let swap = 
@@ -890,12 +649,17 @@ let testWebGPU() =
         let! vertex = 
             dev.CreateGLSLShaderModule(ShaderStage.Vertex, ["Vertex"],
                 """#version 450
+
+                layout(set = 0, binding = 0) uniform PerBla {
+                    mat4 trafo;
+                };
+
                 layout(location = 0) in vec4 p;
                 layout(location = 1) in vec4 c;
                 layout(location = 0) out vec4 fs_color; 
                 void main() {
                     fs_color = c;
-                    gl_Position = p;
+                    gl_Position = p * trafo;
                 }   
                 """
             )
@@ -911,10 +675,50 @@ let testWebGPU() =
                 """
             )
 
+
+        let bindGroupLayout =
+            dev.CreateBindGroupLayout {
+                Label = null
+                Entries =
+                    [|
+                        {
+                            BindGroupLayoutEntry.Binding = 0
+                            BindGroupLayoutEntry.HasDynamicOffset = false
+                            BindGroupLayoutEntry.MinBufferBindingSize = 64UL
+                            BindGroupLayoutEntry.Multisampled = false
+                            BindGroupLayoutEntry.StorageTextureFormat = TextureFormat.Undefined
+                            BindGroupLayoutEntry.TextureComponentType = TextureComponentType.Float
+                            BindGroupLayoutEntry.ViewDimension = TextureViewDimension.Undefined
+                            BindGroupLayoutEntry.Visibility = ShaderStage.Vertex ||| ShaderStage.Fragment
+                            BindGroupLayoutEntry.Type = BindingType.UniformBuffer
+                        }
+                    |]
+            }
+
         let layout =
             dev.CreatePipelineLayout {
                 Label = null
-                BindGroupLayouts = [||]
+                BindGroupLayouts = 
+                    [|
+                        bindGroupLayout
+                    |]
+            }
+
+        let! ub = dev.CreateBuffer(BufferUsage.Uniform, [| M44f.Identity |])
+
+        //do! dev.Upload(ub, [| M44f.Identity |])
+
+        let bindGroup = 
+            dev.CreateBindGroup {
+                Label = null
+                Layout = bindGroupLayout
+                Entries =
+                    [|
+                        {
+                            Binding = 0
+                            Resource = BindingResource.Buffer(ub, 0UL, 64UL)
+                        }
+                    |]
             }
 
         let pipeline = 
@@ -972,7 +776,7 @@ let testWebGPU() =
                     //    DepthBiasSlopeScale = 0.0f
                     //    FrontFace = FrontFace.CCW
                     //}
-                SampleCount = 1
+                SampleCount = samples
                 DepthStencilState =
                     Some {
                         DepthCompare = CompareFunction.Always
@@ -998,35 +802,100 @@ let testWebGPU() =
                 AlphaToCoverageEnabled = false
 
             }
-
+            
         let! positions = 
             dev.CreateBuffer(BufferUsage.Vertex, [| -1.0f; -1.0f; 0.0f; 1.0f; -1.0f; 0.0f; 1.0f; 1.0f; 1.0f|])
      
         let! colors = 
             dev.CreateBuffer(BufferUsage.Vertex, [| 255uy;0uy;0uy;255uy; 0uy;255uy;0uy;255uy; 0uy;0uy;255uy;255uy |])
-     
 
-
-        let size = V2i(canvas.Width, canvas.Height)
 
         Console.Log "configured SwapChain"
 
-        let depth = 
+        let mutable depth = 
+            let size = V2i(canvas.Width, canvas.Height)
             dev.CreateTexture {
                 Label = null
                 Usage = TextureUsage.OutputAttachment
                 Dimension = TextureDimension.D2D
-                Size = { Width = size.X; Height = size.Y; Depth = 1}
+                Size = { Width = size.X; Height = size.Y; Depth = 1 }
                 Format = depthFormat
                 MipLevelCount = 1
-                SampleCount = 1
+                SampleCount = samples
             }
+            
+        let mutable color = 
+            if samples > 1 then
+                let size = V2i(canvas.Width, canvas.Height)
+                dev.CreateTexture {
+                    Label = null
+                    Usage = TextureUsage.CopySrc ||| TextureUsage.OutputAttachment
+                    Dimension = TextureDimension.D2D
+                    Size = { Width = size.X; Height = size.Y; Depth = 1 }
+                    Format = fmt
+                    MipLevelCount = 1
+                    SampleCount = samples
+                }
+            else
+                null
+        
+        let mutable swap = swap
+        let currentSize = ref (V2i(canvas.Width, canvas.Height))
+        let currentSamples = ref samples
+        let fixSize() =
+            let s = canvas.GetBoundingClientRect().Size + V2d.II |> round |> V2i
+            if s <> !currentSize || samples <> !currentSamples then
+                currentSize := s
+                currentSamples := samples
+                canvas.Width <- s.X
+                canvas.Height <- s.Y
 
-        let rec render(dt : float) = 
+                depth.Destroy()
+                depth <- 
+                    dev.CreateTexture {
+                        Label = null
+                        Usage = TextureUsage.OutputAttachment
+                        Dimension = TextureDimension.D2D
+                        Size = { Width = s.X; Height = s.Y; Depth = 1 }
+                        Format = depthFormat
+                        MipLevelCount = 1
+                        SampleCount = samples
+                    }
+
+                color <-
+                    if samples > 1 then
+                        color.Destroy()
+                        dev.CreateTexture {
+                            Label = null
+                            Usage = TextureUsage.CopySrc ||| TextureUsage.OutputAttachment
+                            Dimension = TextureDimension.D2D
+                            Size = { Width = s.X; Height = s.Y; Depth = 1 }
+                            Format = fmt
+                            MipLevelCount = 1
+                            SampleCount = samples
+                        }
+                    else
+                        null
+
+                swap <- 
+                    ctx.ConfigureSwapChain {
+                        Device = dev
+                        Usage = TextureUsage.CopyDst ||| TextureUsage.OutputAttachment
+                        Format = fmt
+                    }
+            
+        let rec render(t : float) = 
             async {
+                let v = t / 10000.0
+                let m = M44f.RotationZ(float32 v)
+                do! dev.Upload(ub, [| m |])
+
+                fixSize()
                 let cmd = dev.CreateCommandEncoder()
-                let tex = swap.GetCurrentTexture()
-                let tex = tex.CreateView()
+                let back = swap.GetCurrentTexture()
+                
+
+                let c = HSVf(float32 v % 1.0f, 1.0f, 1.0f).ToC3f().ToV3d()
 
                 let pass = 
                     cmd.BeginRenderPass {
@@ -1034,9 +903,9 @@ let testWebGPU() =
                         ColorAttachments = 
                             [|
                                 {
-                                    Attachment = tex
-                                    ResolveTarget = null
-                                    LoadValue = LoadOp.Color { R = 1.0; G = 1.0; B = 0.0; A = 1.0 } 
+                                    Attachment = if samples > 1 then color.CreateView() else back.CreateView()
+                                    ResolveTarget = if samples > 1 then back.CreateView() else null
+                                    LoadValue = LoadOp.Color { R = c.X; G = c.Y; B = c.Z; A = 1.0 } 
                                     StoreOp = StoreOp.Store
                                 }
                             |]
@@ -1054,11 +923,14 @@ let testWebGPU() =
                     }
 
                 pass.SetPipeline(pipeline)
+                pass.SetBindGroup(0, bindGroup, null)
                 pass.SetVertexBuffer(0, positions)
                 pass.SetVertexBuffer(1, colors)
                 //pass.SetIndexBuffer(index, IndexFormat.Uint32, 0UL, uint64 indexSize)
                 pass.Draw(3, 1, 0, 0)
                 pass.EndPass()
+
+
                 let cmdBuf = cmd.Finish()
                 queue.Submit [| cmdBuf |]
                 do! queue.OnSubmittedWorkDone()
@@ -1073,7 +945,7 @@ let testWebGPU() =
             }
 
         ()
-        //Window.RequestAnimationFrame(run)
+        Window.RequestAnimationFrame(run)
 
 
     } |> Async.Start
