@@ -4898,6 +4898,13 @@ type JSWindow(o : JSObject) =
     new(o : JsObj) = JSWindow(o.Reference)
     
 
+type JSPerformance(o : JSObject) =
+    inherit JsObj(o)
+
+    member x.Now = o.Invoke("now") |> convert<float>
+    
+    new(o : JsObj) = JSPerformance(o.Reference)
+    
 
 
 [<AutoOpen>]
@@ -4905,3 +4912,4 @@ module RuntimeValues =
     let Window = JSWindow (unbox<JSObject> (Runtime.GetGlobalObject "window"))
     let Document = HTMLDocument (unbox<JSObject> (Runtime.GetGlobalObject "document"))
     let Console = JSConsole (unbox<JSObject> (Runtime.GetGlobalObject "console"))
+    let Performance = JSPerformance (unbox<JSObject> (Runtime.GetGlobalObject "performance"))

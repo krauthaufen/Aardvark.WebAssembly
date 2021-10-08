@@ -200,7 +200,10 @@ module Entry =
                 | "structure" ->
                     let ext = 
                         match prop value "extensible" with
-                        | Some v -> v
+                        | Some (v : string) -> 
+                            match v.ToLower().Trim() with
+                            | "in" | "out" -> true
+                            | _ -> false
                         | None -> false
 
                     let fields =
@@ -268,10 +271,14 @@ let indent (str : string) =
 module rec Ast =
     type Field =
         {
-            name            : string
+            nam             : string
             fieldType       : Lazy<TypeDef>
             defaultValue    : option<string>
         }
+
+        member x.uniqueName =
+            let typeName = userName x.fieldType.Value
+            sprintf "%s_%s" x.nam typeName
 
         member x.Defaultable =
             match x.defaultValue with
@@ -471,6 +478,49 @@ module rec Ast =
         | Unit ->
             "unit"
     
+    let rec userName (t : TypeDef) =
+        match t with
+        | Task Unit -> "Task"
+        | Task t -> sprintf "Task_%s" (userName t)
+        | Int(false, 8) -> "uint8"
+        | Int(false, 16) -> "uint16"
+        | Int(false, 32) -> "int"
+        | Int(false, 64) -> "uint64"
+        | Int(true, 8) -> "int8"
+        | Int(true, 16) -> "int16"
+        | Int(true, 32) -> "int32"
+        | Int(true, 64) -> "int64"
+        | Int(s, b) -> failwithf "bad int: %A %A" s b
+        | Float(32) -> "float32"
+        | Float(64) -> "float"
+        | NativeInt true -> "nativeint"
+        | NativeInt false -> "unativeint"
+        | Float _ -> failwith "bad float"
+        | String -> "string"
+        | Bool -> "bool"
+        | Array (Int(false, 32)) -> "uint32Arr"
+        | Array (Int(false, 16)) -> "uint16Arr"
+        | Array (Int(false, 8)) -> "byteArr"
+        | Array Unit -> "ArrayBuffer"
+        | Array t ->
+            sprintf "%sArr" (userName t)
+        | Option t ->
+            sprintf "%sOpt" (userName t)
+        | Ptr t ->
+            sprintf "%sPtr" (userName t)
+        | ByRef t ->
+            userName t
+        | PersistentCallback(name, _) | CompletionCallback(name,_) ->
+            name
+        | Enum(name,_,_) ->
+            name
+        | Struct(name,_,_) ->
+            name
+        | Object(name,_) ->
+            name
+        | Unit ->
+            "unit"
+    
     module private TypeDef =
         let cache = System.Collections.Concurrent.ConcurrentDictionary<string, Lazy<TypeDef>>()
 
@@ -517,7 +567,8 @@ module rec Ast =
                     | t -> Option t
                 )
 
-        and private valueString (typ : TypeDef) (value : string) =
+        and private unsafeValueString (typ : TypeDef) (value : string) =
+            
             match typ with
             
             | Int(signed, bits) ->
@@ -612,6 +663,10 @@ module rec Ast =
 
             | ByRef _ | Array _ | Ptr _ | Struct _ | PersistentCallback _ | CompletionCallback _ | Task _  ->
                 failwithf "cannot print default value for type: %A" typ
+                
+        and private valueString (typ : TypeDef) (value : string) =
+            try unsafeValueString typ value |> Some
+            with _ -> None
 
         and private ofParameters (persistent : bool) (meth : bool) (context : Map<string, Entry>) (pars : list<Parameter>) =
             match pars with
@@ -631,21 +686,21 @@ module rec Ast =
                             | Ptr t -> lazy (Array t)
                             | t -> lazy t
 
-                        let def = p1.def |> Option.map (valueString typ.Value)
+                        let def = p1.def |> Option.bind (valueString typ.Value)
 
-                        { name = n1; fieldType = typ; defaultValue = def } :: ofParameters persistent meth context pars
+                        { nam = n1; fieldType = typ; defaultValue = def } :: ofParameters persistent meth context pars
                     | _ ->
-                        let def = p0.def |> Option.map (valueString (Int(false, 32)))
+                        let def = p0.def |> Option.bind (valueString (Int(false, 32)))
 
-                        { name = n0; fieldType = lazy Int(false, 32); defaultValue = def } :: ofParameters persistent meth context pars
+                        { nam = n0; fieldType = lazy Int(false, 32); defaultValue = def } :: ofParameters persistent meth context pars
                 | Option elementType when meth -> //(n0.EndsWith "Descriptor" || n0 = "CopySize" || (frontendName elementType).EndsWith "CopyView") ->
-                    { name = n0; fieldType = lazy (ByRef elementType); defaultValue = None } :: ofParameters persistent meth context pars
+                    { nam = n0; fieldType = lazy (ByRef elementType); defaultValue = None } :: ofParameters persistent meth context pars
                 | PersistentCallback(name, args) ->
-                    if persistent then { name = n0; fieldType = lazy (PersistentCallback(name, args)); defaultValue = None } :: ofParameters persistent meth context pars
-                    else { name = n0; fieldType = lazy (CompletionCallback(name, args)); defaultValue = None } :: ofParameters persistent meth context pars
+                    if persistent then { nam = n0; fieldType = lazy (PersistentCallback(name, args)); defaultValue = None } :: ofParameters persistent meth context pars
+                    else { nam = n0; fieldType = lazy (CompletionCallback(name, args)); defaultValue = None } :: ofParameters persistent meth context pars
                 | t0 ->
-                    let def = p0.def |> Option.map (valueString t0)
-                    { name = n0; fieldType = lazy t0; defaultValue = def } :: ofParameters persistent meth context pars
+                    let def = p0.def |> Option.bind (valueString t0)
+                    { nam = n0; fieldType = lazy t0; defaultValue = def } :: ofParameters persistent meth context pars
 
         let rec ofEntry (context : Map<string, Entry>) (entry : Entry) = 
             cache.GetOrAdd(entry.Name, fun _ ->
@@ -654,6 +709,9 @@ module rec Ast =
                     match entry with
                     | Entry.Native "uint32_t" -> Int(false, 32)
                     | Entry.Native "int32_t" -> Int(true, 32)
+                    | Entry.Native "int16_t" -> Int(true, 16)
+                    | Entry.Native "uint16_t" -> Int(false, 16)
+                    | Entry.Native "uint8_t" -> Int(false, 8)
                     | Entry.Native "uint64_t" -> Int(false, 64)
                     | Entry.Native "bool" -> Bool
                     | Entry.Native "float" -> Float 32
@@ -664,6 +722,10 @@ module rec Ast =
                     | Entry.Native "Promise" -> Task Unit
                     | Entry.Native "void *" | Entry.Native "const void *" | Entry.Native "void const *"-> Array Unit
                     | Entry.Native o ->  failwithf "bad native type: %A" o
+
+                    | Entry.Object("adapter", _) ->
+                        Object("Adapter", [])
+
                     | Entry.Object(name, meths) ->  
                         let objectName = cleanName name
 
@@ -748,68 +810,126 @@ module rec Ast =
             str.Split([|"\r\n"|], StringSplitOptions.None) |> Array.map (fun l -> "    " + l) |> String.concat "\r\n"
 
                 
-        let readValue (access : string -> string) (field : Field) (inner : string) =
-            let name = field.name
+        let rec readValue (access : Field -> string) (field : Field) (inner : string) =
+
             let typ = field.fieldType.Value
-            String.concat "\r\n" [
-                sprintf "let _%s = %s" name (access name)
-                inner
-            ]
+            match typ with
+            | Struct(n, _, fs) ->
+                String.concat "\r\n" [
+                    yield sprintf "let _%s = " field.uniqueName
+                    yield sprintf "    {"
+                    for f in fs do
+                        let line = 
+                            try
+                                let conv = sprintf "            let _%sVal = %s.%s" f.uniqueName field.nam f.nam
+                                let r = readValue (fun f -> sprintf "_%sVal" f.uniqueName) f (sprintf "_%s" f.uniqueName) |> indent |> indent |> indent
+                                sprintf "        %s =\r\n%s\r\n%s" f.nam conv r
+                            with _ ->
+                                sprintf "        %s = failwith \"asdsadsad\"" f.nam
+                        yield line
+                    yield sprintf "    }"
+                    yield sprintf "let _%s = Unchecked.defaultof<%s>" field.uniqueName (frontendName typ)
+                    yield inner
+                ]
+
+            | Array t ->
+                let f =  { nam = "item"; fieldType = lazy t; defaultValue = None }
+                String.concat "\r\n" [
+                    sprintf "let _%s =" field.uniqueName
+                    sprintf "    let len = (%s).GetObjectProperty(\"length\") |> convert<int>" (access field)
+                    sprintf "    Array.init len (fun i ->"
+                    sprintf "        let item = (%s).GetObjectProperty(string i) |> convert<%s>" (access field) (nativeName t)
+                    readValue (fun _ -> "item") f (sprintf "_%s" f.uniqueName) |> indent |> indent
+                    sprintf "    )"
+                    inner
+                ]
+
+            | Option t ->
+                String.concat "\r\n" [
+                    sprintf "let _%s = " field.uniqueName
+                    sprintf "    if isNull(%s) then None" (access field)
+                    sprintf "    else "
+                    let fld = { field with fieldType = lazy t }
+                    readValue access fld (sprintf "Some _%s" fld.uniqueName) |> indent |> indent
+                    inner
+                ]
+                
+            | Enum _ ->
+                String.concat "\r\n" [
+                    sprintf "let _%s = %s |> System.Convert.ToInt32 |> unbox<%s>" field.uniqueName (access field) (frontendName field.fieldType.Value)
+                    inner
+                ]
+                
+            | Int(s, b) ->
+                let conv = 
+                    if s then sprintf "ToInt%d" b
+                    else sprintf "ToUInt%d" b
+                String.concat "\r\n" [
+                    sprintf "let _%s = %s |> System.Convert.%s" field.uniqueName (access field) conv
+                    inner
+                ]
+                
+
+            | _ -> 
+                String.concat "\r\n" [
+                    sprintf "let _%s = %s" field.uniqueName (access field)
+                    inner
+                ]
             
-        let rec pinField (device : string) (access : string -> string) (field : Field) (inner : string) =
-            let name = field.name
+        let rec pinField (device : string) (access : Field -> string) (field : Field) (inner : string) =
+            //let name = field.name
             let typ = field.fieldType.Value
             match typ with
             | Task _ ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = %s" name (access name)
+                    sprintf "let _%s = %s" field.uniqueName (access field)
                     inner
                 ]
                 
             | String ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = %s" name (access name)
+                    sprintf "let _%s = %s" field.uniqueName (access field)
                     inner
                 ]
                 
             | Enum(_,false,_) ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = %s.GetValue()" name (access name)
+                    sprintf "let _%s = %s.GetValue()" field.uniqueName (access field)
                     inner
                 ]
 
             | Enum(_,true,_) ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = int (%s)" name (access name)
+                    sprintf "let _%s = int (%s)" field.uniqueName (access field)
                     inner
                 ]
                 
             | Bool ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = %s" name (access name)
+                    sprintf "let _%s = %s" field.uniqueName (access field)
                     inner
                 ]
             | Enum _ | Ptr _ ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = int(%s)" name (access name)
+                    sprintf "let _%s = int(%s)" field.uniqueName (access field)
                     inner
                 ]
             | Int _ | NativeInt _ ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = int (%s)" name (access name)
+                    sprintf "let _%s = int (%s)" field.uniqueName (access field)
                     inner
                 ]
 
 
             | Float _ | Enum _ | Ptr _ ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = (%s)" name (access name)
+                    sprintf "let _%s = (%s)" field.uniqueName (access field)
                     inner
                 ]
                 
             | ByRef (Struct (_, ext, fields) as element) ->
                 let nativeName = nativeName element
-                pinStruct device nativeName (access name) name ext fields [
+                pinStruct device nativeName (access field) field.uniqueName ext fields [
                     inner
                 ]
                 //String.concat "\r\n" [
@@ -822,7 +942,7 @@ module rec Ast =
                 //]
             | ByRef (Enum _ | Float _ | Int _ | NativeInt _ | Ptr _) ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = %s" name (access name)
+                    sprintf "let _%s = %s" field.uniqueName (access field)
                     //sprintf "use _%s = fixed [| %s |]" name (access name)
                     inner
                 ]
@@ -831,32 +951,32 @@ module rec Ast =
                 
             | Array (Object _ as element) ->
                 String.concat "\r\n" [
-                    sprintf "let _%sCount = %s.Length" name (access name)
-                    sprintf "let _%sArray = newArray _%sCount" name name
-                    sprintf "for i in 0 .. _%sCount-1 do" name
-                    sprintf "    if isNull %s.[i] then _%sArray.[i] <- null" (access name) name
-                    sprintf "    else _%sArray.[i] <- %s.[i].Handle" name (access name)
-                    sprintf "let _%s = _%sArray.Reference" name name
+                    sprintf "let _%sCount = %s.Length" field.uniqueName (access field)
+                    sprintf "let _%sArray = newArray _%sCount" field.uniqueName field.uniqueName
+                    sprintf "for i in 0 .. _%sCount-1 do" field.uniqueName
+                    sprintf "    if isNull %s.[i] then _%sArray.[i] <- null" (access field) field.uniqueName
+                    sprintf "    else _%sArray.[i] <- %s.[i].Handle" field.uniqueName (access field)
+                    sprintf "let _%s = _%sArray.Reference" field.uniqueName field.uniqueName
                     inner
                 ]
                  
             | Array (Enum(_, true, _)) ->
                 String.concat "\r\n" [
-                    sprintf "let _%sCount = %s.Length" name (access name)
-                    sprintf "let _%sArray = new Uint32Array(_%sCount)" name name
-                    sprintf "for i in 0 .. _%sCount-1 do" name
-                    sprintf "    _%sArray.[i] <- uint32 %s.[i]" name (access name)
-                    sprintf "let _%s = _%sArray :> JSObject" name name
+                    sprintf "let _%sCount = %s.Length" field.uniqueName (access field)
+                    sprintf "let _%sArray = new Uint32Array(_%sCount)" field.uniqueName field.uniqueName
+                    sprintf "for i in 0 .. _%sCount-1 do" field.uniqueName
+                    sprintf "    _%sArray.[i] <- uint32 %s.[i]" field.uniqueName (access field)
+                    sprintf "let _%s = _%sArray :> JSObject" field.uniqueName field.uniqueName
                     inner
                 ]
                 
             | Array (Enum(_, false, _)) ->
                 String.concat "\r\n" [
-                    sprintf "let _%sCount = %s.Length" name (access name)
-                    sprintf "let _%sArray = newArray (_%sCount)" name name
-                    sprintf "for i in 0 .. _%sCount-1 do" name
-                    sprintf "    _%sArray.[i] <- %s.[i].GetValue()" name (access name)
-                    sprintf "let _%s = _%sArray.Reference" name name
+                    sprintf "let _%sCount = %s.Length" field.uniqueName (access field)
+                    sprintf "let _%sArray = newArray (_%sCount)" field.uniqueName field.uniqueName
+                    sprintf "for i in 0 .. _%sCount-1 do" field.uniqueName
+                    sprintf "    _%sArray.[i] <- %s.[i].GetValue()" field.uniqueName (access field)
+                    sprintf "let _%s = _%sArray.Reference" field.uniqueName field.uniqueName
                     inner
                 ]
 
@@ -865,18 +985,18 @@ module rec Ast =
                 let nativeElement = nativeName element
 
                 String.concat "\r\n" [
-                    sprintf "let _%sCount = if isNull %s then 0 else %s.Length" name (access name) (access name)
-                    sprintf "let rec _%sCont (_%sinputs : array<%s>) (_%soutputs : JsArray) (_%si : int) =" name name frontendElement name name
-                    sprintf "    if _%si >= _%sCount then" name name
-                    sprintf "        let _%s = _%soutputs.Reference" name name
+                    sprintf "let _%sCount = if isNull %s then 0 else %s.Length" field.uniqueName (access field) (access field)
+                    sprintf "let rec _%sCont (_%sinputs : array<%s>) (_%soutputs : JsArray) (_%si : int) =" field.uniqueName field.uniqueName frontendElement field.uniqueName field.uniqueName
+                    sprintf "    if _%si >= _%sCount then" field.uniqueName field.uniqueName
+                    sprintf "        let _%s = _%soutputs.Reference" field.uniqueName field.uniqueName
                     sprintf "%s" (indent (indent inner))
                     sprintf "    else"
-                    indent (indent (pinStruct device nativeElement (sprintf "_%sinputs.[_%si]" name name) "n" ext fields [
-                        sprintf "_%soutputs.[_%si] <- js _n" name name
-                        sprintf "_%sCont _%sinputs _%soutputs (_%si + 1)" name name name name
+                    indent (indent (pinStruct device nativeElement (sprintf "_%sinputs.[_%si]" field.uniqueName field.uniqueName) "n" ext fields [
+                        sprintf "_%soutputs.[_%si] <- js _n" field.uniqueName field.uniqueName
+                        sprintf "_%sCont _%sinputs _%soutputs (_%si + 1)" field.uniqueName field.uniqueName field.uniqueName field.uniqueName
                     ]))
                     //sprintf "        inputs.[i].Pin(fun n -> outputs.[i] <- n; _%sCont inputs outputs (i + 1))" name
-                    sprintf "_%sCont %s (if _%sCount > 0 then newArray _%sCount else null) 0" name (access name) name name
+                    sprintf "_%sCont %s (if _%sCount > 0 then newArray _%sCount else null) 0" field.uniqueName (access field) field.uniqueName field.uniqueName
 
                 ]
 
@@ -884,70 +1004,70 @@ module rec Ast =
                 let typeName = nativeName typ
 
                 String.concat "\r\n" [
-                    sprintf "let _%s = if isNull %s then null else %s.op_Implicit(Span(%s))" name (access name) typeName (access name)
-                    sprintf "let _%sCount = if isNull %s then 0 else %s.Length" name (access name) (access name)
+                    sprintf "let _%s = if isNull %s then null else %s.op_Implicit(Span(%s))" field.uniqueName (access field) typeName (access field)
+                    sprintf "let _%sCount = if isNull %s then 0 else %s.Length" field.uniqueName (access field) (access field)
                     inner
                 ]
 
             | Option (Object _ as element) ->
                 let elementName = nativeName element
                 String.concat "\r\n" [
-                    sprintf "let inline _%sCont _%s =" name name
+                    sprintf "let inline _%sCont _%s =" field.uniqueName field.uniqueName
                     indent inner
 
-                    sprintf "match %s with" (access name)
+                    sprintf "match %s with" (access field)
                     sprintf "| Some o ->"
-                    sprintf "    let _%s = o.Handle" name
-                    sprintf "    _%sCont _%s" name name
+                    sprintf "    let _%s = o.Handle" field.uniqueName
+                    sprintf "    _%sCont _%s" field.uniqueName field.uniqueName
                     sprintf "| _ ->"
-                    sprintf "    _%sCont null" name
+                    sprintf "    _%sCont null" field.uniqueName
                 ]
                 
             | Option (Struct(_, ext, fields) as element) ->
                 let nativeName = nativeName element
                 String.concat "\r\n" [
-                    sprintf "let inline _%sCont _%s = " name name
+                    sprintf "let inline _%sCont _%s = " field.uniqueName field.uniqueName
                     indent inner
-                    sprintf "match %s with" (access name)
+                    sprintf "match %s with" (access field)
                     sprintf "| Some v ->"
                     indent (
                         pinStruct device nativeName "v" "n" ext fields [
-                            sprintf "_%sCont _n" name
+                            sprintf "_%sCont _n" field.uniqueName
                             
                         ]
                     )
                     //sprintf "    v.Pin(fun n -> "
                     //sprintf "    )" 
-                    sprintf "| None -> _%sCont null" name
+                    sprintf "| None -> _%sCont null" field.uniqueName
                 ]
                 
                 
             | Option (Enum _) ->
                 String.concat "\r\n" [
-                    sprintf "let inline _%sCont _%s =" name name
+                    sprintf "let inline _%sCont _%s =" field.uniqueName field.uniqueName
                     indent inner
 
-                    sprintf "match %s with" (access name)
+                    sprintf "match %s with" (access field)
                     sprintf "| Some o ->"
-                    sprintf "    _%sCont(o.GetValue())" name
+                    sprintf "    _%sCont(o.GetValue())" field.uniqueName
                     sprintf "| _ ->"
-                    sprintf "    _%sCont null" name
+                    sprintf "    _%sCont null" field.uniqueName
                 ]
                 
             | Option _ ->
                 String.concat "\r\n" [
-                    sprintf "let inline _%sCont _%s =" name name
+                    sprintf "let inline _%sCont _%s =" field.uniqueName field.uniqueName
                     indent inner
 
-                    sprintf "match %s with" (access name)
+                    sprintf "match %s with" (access field)
                     sprintf "| Some o ->"
-                    sprintf "    _%sCont o" name
+                    sprintf "    _%sCont o" field.uniqueName
                     sprintf "| _ ->"
-                    sprintf "    _%sCont null" name
+                    sprintf "    _%sCont null" field.uniqueName
                 ]
 
             | PersistentCallback(_, args) ->
-                let argDef = args |> List.map (fun a -> sprintf "(%s : %s)" a.name (nativeName a.fieldType.Value)) |> String.concat " "
+                let argDef = args |> List.map (fun a -> sprintf "(%s : %s)" a.nam (nativeName a.fieldType.Value)) |> String.concat " "
                 
                 //let device = if name = "Device" then "x" else "x.Device"
                 let rec readArgs (a : list<Field>) =
@@ -957,33 +1077,33 @@ module rec Ast =
                             args |> List.map (fun f -> 
                                 match f.fieldType.Value with
                                 | Enum(_, true, _) ->
-                                    sprintf "unbox<%s>(_%s)" (frontendName f.fieldType.Value) f.name
+                                    sprintf "unbox<%s>(_%s)" (frontendName f.fieldType.Value) f.uniqueName
                                 | Enum(_, false, _) ->
-                                    sprintf "%s.Parse(_%s)" (frontendName f.fieldType.Value) f.name
+                                    sprintf "%s.Parse(_%s)" (frontendName f.fieldType.Value) f.uniqueName
                                 | Object _ -> 
-                                    sprintf "new %s(%s, _%s)" (frontendName f.fieldType.Value) device f.name
+                                    sprintf "new %s(%s, _%s)" (frontendName f.fieldType.Value) device f.uniqueName
                                 | NativeInt _ ->
-                                    sprintf "nativeint _%s" f.name
+                                    sprintf "nativeint _%s" f.uniqueName
                                 | _ -> 
-                                    sprintf "_%s" f.name
+                                    sprintf "_%s" f.uniqueName
                             ) |> String.concat ", "
-                        sprintf "%s.Invoke(%s)" name all
+                        sprintf "%s.Invoke(%s)" field.nam all
                     | a0 :: rest ->
-                        readValue id a0 (readArgs rest)
+                        readValue (fun f -> f.nam) a0 (readArgs rest)
 
 
 
                 String.concat "\r\n" [
-                    sprintf "let _%sFunction %s = " name argDef
+                    sprintf "let _%sFunction %s = " field.uniqueName argDef
                     indent (readArgs args)
-                    sprintf "let _%sDel = WGPU%s(_%sFunction)" name (frontendName typ) name
-                    sprintf "let _%sGC = System.Runtime.InteropServices.GCHandle.Alloc(_%sDel)" name (access name)
-                    sprintf "let _%s = _%sDel" name (access name)
+                    sprintf "let _%sDel = WGPU%s(_%sFunction)" field.uniqueName (frontendName typ) field.uniqueName
+                    sprintf "let _%sGC = System.Runtime.InteropServices.GCHandle.Alloc(_%sDel)" field.uniqueName field.uniqueName
+                    sprintf "let _%s = _%sDel" field.uniqueName field.uniqueName
                     inner
                 ]
 
             | CompletionCallback(_, args) ->
-                let argDef = args |> List.map (fun a -> sprintf "(%s : %s)" a.name (nativeName a.fieldType.Value)) |> String.concat " "
+                let argDef = args |> List.map (fun a -> sprintf "(%s : %s)" a.nam (nativeName a.fieldType.Value)) |> String.concat " "
 
                 let rec readArgs (a : list<Field>) =
                     match a with
@@ -992,43 +1112,43 @@ module rec Ast =
                             args |> List.map (fun f -> 
                                 match f.fieldType.Value with
                                 | Enum(_, true, _) ->
-                                    sprintf "unbox<%s>(_%s)" (frontendName f.fieldType.Value) f.name
+                                    sprintf "unbox<%s>(_%s)" (frontendName f.fieldType.Value) f.uniqueName
                                 | Enum(_, false, _) ->
-                                    sprintf "%s.Parse(_%s)" (frontendName f.fieldType.Value) f.name
+                                    sprintf "%s.Parse(_%s)" (frontendName f.fieldType.Value) f.uniqueName
                                 | Object _ -> 
-                                    sprintf "new %s(%s, _%s)" (frontendName f.fieldType.Value) device f.name
+                                    sprintf "new %s(%s, _%s)" (frontendName f.fieldType.Value) device f.uniqueName
                                 | NativeInt _ ->
-                                    sprintf "nativeint _%s" f.name
+                                    sprintf "nativeint _%s" f.uniqueName
                                 | _ -> 
-                                    sprintf "_%s" f.name
+                                    sprintf "_%s" f.uniqueName
                             ) |> String.concat ", "
                         String.concat "\r\n"[
-                            sprintf "if _%sGC.IsAllocated then _%sGC.Free()" name name
-                            sprintf "%s.Invoke(%s)" name all
+                            sprintf "if _%sGC.IsAllocated then _%sGC.Free()" field.uniqueName field.uniqueName
+                            sprintf "%s.Invoke(%s)" field.nam all
                         ]
                     | a0 :: rest ->
-                        readValue id a0 (readArgs rest)
+                        readValue (fun f -> f.nam) a0 (readArgs rest)
 
 
 
                 String.concat "\r\n" [
-                    sprintf "let mutable _%sGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>" name
-                    sprintf "let _%sFunction %s = " name argDef
+                    sprintf "let mutable _%sGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>" field.uniqueName
+                    sprintf "let _%sFunction %s = " field.uniqueName argDef
                     indent (readArgs args)
-                    sprintf "let _%sDel = WGPU%s(_%sFunction)" name (frontendName typ) name
-                    sprintf "_%sGC <- System.Runtime.InteropServices.GCHandle.Alloc(_%sDel)" name (access name)
-                    sprintf "let _%s = _%sDel" name (access name)
+                    sprintf "let _%sDel = WGPU%s(_%sFunction)" field.uniqueName (frontendName typ) field.uniqueName
+                    sprintf "_%sGC <- System.Runtime.InteropServices.GCHandle.Alloc(_%sDel)" field.uniqueName field.uniqueName
+                    sprintf "let _%s = _%sDel" field.uniqueName field.uniqueName
                     inner
                 ]
 
             | Object(_, _meths) ->
                 let nativeName = nativeName typ
                 String.concat "\r\n" [
-                    sprintf "let _%s = (if isNull %s then null else %s.Handle)" name (access name) (access name)
+                    sprintf "let _%s = (if isNull %s then null else %s.Handle)" field.uniqueName (access field) (access field)
                     inner
                 ]
             | Struct(_, ext, fields)  ->
-                pinStruct device (nativeName typ) (access name) name ext fields [
+                pinStruct device (nativeName typ) (access field) field.uniqueName ext fields [
                     inner
                 ]
                 //String.concat "\r\n" [
@@ -1049,13 +1169,13 @@ module rec Ast =
                             //match f.fieldType.Value with
                             //| Array _ -> yield sprintf "_%s.%sCount <- _%sCount" varName f.name f.name
                             //| _ -> ()
-                            yield sprintf "_%s.%s <- _%s" varName f.name f.name
+                            yield sprintf "_%s.%s <- _%s" varName f.nam f.uniqueName
                         yield sprintf "let _%s = _%s" varName varName
                         yield! inner
                     ]
                 | f0 :: rest ->
                     let rest = pinCode rest
-                    pinField device (sprintf "%s.%s" access) f0 rest
+                    pinField device (fun f -> sprintf "%s.%s" access f.nam) f0 rest
                 
             pinCode fields
 
@@ -1282,21 +1402,24 @@ module rec Ast =
                 //if ext then printfn "            val mutable public Next : nativeint"
                 for f in fields do
                     let jsName =
-                        let n = f.name
-                        if n.Length > 0 then n.Substring(0, 1).ToLower() + n.Substring(1)
-                        else n
+                        let n = f.nam
+                        match n with
+                        | "LoadOp" -> "loadValue"
+                        | _ -> 
+                            if n.Length > 0 then n.Substring(0, 1).ToLower() + n.Substring(1)
+                            else n
                     let typ = f.fieldType.Value
                     let typeName = nativeName typ
                     match typ with
                     | Enum(_, true, _) ->
 
-                        printfn "        member x.%s" f.name
+                        printfn "        member x.%s" f.nam
                         printfn "            with get() : %s = h.GetObjectProperty(\"%s\") |> convert<int>" typeName jsName
                         printfn "            and set (v : %s) = h.SetObjectProperty(\"%s\", v)" typeName jsName
             
                     | Enum(n, false, _) ->
                         //if n = "LoadOp" then
-                        printfn "        member x.%s" f.name
+                        printfn "        member x.%s" f.nam
                         printfn "            with get() : obj = h.GetObjectProperty(\"%s\") |> convert<obj>" jsName
                         printfn "            and set (v : obj) = h.SetObjectProperty(\"%s\", v)" jsName
             
@@ -1305,10 +1428,16 @@ module rec Ast =
                         //    printfn "            with get() : %s = h.GetObjectProperty(\"%s\") |> convert<string>" typeName jsName
                         //    printfn "            and set (v : %s) = h.SetObjectProperty(\"%s\", v)" typeName jsName
             
-                    | _ ->
-                        printfn "        member x.%s" f.name
+                    | TypeDef.Struct _ | TypeDef.Object _ | TypeDef.Option _ ->
+                        printfn "        member x.%s" f.nam
+                        printfn "            with get() : %s = h.GetObjectProperty(\"%s\") |> convert<%s>" typeName jsName typeName
+                        printfn "            and set (v : %s) = if not (isNull v) then h.SetObjectProperty(\"%s\", js v)" typeName jsName
+
+                    |  _ ->
+                        printfn "        member x.%s" f.nam
                         printfn "            with get() : %s = h.GetObjectProperty(\"%s\") |> convert<%s>" typeName jsName typeName
                         printfn "            and set (v : %s) = h.SetObjectProperty(\"%s\", js v)" typeName jsName
+
             
             
             | _ ->
@@ -1358,7 +1487,7 @@ module rec Ast =
                 for f in fields do
                     let typ = f.fieldType.Value
                     let typeName = frontendName typ
-                    printfn "        %s : %s" f.name typeName
+                    printfn "        %s : %s" f.nam typeName
                 printfn "    }"
 
                 
@@ -1369,9 +1498,9 @@ module rec Ast =
                         | [] -> 
                             ""
                         | other ->
-                            other |> List.map (fun f -> sprintf "%s: %s" f.name (frontendName f.fieldType.Value)) |> String.concat ", " |> sprintf "(%s)"
+                            other |> List.map (fun f -> sprintf "%s: %s" f.nam (frontendName f.fieldType.Value)) |> String.concat ", " |> sprintf "(%s)"
 
-                    let argSet = otherFields |> List.map (fun f -> f.name) |> Set.ofList
+                    let argSet = otherFields |> List.map (fun f -> f.nam) |> Set.ofList
 
                     printfn "    static member Default%s : %s =" args name
                     printfn "        {"
@@ -1379,12 +1508,12 @@ module rec Ast =
                         let fieldType = f.fieldType.Value |> frontendName
                         match f.defaultValue with
                         | Some v ->
-                            printfn "            %s = %s" f.name v
+                            printfn "            %s = %s" f.nam v
                         | None ->
-                            if Set.contains f.name argSet then
-                                printfn "            %s = %s" f.name f.name
+                            if Set.contains f.nam argSet then
+                                printfn "            %s = %s" f.nam f.nam
                             else
-                                printfn "            %s = %s.Default" f.name fieldType
+                                printfn "            %s = %s.Default" f.nam fieldType
                     printfn "        }"
 
                 printfn ""
@@ -1397,12 +1526,12 @@ module rec Ast =
                         String.concat "\r\n" [
                             yield sprintf "let native = %s()" (nativeName e)
                             for f in fields do
-                                yield sprintf "native.%s <- _%s" f.name f.name
+                                yield sprintf "native.%s <- _%s" f.nam f.uniqueName
                             yield sprintf "callback native"
                         ]
                     | f0 :: rest ->
                         let rest = pinCode rest
-                        pinField "device" (sprintf "x.%s") f0 rest
+                        pinField "device" (fun f -> sprintf "x.%s" f.nam) f0 rest
                 
                 let code = pinCode fields
                 printfn "%s" (indent (indent code))
@@ -1507,8 +1636,8 @@ module rec Ast =
                                         let restArgs = 
                                             (f :: rest) |> List.map (fun f -> 
                                                 match f.defaultValue with
-                                                | Some v -> Choice2Of2 (f.name, v, f.fieldType.Value)
-                                                | None -> Choice2Of2 (f.name, sprintf "%s.Default" (frontendName f.fieldType.Value), f.fieldType.Value)
+                                                | Some v -> Choice2Of2 (f.nam, v, f.fieldType.Value)
+                                                | None -> Choice2Of2 (f.nam, sprintf "%s.Default" (frontendName f.fieldType.Value), f.fieldType.Value)
                                             )
                                         restArgs :: take
                                     else
@@ -1526,7 +1655,7 @@ module rec Ast =
                             let ret = meth.returnType.Value |> frontendName
                             let argDecl = 
                                 meth.parameters |> List.map (fun p ->
-                                    sprintf "%s : %s" p.name (frontendName p.fieldType.Value)
+                                    sprintf "%s : %s" p.nam (frontendName p.fieldType.Value)
                                 ) |> String.concat ", "
                             printfn "    member x.%s(%s) : %s = " meth.name argDecl ret
 
@@ -1570,6 +1699,9 @@ module rec Ast =
                                         | Task Unit ->
                                             sprintf "%s |> convert<System.Threading.Tasks.Task>"
 
+                                        | Enum(name, _, _) ->
+                                            fun s -> sprintf "%s |> System.Convert.ToInt32 |> unbox<%s>" s name
+
                                         | t ->
                                             failwithf "bad return type: %A" t
 
@@ -1600,8 +1732,8 @@ module rec Ast =
                                 | f0 :: rest ->
                                     match f0 with
                                     | Choice1Of2 f0 -> 
-                                        let rest = pinCode (sprintf "js _%s" f0.name :: args) rest
-                                        pinField device id f0 rest
+                                        let rest = pinCode (sprintf "js _%s" f0.uniqueName :: args) rest
+                                        pinField device (fun f -> f.nam) f0 rest
                                     | Choice2Of2 ((name, value, typ)) ->
                                         pinCode args rest
                                         //pinField device (fun _ -> value) { name = name; fieldType = lazy typ; defaultValue = None } rest

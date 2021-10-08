@@ -194,7 +194,6 @@ type JsArray(r : JSObject) =
         with get(i : int) = r.GetObjectProperty(string i) |> net
         and set(i : int) (value : obj) = r.SetObjectProperty(string i, js value)
 
-
 type Iterator<'a>(getIterator : unit -> JSObject, extract : obj -> 'a) =
     let mutable iterator : JSObject = null
     let mutable current : JSObject = null

@@ -5,7 +5,7 @@ open WebAssembly
 open Aardvark.WebAssembly
 open WebAssembly.Core
 
-type Adapter(o : JSObject) =
+type WebGPUAdapter(o : JSObject) =
     inherit JsObj(o)
     member x.RequestDevice() : Async<Device> =
         async {
@@ -16,11 +16,11 @@ type Adapter(o : JSObject) =
 type GPU(o : JSObject) =
     inherit JsObj(o)
 
-    member x.RequestAdapter() : Async<Adapter> =
+    member x.RequestAdapter() : Async<WebGPUAdapter> =
         let t = o.Invoke("requestAdapter") |> unbox<Task<obj>>
         async {
             let! o = o.Invoke("requestAdapter") |> unbox<Task<obj>> |> Async.AwaitTask
-            return convert<Adapter> o
+            return convert<WebGPUAdapter> o
         }
 
 type Navigator(o : JSObject) =
@@ -46,7 +46,7 @@ type GPUSwapChainDescriptor =
 type GPUPresentContext(r : JSObject) =
     inherit JsObj(r)
 
-    member x.GetSwapChainPreferredFormat(adapter : Adapter) =
+    member x.GetSwapChainPreferredFormat(adapter : WebGPUAdapter) =
         async {
             let task = 
                 try x.Reference.Invoke("getSwapChainPreferredFormat", adapter.Reference) //|> convert<System.Threading.Tasks.Task<obj>>
@@ -161,16 +161,17 @@ module WebGPUExtensions =
             with set (action : GPUUncapturedErrorEvent -> unit) =
                 x.Handle.Reference.SetObjectProperty("onuncapturederror", System.Action<obj>(fun o -> action(convert o)))
 
-    type Queue with 
-        member x.OnSubmittedWorkDone() : Async<unit> =
-            let f = x.CreateFence { Label = null; InitialValue = 0UL }
-            x.Signal(f, 1UL)
-            f.Handle.Reference.Invoke("onCompletion", 1) |> convert<System.Threading.Tasks.Task> |> Async.AwaitTask
+    //type Queue with 
+    //    member x.OnSubmittedWorkDone() : Async<unit> =
+    //        let f = x. { Label = null; InitialValue = 0UL }
+    //        x.Signal(f, 1UL)
+    //        f.Handle.Reference.Invoke("onCompletion", 1) |> convert<System.Threading.Tasks.Task> |> Async.AwaitTask
 
     type Buffer with
         member x.Map(mode : MapMode, offset : unativeint, size : unativeint) =
             async {
-                do! x.MapAsync(mode, offset, size) |> Async.AwaitTask
+                failwith "mapAsync"
+                //do! x.MapAsync(mode, offset, size) |> Async.AwaitTask
                 return x.GetMappedRange(offset, size)
             }
 

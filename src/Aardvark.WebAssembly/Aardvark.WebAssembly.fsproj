@@ -20,6 +20,8 @@
   <ItemGroup>
     <None Include="Generator.fsx" />
     <None Include="paket.references" />
+    <Compile Include="Map.fs" />
+    <Compile Include="RangeSet.fs" />
     <Compile Include="Core.fs" />
     <Compile Include="Browser.fs" />
     <Compile Include="WebGL.fs" />

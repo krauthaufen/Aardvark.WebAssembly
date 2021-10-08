@@ -585,7 +585,7 @@ type Device with
             data.CopyTo(ptr, 0)
             temp.Unmap()
 
-            let queue = x.GetDefaultQueue()
+            let queue = x.GetQueue()
             let cmd = x.CreateCommandEncoder()
             cmd.CopyBufferToBuffer(temp, 0UL, real, 0UL, uint64 byteSize)
             queue.Submit [| cmd.Finish() |]
@@ -604,24 +604,40 @@ type Device with
             data.CopyTo(ptr, 0)
             temp.Unmap()
 
-            let queue = x.GetDefaultQueue()
+            let queue = x.GetQueue()
             let cmd = x.CreateCommandEncoder()
             cmd.CopyBufferToBuffer(temp, 0UL, dst, 0UL, uint64 byteSize)
             queue.Submit [| cmd.Finish() |]
 
         }
 
-
+open Aardvark.WebAssembly
 
 let testWebGPU() =
     async {
+
+        let a = RangeSet<int>.Empty.Add(0, 2).Add(3, 5)
+        Console.Warn(string a)
+        let a = a.Add(2, 3)
+        Console.Warn(string a)
+        let a = a.Remove(2, 3)
+        Console.Warn(string a)
+
+        Console.Warn(a.TryHead() |> string)
+        Console.Warn(a.TryLast() |> string)
+
+
+
+        for range in a do
+            Console.Warn(string range)
+
         Console.Begin "Buffer Roundtrip"
 
         let! gpu = Navigator.GPU.RequestAdapter()
         Console.Log("got Adapter")
         let! dev = gpu.RequestDevice()
         Console.Log("got Device")
-        let queue = dev.GetDefaultQueue()
+        let queue = dev.GetQueue()
         
         let canvas = Document.CreateCanvasElement()
         canvas.Style.Width <- "100%"
@@ -641,7 +657,7 @@ let testWebGPU() =
         let swap = 
             ctx.ConfigureSwapChain {
                 Device = dev
-                Usage = TextureUsage.CopyDst ||| TextureUsage.OutputAttachment
+                Usage = TextureUsage.CopyDst ||| TextureUsage.RenderAttachment
                 Format = fmt
             }
         Console.Log "got SwapChain"
@@ -682,15 +698,20 @@ let testWebGPU() =
                 Entries =
                     [|
                         {
-                            BindGroupLayoutEntry.Binding = 0
-                            BindGroupLayoutEntry.HasDynamicOffset = false
-                            BindGroupLayoutEntry.MinBufferBindingSize = 64UL
-                            BindGroupLayoutEntry.Multisampled = false
-                            BindGroupLayoutEntry.StorageTextureFormat = TextureFormat.Undefined
-                            BindGroupLayoutEntry.TextureComponentType = TextureComponentType.Float
-                            BindGroupLayoutEntry.ViewDimension = TextureViewDimension.Undefined
-                            BindGroupLayoutEntry.Visibility = ShaderStage.Vertex ||| ShaderStage.Fragment
-                            BindGroupLayoutEntry.Type = BindingType.UniformBuffer
+                            
+                            Binding = 0
+                            //HasDynamicOffset = true
+                            //MinBufferBindingSize = 64UL
+                            //Multisampled = false
+                            //StorageTextureFormat = TextureFormat.Undefined
+                            //TextureComponentType = TextureComponentType.Float
+                            //ViewDimension = TextureViewDimension.Undefined
+                            Visibility = ShaderStage.Vertex ||| ShaderStage.Fragment
+                            BindGroupLayoutEntry.Buffer = failwith ""
+                            BindGroupLayoutEntry.Texture = failwith ""
+                            BindGroupLayoutEntry.Sampler = failwith ""
+                            BindGroupLayoutEntry.StorageTexture = failwith ""
+                            //Type = BindingType.UniformBuffer
                         }
                     |]
             }
@@ -704,7 +725,7 @@ let testWebGPU() =
                     |]
             }
 
-        let! ub = dev.CreateBuffer(BufferUsage.Uniform, [| M44f.Identity |])
+        let! ub = dev.CreateBuffer(BufferUsage.Uniform, [| M44f.Identity; M44f.Identity; M44f.Identity; M44f.Identity; M44f.Identity |])
 
         //do! dev.Upload(ub, [| M44f.Identity |])
 
@@ -716,92 +737,97 @@ let testWebGPU() =
                     [|
                         {
                             Binding = 0
-                            Resource = BindingResource.Buffer(ub, 0UL, 64UL)
+                            Offset = 0UL
+                            Size = 64UL
+                            Buffer = ub
+                            Sampler = null
+                            TextureView = null
                         }
                     |]
             }
 
-        let pipeline = 
-            dev.CreateRenderPipeline {
-                Label = null
-                Layout = layout
-                VertexStage = 
-                    {
-                        Module = vertex
-                        EntryPoint = "main"
-                    }
-                FragmentStage =
-                    Some {
-                        Module = fragment
-                        EntryPoint = "main"
-                    }
-                VertexState =
-                    Some {
-                        IndexFormat = IndexFormat.Undefined
-                        VertexBuffers  =
-                            [|
-                                {
-                                    ArrayStride = 12UL
-                                    Attributes = 
-                                        [|
-                                            {
-                                                Format = VertexFormat.Float3
-                                                Offset = 0UL
-                                                ShaderLocation = 0
-                                            }
-                                        |]
-                                    StepMode = InputStepMode.Vertex
-                                }
+        let pipeline : RenderPipeline = 
+            failwith ""
+            //dev.CreateRenderPipeline {
+            //    Label = null
+            //    Layout = layout
+            //    Vertex = 
+            //        {
+            //            Module = vertex
+            //            EntryPoint = "main"
+            //        }
+            //    Fragment =
+            //        Some {
+            //            Module = fragment
+            //            EntryPoint = "main"
+            //        }
+            //    Primitive =
+            //        Some {
+            //            IndexFormat = IndexFormat.Undefined
+            //            VertexBuffers  =
+            //                [|
+            //                    {
+            //                        ArrayStride = 12UL
+            //                        Attributes = 
+            //                            [|
+            //                                {
+            //                                    Format = VertexFormat.Float3
+            //                                    Offset = 0UL
+            //                                    ShaderLocation = 0
+            //                                }
+            //                            |]
+            //                        StepMode = InputStepMode.Vertex
+            //                    }
                                 
-                                {
-                                    ArrayStride = 4UL
-                                    Attributes = 
-                                        [|
-                                            {
-                                                Format = VertexFormat.UChar4Norm
-                                                Offset = 0UL
-                                                ShaderLocation = 1
-                                            }
-                                        |]
-                                    StepMode = InputStepMode.Vertex
-                                }
-                            |]
-                    }
-                PrimitiveTopology = WebGPU.PrimitiveTopology.TriangleList
-                RasterizationState = Some RasterizationStateDescriptor.Default
-                    //Some {
-                    //    CullMode = CullMode.None
-                    //    DepthBias = 0
-                    //    DepthBiasClamp = 1.0f
-                    //    DepthBiasSlopeScale = 0.0f
-                    //    FrontFace = FrontFace.CCW
-                    //}
-                SampleCount = samples
-                DepthStencilState =
-                    Some {
-                        DepthCompare = CompareFunction.Always
-                        DepthWriteEnabled = true
-                        Format = depthFormat
-                        StencilBack = StencilStateFaceDescriptor.Default
-                        StencilFront = StencilStateFaceDescriptor.Default
-                        StencilReadMask = 0
-                        StencilWriteMask = 0
-                    }
+            //                    {
+            //                        ArrayStride = 4UL
+            //                        Attributes = 
+            //                            [|
+            //                                {
+            //                                    Format = VertexFormat.UChar4Norm
+            //                                    Offset = 0UL
+            //                                    ShaderLocation = 1
+            //                                }
+            //                            |]
+            //                        StepMode = InputStepMode.Vertex
+            //                    }
+            //                |]
+            //            Topology = WebGPU.PrimitiveTopology.TriangleList
+            //        }
+            //    //Rast = Some RasterizationStateDescriptor.Default
+            //        //Some {
+            //        //    CullMode = CullMode.None
+            //        //    DepthBias = 0
+            //        //    DepthBiasClamp = 1.0f
+            //        //    DepthBiasSlopeScale = 0.0f
+            //        //    FrontFace = FrontFace.CCW
+            //        //}
+            //    //SampleCount = samples
+            //    DepthStencil =
+            //        Some {
+            //            DepthCompare = CompareFunction.Always
+            //            DepthWriteEnabled = true
+            //            Format = depthFormat
+            //            StencilBack = StencilStateFaceDescriptor.Default
+            //            StencilFront = StencilStateFaceDescriptor.Default
+            //            StencilReadMask = 0
+            //            StencilWriteMask = 0
+            //        }
 
-                ColorStates =
-                    [|
-                        { 
-                            Format = fmt
-                            AlphaBlend = BlendDescriptor.Default
-                            WriteMask = ColorWriteMask.All
-                            ColorBlend = BlendDescriptor.Default
-                        }
-                    |]
+            //    ColorStates =
+            //        [|
+            //            { 
+            //                Format = fmt
+            //                AlphaBlend = BlendDescriptor.Default
+            //                WriteMask = ColorWriteMask.All
+            //                ColorBlend = BlendDescriptor.Default
+            //            }
+            //        |]
 
-                SampleMask = 0xFF
-                AlphaToCoverageEnabled = false
+            //    SampleMask = 0xFF
+            //    AlphaToCoverageEnabled = false
 
-            }
+            //}
             
         let! positions = 
             dev.CreateBuffer(BufferUsage.Vertex, [| -1.0f; -1.0f; 0.0f; 1.0f; -1.0f; 0.0f; 1.0f; 1.0f; 1.0f|])
@@ -810,15 +836,16 @@ let testWebGPU() =
             dev.CreateBuffer(BufferUsage.Vertex, [| 255uy;0uy;0uy;255uy; 0uy;255uy;0uy;255uy; 0uy;0uy;255uy;255uy |])
 
 
+
         Console.Log "configured SwapChain"
 
         let mutable depth = 
             let size = V2i(canvas.Width, canvas.Height)
             dev.CreateTexture {
                 Label = null
-                Usage = TextureUsage.OutputAttachment
+                Usage = TextureUsage.RenderAttachment
                 Dimension = TextureDimension.D2D
-                Size = { Width = size.X; Height = size.Y; Depth = 1 }
+                Size = { Width = size.X; Height = size.Y; DepthOrArrayLayers = 1 }
                 Format = depthFormat
                 MipLevelCount = 1
                 SampleCount = samples
@@ -829,9 +856,9 @@ let testWebGPU() =
                 let size = V2i(canvas.Width, canvas.Height)
                 dev.CreateTexture {
                     Label = null
-                    Usage = TextureUsage.CopySrc ||| TextureUsage.OutputAttachment
+                    Usage = TextureUsage.CopySrc ||| TextureUsage.RenderAttachment
                     Dimension = TextureDimension.D2D
-                    Size = { Width = size.X; Height = size.Y; Depth = 1 }
+                    Size = { Width = size.X; Height = size.Y; DepthOrArrayLayers = 1 }
                     Format = fmt
                     MipLevelCount = 1
                     SampleCount = samples
@@ -854,9 +881,9 @@ let testWebGPU() =
                 depth <- 
                     dev.CreateTexture {
                         Label = null
-                        Usage = TextureUsage.OutputAttachment
+                        Usage = TextureUsage.RenderAttachment
                         Dimension = TextureDimension.D2D
-                        Size = { Width = s.X; Height = s.Y; Depth = 1 }
+                        Size = { Width = s.X; Height = s.Y; DepthOrArrayLayers = 1 }
                         Format = depthFormat
                         MipLevelCount = 1
                         SampleCount = samples
@@ -867,9 +894,9 @@ let testWebGPU() =
                         color.Destroy()
                         dev.CreateTexture {
                             Label = null
-                            Usage = TextureUsage.CopySrc ||| TextureUsage.OutputAttachment
+                            Usage = TextureUsage.CopySrc ||| TextureUsage.RenderAttachment
                             Dimension = TextureDimension.D2D
-                            Size = { Width = s.X; Height = s.Y; Depth = 1 }
+                            Size = { Width = s.X; Height = s.Y; DepthOrArrayLayers = 1 }
                             Format = fmt
                             MipLevelCount = 1
                             SampleCount = samples
@@ -880,7 +907,7 @@ let testWebGPU() =
                 swap <- 
                     ctx.ConfigureSwapChain {
                         Device = dev
-                        Usage = TextureUsage.CopyDst ||| TextureUsage.OutputAttachment
+                        Usage = TextureUsage.CopyDst ||| TextureUsage.RenderAttachment
                         Format = fmt
                     }
             
@@ -888,7 +915,7 @@ let testWebGPU() =
             async {
                 let v = t / 10000.0
                 let m = M44f.RotationZ(float32 v)
-                do! dev.Upload(ub, [| m |])
+                do! dev.Upload(ub, [| M44f.Identity; M44f.Identity; M44f.Identity; M44f.Identity; m |])
 
                 fixSize()
                 let cmd = dev.CreateCommandEncoder()
@@ -903,27 +930,29 @@ let testWebGPU() =
                         ColorAttachments = 
                             [|
                                 {
-                                    Attachment = if samples > 1 then color.CreateView() else back.CreateView()
-                                    ResolveTarget = if samples > 1 then back.CreateView() else null
-                                    LoadValue = LoadOp.Color { R = c.X; G = c.Y; B = c.Z; A = 1.0 } 
+                                    View = if samples > 1 then color.CreateView(failwith "") else back.CreateView(failwith "")
+                                    ResolveTarget = if samples > 1 then back.CreateView(failwith "") else null
+                                    LoadOp = LoadOp.Color { R = c.X; G = c.Y; B = c.Z; A = 1.0 } 
                                     StoreOp = StoreOp.Store
+                                    ClearColor = { R = c.X; G = c.Y; B = c.Z; A = 1.0 } 
                                 }
                             |]
                         DepthStencilAttachment =
-                            Some {
-                                Attachment = depth.CreateView()
-                                DepthLoadValue = DepthLoadOp.Depth 1.0
-                                DepthReadOnly = false
-                                DepthStoreOp = StoreOp.Store
-                                StencilLoadValue = StencilLoadOp.Stencil 0
-                                StencilReadOnly = false
-                                StencilStoreOp = StoreOp.Store
-                            }
+                            Some (failwith "")
+                            //Some {
+                            //    View = depth.CreateView()
+                            //    DepthLoadValue = DepthLoadOp.Depth 1.0
+                            //    DepthReadOnly = false
+                            //    DepthStoreOp = StoreOp.Store
+                            //    StencilLoadValue = StencilLoadOp.Stencil 0
+                            //    StencilReadOnly = false
+                            //    StencilStoreOp = StoreOp.Store
+                            //}
                         OcclusionQuerySet = null
                     }
 
                 pass.SetPipeline(pipeline)
-                pass.SetBindGroup(0, bindGroup, null)
+                pass.SetBindGroup(0, bindGroup, [| 256u |])
                 pass.SetVertexBuffer(0, positions)
                 pass.SetVertexBuffer(1, colors)
                 //pass.SetIndexBuffer(index, IndexFormat.Uint32, 0UL, uint64 indexSize)
@@ -933,7 +962,7 @@ let testWebGPU() =
 
                 let cmdBuf = cmd.Finish()
                 queue.Submit [| cmdBuf |]
-                do! queue.OnSubmittedWorkDone()
+                //do! queue.OnSubmittedWorkDone()
             }
             
         do! render 0.0
@@ -951,19 +980,522 @@ let testWebGPU() =
     } |> Async.Start
      
 
+open System.Threading.Tasks
+open System.Runtime.InteropServices
+
+module VoidPtr =
+    let ofNativeInt (v : nativeint) =
+        v |> NativePtr.ofNativeInt<byte> |> NativePtr.toVoidPtr
+        
+[<AllowNullLiteral>]
+type Fragment(o : JSObject, program : FragmentProgram) =
+    inherit JsObj(o)
+
+
+    member internal x.Prev
+        with get() = 
+            let p = o.GetObjectProperty "prev"
+            if isNull p then null
+            else new Fragment(unbox p, program)
+        and set (n : Fragment) = 
+            if isNull n then o.SetObjectProperty("prev", null)
+            else o.SetObjectProperty("prev", n.Reference)
+
+    member internal x.Next
+        with get() = 
+            let n = o.GetObjectProperty "next"
+            if isNull n then null
+            else new Fragment(unbox n, program)
+
+        and set (n : Fragment) = 
+            if isNull n then o.SetObjectProperty("next", null)
+            else o.SetObjectProperty("next", n.Reference)
+
+    member private x.Parts =
+        o.GetObjectProperty("parts") |> convert<JsArray>
+
+    member x.Clear() =
+        x.Parts.Reference.SetObjectProperty("length", 0) |> ignore
+
+    member x.Append(closure : array<string * obj>, code : string) =
+
+        let args = Array.zeroCreate (closure.Length + 2)
+        for i in 0 .. closure.Length - 1 do args.[i] <- fst closure.[i] :> obj
+        args.[closure.Length] <- "scope" :> obj
+        args.[closure.Length+1] <- code :> obj
+        let f = new Function(args)
+
+        let inline v (_, a) = js a
+        let func = 
+            match closure.Length with
+            | 0 -> f
+            | 1 -> f.Invoke("bind", null, v closure.[0]) |> convert<Function>
+            | 2 -> f.Invoke("bind", null, v closure.[0], v closure.[1]) |> convert<Function>
+            | 3 -> f.Invoke("bind", null, v closure.[0], v closure.[1], v closure.[2]) |> convert<Function>
+            | 4 -> f.Invoke("bind", null, v closure.[0], v closure.[1], v closure.[2], v closure.[3]) |> convert<Function>
+            | 5 -> f.Invoke("bind", null, v closure.[0], v closure.[1], v closure.[2], v closure.[3], v closure.[4]) |> convert<Function>
+            | 6 -> f.Invoke("bind", null, v closure.[0], v closure.[1], v closure.[2], v closure.[3], v closure.[4], v closure.[5]) |> convert<Function>
+            | 7 -> f.Invoke("bind", null, v closure.[0], v closure.[1], v closure.[2], v closure.[3], v closure.[4], v closure.[5], v closure.[6]) |> convert<Function>
+            | 8 -> f.Invoke("bind", null, v closure.[0], v closure.[1], v closure.[2], v closure.[3], v closure.[4], v closure.[5], v closure.[6], v closure.[7]) |> convert<Function>
+            | _ -> failwith "bad"
+
+        x.Parts.Push(func)
+
+    member x.Dispose() =
+        let n = x.Next
+        let p = x.Prev
+        x.Next <- null
+        x.Prev <- null
+        x.Clear()
+
+        if isNull p then
+            if isNull n then 
+                program.First <- null
+                program.Last <- null
+            else
+                n.Prev <- null
+                program.First <- n
+        else
+            if isNull n then
+                p.Next <- null
+                program.Last <- p
+            else
+                p.Next <- n
+                n.Prev <- p
+
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+        
+
+    internal new(program : FragmentProgram) =
+        let o = new JSObject()
+        o.SetObjectProperty("prev", null, true)
+        o.SetObjectProperty("next", null, true)
+        o.SetObjectProperty("parts", js (newArray 0), true)
+        new Fragment(o, program)
+
+and FragmentProgram() =
+    static let interpreter =
+        new Function("frag", "scope",
+            String.concat "\r\n" [
+                "let current = frag;"
+                "while(current) {"
+                "  for(i = 0; i < current.parts.length; i++) current.parts[i](scope);"
+                "  current = current.next;"
+                "}"
+            ]
+        )
+    let mutable first : Fragment = null
+    let mutable last : Fragment = null
+
+    member x.First
+        with get() = first
+        and internal set f = first <- f
+        
+    member x.Last
+        with get() = last
+        and internal set l = last <- l
+
+    member x.InsertAfter(reference : Fragment) =
+        let f = new Fragment(x)
+
+        if isNull reference then
+            if isNull first then
+                first <- f
+                last <- f
+            else
+                f.Next <- first
+                first.Prev <- f
+                first <- f
+        else
+            let n = reference.Next
+            f.Prev <- reference
+            f.Next <- n
+            if isNull n then last <- f
+            else n.Prev <- f
+            reference.Next <- f
+
+
+        f
+        //else
+        //    let f = new Fragment(x)
+
+        //    let n = reference
+        //    let p = if isNull reference then null else reference.Prev
+        //    f.Next <- n
+        //    f.Prev <- p
+        //    if isNull n then last <- f
+        //    else n.Prev <- f
+        //    if isNull p then first <- f
+        //    else p.Next <- f 
+
+        //    f
+
+    member x.InsertBefore(reference : Fragment) =
+        let f = new Fragment(x)
+        if isNull reference then
+            if isNull last then
+                first <- f
+                last <- f
+            else
+                f.Prev <- last
+                last.Next <- f
+                last <- f
+        else
+            let p = reference.Prev
+            f.Next <- reference
+            f.Prev <- p
+            reference.Prev <- f
+            if isNull p then first <- f
+            else p.Next <- f
+
+        f
+
+    member x.Append() = x.InsertBefore null
+    member x.Prepend() = x.InsertAfter null
+
+    member x.Run(?scope : obj) =
+        if not (isNull first) then
+            let scope = defaultArg scope null
+            interpreter.Call(null, first.Reference, js scope) |> ignore
+
+[<AutoOpen>]
+module FragmentExtensions =
+    
+    type IAdaptiveRef =
+        inherit IAdaptiveObject
+        abstract member Ref : JsObj
+        abstract member Update : AdaptiveToken -> unit
+        
+    type IAdaptiveRef<'a> =
+        inherit IAdaptiveRef
+        abstract member Value : 'a
+
+    type aref<'a> = IAdaptiveRef<'a>
+
+    module ARef = 
+        type private ConstantRef<'a>(value : 'a) =
+            inherit ConstantObject()
+
+            interface aref<'a> with
+                member x.Value = value
+                member x.Ref = createObj [| "value", js value |]
+                member x.Update _ = ()
+
+        type private AdaptiveRef<'a, 'b>(value : aval<'a>, mapping : 'a -> 'b) =
+            inherit AdaptiveObject()
+
+            let mutable valid = false
+            let ref = createObj [| "value", null |]
+
+            interface aref<'b> with
+                member x.Value = 
+                    if valid then ref.["value"] |> convert<'b>
+                    else AVal.force value |> mapping
+
+                member x.Ref = ref
+                member x.Update token =
+                    x.EvaluateIfNeeded token () (fun t ->
+                        let v = value.GetValue t |> mapping
+                        ref.["value"] <- js v
+                        valid <- true
+                    )
+
+        let constant (value : 'a) =
+            ConstantRef value :> aref<_>
+            
+        let ofAVal (value : aval<'a>) =
+            AdaptiveRef(value, id) :> aref<_>
+
+        let mapVal (mapping : 'a -> 'b) (value : aval<'a>) =
+            AdaptiveRef(value, mapping) :> aref<_>
+
+
+    type private RefCountingSet<'a>() =
+        let store = Dict<'a, ref<int>>()
+
+        member x.Clear() =
+            store.Clear()
+
+        member x.Add(value : 'a) =
+            let r = store.GetOrCreate(value, fun _ -> ref 0)
+            let isNew = !r = 0
+            r := !r + 1
+            isNew
+
+        member x.Remove(value : 'a) =
+            match store.TryGetValue value with
+            | (true, r) ->
+                let o = !r
+                if o = 1 then
+                    store.Remove value |> ignore
+                    true
+                else
+                    r := o - 1
+                    false
+            | _ ->
+                false
+
+        member x.Contains(value : 'a) =
+            store.ContainsKey value
+
+        member x.ToArray() =
+            let arr = Array.zeroCreate store.Count
+            let mutable i = 0
+            for k in store.Keys do 
+                arr.[i] <- k
+                i <- i + 1
+            arr
+
+    type CommandStream(device : Device) =
+        inherit AdaptiveObject()
+
+        let all = RefCountingSet<IAdaptiveRef>()
+        let dirty = RefCountingSet<IAdaptiveRef>()
+        let prog = FragmentProgram()
+
+        override x.InputChangedObject(_trans,obj) =
+            match obj with
+            | :? IAdaptiveRef as r ->
+                if all.Contains r then dirty.Add r |> ignore
+            | _ ->
+                ()
+
+        member x.Update(token : AdaptiveToken) =
+            x.EvaluateIfNeeded token () (fun token ->
+                let ds = dirty.ToArray()
+                dirty.Clear()
+                for d in ds do d.Update(token)
+            )
+
+        member x.Add(v : IAdaptiveRef) =
+            if all.Add v then
+                dirty.Add v |> ignore
+
+        member x.Remove(v : IAdaptiveRef) =
+            if all.Remove v then 
+                dirty.Remove v |> ignore
+                v.Outputs.Remove x |> ignore
+
+        member x.InsertBefore(f : CommandFragment) =
+            let f = prog.InsertBefore(if isNull f then null else f.Fragment)
+            new CommandFragment(device, x, f)
+            
+        member x.InsertAfter(f : CommandFragment) =
+            let f = prog.InsertAfter(if isNull f then null else f.Fragment)
+            new CommandFragment(device, x, f)
+            
+        member x.Append() = x.InsertBefore null
+        member x.Prepend() = x.InsertAfter null
+
+        member x.Run(token : AdaptiveToken, enc : CommandEncoder) =
+            x.Update token
+            prog.Run(createObj ["cmd", js enc.Handle])
+
+    and [<AllowNullLiteral>] CommandFragment(device : Device, parent : CommandStream, f : Fragment) =
+        let refs = RefCountingSet<IAdaptiveRef>()
+
+        member x.Fragment = f
+
+        member private x.Add(r : aref<'a>) =
+            if refs.Add r then
+                parent.Add r |> ignore
+            r.Ref
+
+        member x.Clear() =
+            let all = refs.ToArray()
+            for a in all do parent.Remove a
+            refs.Clear()
+            f.Clear()
+
+        member x.Dispose() =
+            let all = refs.ToArray()
+            for a in all do parent.Remove a
+            refs.Clear()
+            f.Dispose()
+            
+        member x.BeginRenderPass(p : RenderPassDescriptor) =
+            let w = p.Pin(device, id)
+            f.Append(
+                [|"desc", w :> obj|],
+                "scope.render = scope.cmd.beginRenderPass(desc);"
+            )
+
+        member x.BeginRenderPass(p : aval<RenderPassDescriptor>) =
+            let w = p |> ARef.mapVal (fun p -> p.Pin(device, id))
+            f.Append(
+                [|"desc", x.Add w :> obj|],
+                "scope.render = scope.cmd.beginRenderPass(desc.value);"
+            )
+
+        member x.Log(value : aval<'a>) =
+            let w = value |> ARef.mapVal (fun p -> js p)
+            f.Append(
+                [|"desc", x.Add w :> obj|],
+                "console.log(desc.value);"
+            )
+
+        member x.EndRenderPass() =
+            f.Append(
+                [||],
+                "scope.render.endPass(); scope.render = null;"
+            )
+
+        interface System.IDisposable with
+            member x.Dispose() = x.Dispose()
 
 [<EntryPoint>]
 let main _argv =
+    //let e = Document.CreateElement "div"
+    //e.Style.Background <- "red"
+    //e.Style.Width <- "100%"
+    //e.Style.Height <- "100%"
+    //Document.Body.AppendChild e
 
-    let rx = System.Text.RegularExpressions.Regex @"^\#version[ \t]+.*"
+    //let f = new Function("c", "{ let sum = 0; for(i = 0; i < c; i++) { sum += i; } return sum; }")
 
 
+
+    //let res = f.Call(null, 1 <<< 20) |> convert<int>
+    //Console.Log(res)
+
+    //let arr = [| V3f.IOI |]
+    //let gc = GCHandle.Alloc(arr, GCHandleType.Pinned)
+    //Console.Log(Float32Array.From(ReadOnlySpan<float32>(VoidPtr.ofNativeInt(gc.AddrOfPinnedObject()), 3)))
+    //gc.Free()
+
+ 
+    let prog = new FragmentProgram()
+    let a = prog.Append()
+    let b = prog.Append()
+    a.Append([|"a", 45.5 :> obj|], "console.log(100, a, scope);")
+    a.Append([|"x", ref 10 :> obj|], "console.log('a2', x.Value);")
+    b.Append([||], "console.log(10, scope);")
+
+    let c = prog.InsertAfter(a)
+    c.Append([||], "console.log('c');")
+
+    Console.Begin "run 1"
+    prog.Run("hello")
+    Console.End()
+
+    //a.Dispose()
+    let d = prog.InsertBefore(a)
+    d.Append([||], "console.log('d')")
+    
+    Console.Begin "run 2"
+    prog.Run("sepp")
+    Console.End()
+
+    a.Dispose()
+    Console.Begin "run 3"
+    prog.Run("sepp")
+    Console.End()
+
+
+    //Task.Delay(1000).ContinueWith (fun _ ->
+    //    let cnt = 1 <<< 20
+    //    Console.Begin "dotnet"
+    //    for i in 1 .. 5 do
+    //        let sw = Performance.Now
+    //        let mutable sum = 0
+    //        for i in 1 .. cnt do
+    //            sum <- sum + i
+    //        let dt = Performance.Now - sw
+    //        Console.Log(sprintf "took: %.3fms" dt)
+    //    Console.End()
+    //    Console.Begin "js"
+    //    for i in 1 .. 5 do
+    //        let sw = Performance.Now
+    //        let sum = f.Call(null, cnt) |> convert<int>
+    //        let dt = Performance.Now - sw
+    //        Console.Log(sprintf "took: %.3fms" dt)
+    //    Console.End()
+
+    //) |> ignore
+
+    let task = 
+        async { 
+            try
+                let! gpu = Navigator.GPU.RequestAdapter()
+                let! dev = gpu.RequestDevice()
+                
+                let value = cval 10
+
+                let prog = CommandStream(dev)
+                let f = prog.InsertAfter(null)
+                f.Log(value)
+
+                let tex = 
+                    dev.CreateTexture { 
+                        Label = null
+                        Usage = TextureUsage.RenderAttachment ||| TextureUsage.CopySrc
+                        Dimension = TextureDimension.D2D
+                        Size = { Width = 1024; Height = 768; DepthOrArrayLayers = 1 }
+                        Format = TextureFormat.RGBA8Unorm
+                        MipLevelCount = 1
+                        SampleCount = 1
+                    }
+
+                let view = 
+                    tex.CreateView {
+                        Label = null
+                        Format = TextureFormat.RGBA8Unorm
+                        Dimension = TextureViewDimension.D2D
+                        BaseMipLevel = 0
+                        MipLevelCount = 1
+                        BaseArrayLayer = 0
+                        ArrayLayerCount = 1
+                        Aspect = TextureAspect.All
+                    }
+
+                let g = prog.Append()
+                g.BeginRenderPass {
+                    RenderPassDescriptor.Label = null
+                    ColorAttachments = 
+                        [|
+                            { 
+                                View = view
+                                ResolveTarget = null
+                                LoadOp = LoadOp.Color { R = 1.0; G = 0.0; B = 1.0; A = 1.0}
+                                StoreOp = StoreOp.Store
+                                ClearColor =  { R = 1.0; G = 0.0; B = 1.0; A = 1.0}
+                            }
+                        |]
+                    DepthStencilAttachment = None
+                    OcclusionQuerySet = null
+                }
+
+                g.EndRenderPass()
+
+                let enc = dev.CreateCommandEncoder()
+
+
+
+
+                Console.Begin "run 1"
+                prog.Run(AdaptiveToken.Top, enc)
+                Console.End()
+
+                transact (fun () ->
+                    value.Value <- 200
+                )
+        
+                Console.Begin "run 2"
+                prog.Run(AdaptiveToken.Top, enc)
+                Console.End()
+
+
+            with e ->
+                Console.Warn(string e)
+        } |> Async.StartAsTask
+    ()
     //testDynamicMethod()
-    testArrayBuffer()
+    //testArrayBuffer()
     //testAdaptive()
     //testAardvarkBase()
     //testCallback()
-    testWebGPU()
+    //testWebGPU()
 
 
     //Document.Body.Style.Background <- "w3-win8-cobalt"
