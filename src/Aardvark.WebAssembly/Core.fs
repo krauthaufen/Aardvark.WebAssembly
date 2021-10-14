@@ -148,6 +148,9 @@ module internal Interop =
 type JsObj(r : JSObject) =
     member x.Reference = r
     
+    member x.Call(meth : string) =
+        r.Invoke(meth) |> net
+        
     member x.Call(meth : string, a0 : 'a) =
         r.Invoke(meth, js a0) |> net
         

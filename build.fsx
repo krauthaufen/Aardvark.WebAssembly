@@ -658,6 +658,11 @@ module Packager =
         File.WriteAllText(Path.Combine(config.Output, "index.html"), indexHtml)
         File.Copy(Path.Combine(__SOURCE_DIRECTORY__, "src", "Aardvark.WebAssembly", "prelude.js"), Path.Combine(config.Output, "prelude.js"), true)
 
+        for src in Directory.GetFiles(Path.Combine(__SOURCE_DIRECTORY__, "src", "Aardvark.WebAssembly", "public")) do
+            Trace.tracefn "COPY %A" src
+            File.Copy(src, Path.Combine(config.Output, Path.GetFileName src), true)
+            
+
         Threading.Thread.Sleep 300
 
         ()

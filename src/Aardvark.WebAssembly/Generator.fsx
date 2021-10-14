@@ -24,7 +24,7 @@ type Method =
 type Entry =
     | Struct of name : string * extensible : bool * members : list<Parameter>
     | Enum of name : string * flags : bool * values : list<string * int>
-    | Object of name : string * methods : list<Method>
+    | Object of name : string * fields : list<string * string> * methods : list<Method>
     | Native of name : string
     | Callback of name : string * args : list<Parameter>
 
@@ -32,7 +32,7 @@ type Entry =
         match x with
         | Struct(name,_,_) -> name
         | Enum(name,_,_) -> name
-        | Object(name,_) -> name
+        | Object(name,_,_) -> name
         | Native(name) -> name
         | Callback(name,_) -> name
 
@@ -71,6 +71,13 @@ module Helpers =
         )
         |> String.concat ""
         
+    let lowerName (name : string) =
+        let n = cleanName name
+        if n.Length > 0 then 
+            n.Substring(0, 1).ToLower() + n.Substring 1
+        else
+            n
+
     let jsName (name : string) =
         let arr = name.Split([| ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
         let b = System.Text.StringBuilder()
@@ -169,6 +176,8 @@ module Entry =
             | _ ->
                 None
 
+   
+
     let tryParse (o : JProperty) =
         match o.Value with
         | :? JObject as value -> 
@@ -195,7 +204,7 @@ module Entry =
                         { name = "release"; ret = None; args = [] } ::
                         methods
 
-                    Object(o.Name, methods) |> Some
+                    Object(o.Name, [], methods) |> Some
 
                 | "structure" ->
                     let ext = 
@@ -299,7 +308,7 @@ module rec Ast =
 
     type TypeDef =
         | Unit
-        | Object of name : string * methods : list<Method>
+        | Object of name : string * fields : list<Field> * methods : list<Method>
         | Struct of name : string * extensible : bool * fields : list<Field>
         | PersistentCallback of name : string * args : list<Field>
         | CompletionCallback of name : string * args : list<Field>
@@ -325,9 +334,13 @@ module rec Ast =
             match x with
             | Task t ->
                 Seq.singleton t
-            | Object(_, methods) -> 
-                methods 
-                |> Seq.collect (fun m -> m.returnType.Value :: (m.parameters |> List.map (fun p -> p.fieldType.Value)))
+            | Object(_, fields, methods) -> 
+                Seq.append
+                    (
+                        methods 
+                        |> Seq.collect (fun m -> m.returnType.Value :: (m.parameters |> List.map (fun p -> p.fieldType.Value)))
+                    )
+                    (fields |> Seq.map (fun f -> f.fieldType.Value))
                 |> Seq.map (fun t -> t.Flatten)
             | Struct(_, _, fields) ->
                 fields 
@@ -347,7 +360,13 @@ module rec Ast =
         match t with
         | Task Unit -> "System.Threading.Tasks.Task"
         | Task t -> sprintf "System.Threading.Tasks.Task<%s>" (nativeName t)
-        | Int _ | NativeInt _ -> "int"
+        | Int(true, 32) -> "int"
+        | Int(false, 32) -> "uint32"
+        | Int(true, 16) -> "int16"
+        | Int(false, 16) -> "uint16"
+        | Int(true, 8) -> "int8"
+        | Int(false, 8) -> "uint8"
+        | Int _ | NativeInt _ -> "float"
         ////| Int _ | Float _ | NativeInt _ -> "float"
         //| Int(false, 8) -> "uint8"
         //| Int(false, 16) -> "uint16"
@@ -395,7 +414,7 @@ module rec Ast =
             "obj"
         | Struct(name,_,_) ->
             "DawnRaw.WGPU" + name
-        | Object(name,_) ->
+        | Object(name,_,_) ->
             //"JSObject"
             name + "Handle"
         | Unit ->
@@ -473,7 +492,7 @@ module rec Ast =
             name
         | Struct(name,_,_) ->
             name
-        | Object(name,_) ->
+        | Object(name,_,_) ->
             name
         | Unit ->
             "unit"
@@ -516,7 +535,7 @@ module rec Ast =
             name
         | Struct(name,_,_) ->
             name
-        | Object(name,_) ->
+        | Object(name,_,_) ->
             name
         | Unit ->
             "unit"
@@ -723,10 +742,10 @@ module rec Ast =
                     | Entry.Native "void *" | Entry.Native "const void *" | Entry.Native "void const *"-> Array Unit
                     | Entry.Native o ->  failwithf "bad native type: %A" o
 
-                    | Entry.Object("adapter", _) ->
-                        Object("Adapter", [])
+                    | Entry.Object("adapter", _, _) ->
+                        Object("Adapter", [], [])
 
-                    | Entry.Object(name, meths) ->  
+                    | Entry.Object(name, flds, meths) ->  
                         let objectName = cleanName name
 
                         let methods =
@@ -743,7 +762,7 @@ module rec Ast =
                                         lazy Unit
 
                                 let parameters = ofParameters (m.name.EndsWith "callback") true context m.args
-                                //System.Console.WriteLine(sprintf "%s: %A" m.name (m.name.EndsWith "callback"))
+
                                 {
                                     name = cleanName m.name
                                     parameters = parameters
@@ -751,7 +770,19 @@ module rec Ast =
                                 }
                             )
 
-                        Object(objectName, methods)
+                        let flds =
+                            flds |> List.map (fun (name, typ) ->
+                                let typ =
+                                    match Map.tryFind typ context with
+                                    | Some retEntry ->
+                                        ofEntry context retEntry
+                                    | None ->
+                                        failwithf "bad return type: %A" typ
+
+                                { fieldType = typ; nam = name; defaultValue = None }
+                            )
+
+                        Object(objectName, flds, methods)
 
                     | Entry.Enum(name, flags, values) ->
                         let name = cleanName name
@@ -790,6 +821,48 @@ module rec Ast =
             )
           
     let typeDefs (context : Map<string, Entry>) =
+
+        let mutable creators = Map.empty<string, list<Entry * _>> 
+
+        for (name, e) in Map.toList context do
+            match e with
+            | Entry.Object(_, _, meths) ->
+                for m in meths do
+                    match m.ret with
+                    | Some r ->
+                        match Map.tryFind r context with
+                        | Some (Entry.Object(name, _, _)) ->
+                            match Map.tryFind name creators with
+                            | None -> creators <- Map.add name [e, m] creators
+                            | Some o -> creators <- Map.add name ((e, m)::o) creators
+
+                            ()
+                        | _ ->
+                            ()
+                    | None ->
+                        ()
+                    ()
+            | _ ->
+                ()
+                
+
+        let mutable context = context
+        for (name, entries) in Map.toSeq creators do
+            match entries with
+            | [(o,m)] ->
+                match m.args with
+                | [info] ->
+                    match Map.tryFind name context with
+                    | Some (Entry.Object(oname,oflds,omeths)) ->
+                        context <- Map.add name (Entry.Object(oname, (info.name, info.typ)::oflds, omeths)) context
+                    | _ ->
+                        ()
+                    System.Console.WriteLine("{0}: {1}.{2}", name, o.Name, m)
+                | _ ->
+                    ()
+            | _ ->
+                System.Console.WriteLine("{0}: BAD", name)
+
         context |> Map.toList |> List.choose (fun (_, e) ->
             match e with
             | Native _ -> None
@@ -914,9 +987,23 @@ module rec Ast =
                     sprintf "let _%s = int(%s)" field.uniqueName (access field)
                     inner
                 ]
+
+            | Int(true, ((8 | 16 | 32) as b)) ->
+                String.concat "\r\n" [
+                    sprintf "let _%s = int%d (%s)" field.uniqueName b (access field)
+                    inner
+                ]
+                
+            | Int(false, ((8 | 16 | 32) as b)) ->
+                String.concat "\r\n" [
+                    sprintf "let _%s = uint%d (%s)" field.uniqueName b (access field)
+                    inner
+                ]
+                
+
             | Int _ | NativeInt _ ->
                 String.concat "\r\n" [
-                    sprintf "let _%s = int (%s)" field.uniqueName (access field)
+                    sprintf "let _%s = float (%s)" field.uniqueName (access field)
                     inner
                 ]
 
@@ -1115,8 +1202,13 @@ module rec Ast =
                                     sprintf "unbox<%s>(_%s)" (frontendName f.fieldType.Value) f.uniqueName
                                 | Enum(_, false, _) ->
                                     sprintf "%s.Parse(_%s)" (frontendName f.fieldType.Value) f.uniqueName
-                                | Object _ -> 
-                                    sprintf "new %s(%s, _%s)" (frontendName f.fieldType.Value) device f.uniqueName
+                                | Object(_,flds,_) ->
+                                    match flds with
+                                    | [] ->
+                                        sprintf "new %s(%s, _%s)" (frontendName f.fieldType.Value) device f.uniqueName
+                                    | _ -> 
+                                        let def = flds |> Seq.map (fun _ -> "Unchecked.defaultof<_>") |> String.concat ", "
+                                        sprintf "new %s(%s, _%s, %s)" (frontendName f.fieldType.Value) device f.uniqueName def
                                 | NativeInt _ ->
                                     sprintf "nativeint _%s" f.uniqueName
                                 | _ -> 
@@ -1141,7 +1233,7 @@ module rec Ast =
                     inner
                 ]
 
-            | Object(_, _meths) ->
+            | Object(_, _, _meths) ->
                 let nativeName = nativeName typ
                 String.concat "\r\n" [
                     sprintf "let _%s = (if isNull %s then null else %s.Handle)" field.uniqueName (access field) (access field)
@@ -1205,34 +1297,34 @@ module rec Ast =
    
         let defs = tops graph
             
-        for d in defs do
-            match d with
-            | Object(_, meths) ->
-                for m in meths do
-                    match m.returnType.Value with
-                    | Object(name, _) ->
+        //for d in defs do
+        //    match d with
+        //    | Object(_, fields, meths) ->
+        //        for m in meths do
+        //            match m.returnType.Value with
+        //            | Object(name, _) ->
                         
-                        let rec objects (t : TypeDef) =
-                            match t with
-                            | Task _ -> []
-                            | Object(name,_) -> [name]
-                            | Struct(_, _, fields) ->
-                                fields |> List.collect (fun f -> objects f.fieldType.Value)
-                            | Array t | ByRef t | Ptr t | Option t ->
-                                objects t
-                            | Unit | String | Enum _ | Bool | Float _ | Int _ | NativeInt _ -> []
-                            | CompletionCallback _ | PersistentCallback _ -> []
+        //                let rec objects (t : TypeDef) =
+        //                    match t with
+        //                    | Task _ -> []
+        //                    | Object(name,_) -> [name]
+        //                    | Struct(_, _, fields) ->
+        //                        fields |> List.collect (fun f -> objects f.fieldType.Value)
+        //                    | Array t | ByRef t | Ptr t | Option t ->
+        //                        objects t
+        //                    | Unit | String | Enum _ | Bool | Float _ | Int _ | NativeInt _ -> []
+        //                    | CompletionCallback _ | PersistentCallback _ -> []
 
-                        let referenced = m.parameters |> List.collect (fun f -> objects f.fieldType.Value)
+        //                let referenced = m.parameters |> List.collect (fun f -> objects f.fieldType.Value)
 
-                        System.Console.WriteLine(sprintf "CREATOR: %s -> %s" m.name name)
-                        for r in referenced do 
-                            System.Console.WriteLine("  {0}", r)
-                    | _ ->
-                        ()
-                ()
-            | _ ->
-                ()
+        //                System.Console.WriteLine(sprintf "CREATOR: %s -> %s" m.name name)
+        //                for r in referenced do 
+        //                    System.Console.WriteLine("  {0}", r)
+        //            | _ ->
+        //                ()
+        //        ()
+        //    | _ ->
+        //        ()
 
 
 
@@ -1545,19 +1637,23 @@ module rec Ast =
         
         for e in defs do
             match e with
-            | Object(name, meths) ->
+            | Object(name, fields, meths) ->
                 let meNative = nativeName e
                 let device = if name = "Device" then "x" else "x.Device"
                 let ctorArgs = 
                     String.concat ", " [
                         if name <> "Device" then yield "device : Device"
                         yield sprintf "handle : %s" meNative
+                        for f in fields do
+                            yield sprintf "%s : %s" (lowerName f.nam) (frontendName f.fieldType.Value)
                     ]
 
                 let ctorArgsWithRefCount = 
                     String.concat ", " [
                         if name <> "Device" then yield "device : Device"
                         yield sprintf "handle : %s" meNative
+                        for f in fields do
+                            yield sprintf "%s : %s" (lowerName f.nam) (frontendName f.fieldType.Value)
                         yield sprintf "refCount : ref<int>"
                     ]
 
@@ -1566,6 +1662,9 @@ module rec Ast =
                     String.concat ", " [
                         if name <> "Device" then yield "device"
                         yield sprintf "handle"
+                        for f in fields do
+                            yield sprintf "%s" (lowerName f.nam)
+
                         yield sprintf "refCount"
                     ]
 
@@ -1579,6 +1678,10 @@ module rec Ast =
                 printfn "    let mutable isDisposed = false"
                 if name <> "Device" then
                     printfn "    member x.Device = device"
+
+                for f in fields do
+                    printfn "    member x.%s = %s" (cleanName f.nam) (lowerName f.nam)
+
 
                 printfn "    member x.ReferenceCount = !refCount"
                 printfn "    member x.Handle : %sHandle = handle" name
@@ -1615,15 +1718,17 @@ module rec Ast =
                     String.concat ", " [
                         if name <> "Device" then yield "device"
                         yield sprintf "handle"
+                        for f in fields do
+                            yield sprintf "%s" (lowerName f.nam)
                         yield "ref 1"
                     ]
                 printfn "    new(%s) = new %s(%s)" ctorArgs name ctorArgUse
 
                 for meth in meths do
-                    if meth.name = "GetDefaultQueue" then
+                    if meth.name = "GetQueue" then
                         let ret = meth.returnType.Value |> frontendName
-                        printfn "    member x.GetDefaultQueue() : %s = " ret
-                        printfn "        let handle = x.Handle.Reference.GetObjectProperty(\"defaultQueue\") |> convert<%sHandle>" ret
+                        printfn "    member x.GetQueue() : %s = " ret
+                        printfn "        let handle = x.Handle.Reference.GetObjectProperty(\"queue\") |> convert<%sHandle>" ret
                         printfn "        new %s(x, handle)" ret
                     elif meth.name <> "Reference" && meth.name <> "Release" then
                         let overloads (meth : Method) =
@@ -1652,6 +1757,17 @@ module rec Ast =
 
                         for meth, args in overloads meth do
 
+
+                            let defaults =
+                                args |> Seq.choose (fun c ->
+                                    match c with
+                                    | Choice2Of2(name,value,c) ->
+                                        Some (lowerName name, value)
+                                    | _ ->
+                                        None
+                                )
+                                |> Map.ofSeq
+
                             let ret = meth.returnType.Value |> frontendName
                             let argDecl = 
                                 meth.parameters |> List.map (fun p ->
@@ -1679,10 +1795,21 @@ module rec Ast =
                                     let retName = frontendName meth.returnType.Value
                                     let wrap = 
                                         match meth.returnType.Value with
-                                        | Object _ -> 
+                                        | Object(_, f, _) -> 
                                             if retName = "Device" then sprintf "new %s(convert(%s))" retName
-                                            else sprintf "new %s(%s, convert(%s))" retName device
-             
+                                            else 
+                                                match f with
+                                                | [] -> 
+                                                    sprintf "new %s(%s, convert(%s))" retName device
+                                                | _ ->
+                                                    let fldArgs = 
+                                                        f |> Seq.map (fun f -> 
+                                                            match Map.tryFind (lowerName f.nam) defaults with
+                                                            | Some v -> v
+                                                            | None -> cleanName f.nam
+                                                        ) |> String.concat ", "
+                                                    fun h -> sprintf "new %s(%s, convert(%s), %s)" retName device h fldArgs
+
                                         | Array Unit ->
                                             sprintf "%s |> unbox<ArrayBuffer>"
 

@@ -1,6 +1,7 @@
 ﻿// Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
 module Bla 
 
+open Aardvark.Rendering
 open System
 open WebAssembly
 open WebAssembly.Core
@@ -638,7 +639,9 @@ let testWebGPU() =
         let! dev = gpu.RequestDevice()
         Console.Log("got Device")
         let queue = dev.GetQueue()
-        
+
+        let man = ResourceManager(dev)
+
         let canvas = Document.CreateCanvasElement()
         canvas.Style.Width <- "100%"
         canvas.Style.Height <- "100%"
@@ -934,7 +937,6 @@ let testWebGPU() =
                                     ResolveTarget = if samples > 1 then back.CreateView(failwith "") else null
                                     LoadOp = LoadOp.Color { R = c.X; G = c.Y; B = c.Z; A = 1.0 } 
                                     StoreOp = StoreOp.Store
-                                    ClearColor = { R = c.X; G = c.Y; B = c.Z; A = 1.0 } 
                                 }
                             |]
                         DepthStencilAttachment =
@@ -1117,19 +1119,6 @@ and FragmentProgram() =
 
 
         f
-        //else
-        //    let f = new Fragment(x)
-
-        //    let n = reference
-        //    let p = if isNull reference then null else reference.Prev
-        //    f.Next <- n
-        //    f.Prev <- p
-        //    if isNull n then last <- f
-        //    else n.Prev <- f
-        //    if isNull p then first <- f
-        //    else p.Next <- f 
-
-        //    f
 
     member x.InsertBefore(reference : Fragment) =
         let f = new Fragment(x)
@@ -1159,56 +1148,211 @@ and FragmentProgram() =
             let scope = defaultArg scope null
             interpreter.Call(null, first.Reference, js scope) |> ignore
 
+
+type ImageData(r : JSObject) =
+    inherit JsObj(r)
+
+    member x.Width = r.GetObjectProperty "width" |> convert<int>
+    member x.Height = r.GetObjectProperty "height" |> convert<int>
+    member x.Data = r.GetObjectProperty "data" |> convert<Uint8ClampedArray>
+
+    static member Load(url : string) =
+        Async.FromContinuations (fun (succ,err,cancel) ->
+            let img = newObj "Image" [||]
+            img.Call("addEventListener", "load", Action<obj>(fun e ->
+                let c = Document.CreateCanvasElement()
+                c.Width <- img.["width"] |> convert<int>
+                c.Height <- img.["height"] |> convert<int>
+                let ctx = c.GetContext("2d")
+                ctx.Call("drawImage", img, 0, 0) |> ignore
+                let d = ctx.Call("getImageData", 0, 0, c.Width, c.Height) |> convert<ImageData>
+                succ d
+            )) |> ignore
+            img.["src"] <- url
+        )
+
+    member x.Size = V2i(x.Width, x.Height)
+
+    new(w : int, h : int) =
+        ImageData(
+            (newObj "ImageData" [| js w; js h|]).Reference
+        )
+        
+    new(data : Uint8ClampedArray, w : int, h : int) =
+        ImageData(
+            (newObj "ImageData" [| js data; js w; js h|]).Reference
+        )
+
+type PixelbufferMode =
+    | Read
+    | Write
+    | OneTimeWrite
+
+type Pixelbuffer<'a when 'a : unmanaged and 'a :> ValueType and 'a : (new : unit -> 'a) and 'a : struct>(device : Device, format : Col.Format, size : V3i, mode : PixelbufferMode) =
+    static let es = sizeof<'a>
+
+    static let usageFlags (mode : PixelbufferMode) =
+        match mode with
+        | Read -> BufferUsage.CopyDst ||| BufferUsage.MapRead
+        | Write | OneTimeWrite -> BufferUsage.CopySrc ||| BufferUsage.MapWrite
+
+    static let createMapped (mode : PixelbufferMode) =
+        match mode with
+        | OneTimeWrite -> true
+        | Write | Read -> false
+
+    static let next (value : int) =
+        if value &&& 255 = 0 then value
+        else (1 + (value >>> 8)) <<< 8
+
+    let channels = format.ChannelCount()
+
+    let bytesPerRow = next (es * channels * size.X)
+    let totalSize = bytesPerRow * size.Y * size.Z
+
+    let buffer = 
+        device.CreateBuffer {
+            Label = null
+            Usage = usageFlags mode
+            Size = uint64 totalSize
+            MappedAtCreation = createMapped mode
+        }
+
+    let mutable written = false
+
+    static let copy =
+        new Function(
+            "src", "srcDelta", "dst", "dstDelta", "h", "d", "rowSize", 
+            String.concat "\r\n" [
+                "let srcOffset = 0;"
+                "let dstOffset = 0;"
+                "for(z = 0; z < d; z++) {"
+                "  for(y = 0; y < h; y++) {"
+                "    const s = new Uint8Array(src, srcOffset, rowSize);"
+                "    const d = new Uint8Array(dst, dstOffset, rowSize);"
+                "    d.set(s);"
+                "    srcOffset += srcDelta;"
+                "    dstOffset += dstDelta;"
+                "  }"
+                "}"
+            ]
+        )
+
+    member x.Buffer = buffer
+
+    member x.ImageCopyBuffer = 
+        {
+            Offset = 0UL
+            Buffer = buffer
+            BytesPerRow = bytesPerRow
+            RowsPerImage = size.Y
+        }
+
+    member x.UnsafeWriteSync (image : ArrayBuffer) =
+        if written then failwith "[WebGPU] cannot write more than once to OneTimeWrite Pixelbuffer"
+        written <- true
+        let b = buffer.GetMappedRange()
+        let inputRowSize = es * size.X * channels
+        copy.Call(null, image, inputRowSize, b, bytesPerRow, size.Y, size.Z, inputRowSize) |> ignore
+        buffer.Unmap()
+
+    member x.Write(image : ArrayBuffer) =
+        match mode with
+        | Write ->
+            async {
+                let! b = buffer.Map(MapMode.Write, 0un, unativeint totalSize)
+                let inputRowSize = es * size.X * channels
+                copy.Call(null, image, inputRowSize, b, bytesPerRow, size.Y, size.Z, inputRowSize) |> ignore
+                buffer.Unmap()
+            }
+        | OneTimeWrite ->
+            async {
+                if written then failwith "[WebGPU] cannot write more than once to OneTimeWrite Pixelbuffer"
+                written <- true
+                let b = buffer.GetMappedRange()
+                let inputRowSize = es * size.X * channels
+                copy.Call(null, image, inputRowSize, b, bytesPerRow, size.Y, size.Z, inputRowSize) |> ignore
+                buffer.Unmap()
+            }
+        | Read ->   
+            failwith "[WebGPU] cannot write to Pixelbuffer created in Read-mode"
+
+    member x.Read(image : ArrayBuffer) =
+        match mode with
+        | Write | OneTimeWrite ->
+            failwith "[WebGPU] cannot read from (OneTime)Write Pixelbuffer"
+        | Read ->
+            async {
+                let! b = buffer.Map(MapMode.Read, 0un, unativeint totalSize)
+                let inputRowSize = es * size.X * channels
+                copy.Call(null, b, bytesPerRow, image, inputRowSize, size.Y, size.Z, inputRowSize) |> ignore
+                buffer.Unmap()
+            }
+
+    member x.Read() : Async<ArrayBuffer> =
+        async {
+            let dst = new ArrayBuffer(size.X * size.Y * size.Z * channels * es)
+            do! x.Read(dst)
+            return dst
+        }
+
+    member x.Write(img : ImageData) =
+        if size.X <> img.Width || size.Y <> img.Height || size.Z <> 1 || format <> Col.Format.RGBA then failwithf "bad image dimensions %A (%A)" (V2i(img.Width, img.Height)) size
+        let buffer =
+            let data = img.Data
+            let o = data.GetObjectProperty "byteOffset" |> convert<int>
+            if o = 0 then data.Buffer
+            else data.Buffer.Slice(o)
+
+        x.Write buffer
+        
+    member x.Read(img : ImageData) =
+        if size.X <> img.Width || size.Y <> img.Height || size.Z <> 1 || format <> Col.Format.RGBA then failwithf "bad image dimensions %A (%A)" (V2i(img.Width, img.Height)) size
+        let buffer =
+            let data = img.Data
+            let o = data.GetObjectProperty "byteOffset" |> convert<int>
+            if o = 0 then data.Buffer
+            else data.Buffer.Slice(o)
+
+        x.Read buffer
+        
+    member x.Dispose() =
+        buffer.Destroy()
+
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+
+
+[<AutoOpen>]
+module DevicePixelbufferExtensions =
+    type Device with
+        member x.CreatePixelbuffer(img : ImageData) =
+            let pbo = new Pixelbuffer<byte>(x, Col.Format.RGBA, V3i(img.Size, 1), OneTimeWrite)
+            pbo.UnsafeWriteSync img.Data.Buffer
+            pbo
+
+    type PixImage with
+        static member Load (url : string) =
+            async {
+                let! img = ImageData.Load(url)
+                let arr : byte[] = Array.zeroCreate img.Data.Length
+                img.Data.CopyTo(arr)
+                
+                return PixImage<byte>(Col.Format.RGBA, Volume<byte>(arr, VolumeInfo(0L, V3l(img.Width, img.Height, 4), V3l(4, img.Width*4, 1))))
+            }
+
+    [<AbstractClass; Sealed; Extension>]
+    type PixImageExtensions private() =
+        [<Extension>]
+        static member ToImageData(x : PixImage<byte>) =
+            let arr = Uint8ClampedArray.op_Implicit(Span<byte>(x.Volume.Data))
+            new ImageData(arr,  x.Size.X, x.Size.Y)
+
+
+
+
 [<AutoOpen>]
 module FragmentExtensions =
-    
-    type IAdaptiveRef =
-        inherit IAdaptiveObject
-        abstract member Ref : JsObj
-        abstract member Update : AdaptiveToken -> unit
-        
-    type IAdaptiveRef<'a> =
-        inherit IAdaptiveRef
-        abstract member Value : 'a
-
-    type aref<'a> = IAdaptiveRef<'a>
-
-    module ARef = 
-        type private ConstantRef<'a>(value : 'a) =
-            inherit ConstantObject()
-
-            interface aref<'a> with
-                member x.Value = value
-                member x.Ref = createObj [| "value", js value |]
-                member x.Update _ = ()
-
-        type private AdaptiveRef<'a, 'b>(value : aval<'a>, mapping : 'a -> 'b) =
-            inherit AdaptiveObject()
-
-            let mutable valid = false
-            let ref = createObj [| "value", null |]
-
-            interface aref<'b> with
-                member x.Value = 
-                    if valid then ref.["value"] |> convert<'b>
-                    else AVal.force value |> mapping
-
-                member x.Ref = ref
-                member x.Update token =
-                    x.EvaluateIfNeeded token () (fun t ->
-                        let v = value.GetValue t |> mapping
-                        ref.["value"] <- js v
-                        valid <- true
-                    )
-
-        let constant (value : 'a) =
-            ConstantRef value :> aref<_>
-            
-        let ofAVal (value : aval<'a>) =
-            AdaptiveRef(value, id) :> aref<_>
-
-        let mapVal (mapping : 'a -> 'b) (value : aval<'a>) =
-            AdaptiveRef(value, mapping) :> aref<_>
 
 
     type private RefCountingSet<'a>() =
@@ -1327,6 +1471,180 @@ module FragmentExtensions =
                 [|"desc", x.Add w :> obj|],
                 "scope.render = scope.cmd.beginRenderPass(desc.value);"
             )
+            
+        member x.EndRenderPass() =
+            f.Append(
+                [||],
+                "scope.render.endPass(); scope.render = null;"
+            )
+
+
+        member x.SetPipeline(pipeline : RenderPipeline) =
+            f.Append(
+                [|"pipe", pipeline.Handle :> obj|],
+                "scope.render.setPipeline(pipe);"
+            )
+
+        member x.SetPipeline(pipeline : aval<RenderPipeline>) =
+            let handle = pipeline |> ARef.mapVal (fun p -> p.Handle)
+            f.Append(
+                [|"pipe", x.Add handle :> obj|],
+                "scope.render.setPipeline(pipe.value);"
+            )
+
+        member x.Draw(faceVertexCount : int, instanceCount : int, first : int, firstInstance : int) =
+            f.Append(
+                [|"cnt", faceVertexCount :> obj; "icnt", instanceCount :> obj; "fst", first :> obj; "ifst", firstInstance :> obj|],
+                "scope.render.draw(cnt, icnt, fst, ifst);"
+            )
+
+
+        member x.Draw(call : DrawCallInfo, indexed : bool) =
+            if indexed then
+                f.Append(
+                    [|"cnt", call.FaceVertexCount :> obj; "icnt", call.InstanceCount :> obj; "fst", call.FirstIndex :> obj; "bv", call.BaseVertex :> obj; "ifst", call.FirstInstance :> obj|],
+                    "scope.render.drawIndexed(cnt, icnt, fst, bv, ifst);"
+                )
+                
+            else
+                f.Append(
+                    [|"cnt", call.FaceVertexCount :> obj; "icnt", call.InstanceCount :> obj; "fst", call.FirstIndex :> obj; "ifst", call.FirstInstance :> obj|],
+                    "scope.render.draw(cnt, icnt, fst, ifst);"
+                )
+
+        member x.Draw(call : DrawCallInfo) = x.Draw(call, false)
+        member x.DrawIndexed(call : DrawCallInfo) = x.Draw(call, true)
+
+        member x.Draw(calls : aval<list<DrawCallInfo>>) =
+            let calls = 
+                calls |> ARef.mapVal (fun calls -> 
+                    let all = 
+                        calls |> List.toArray |> Array.collect (fun c ->
+                            [|
+                                c.FaceVertexCount
+                                c.InstanceCount
+                                c.FirstIndex
+                                c.FirstInstance
+                            |]
+                        )
+                    
+                    Int32Array.op_Implicit(Span all)
+                )
+
+            f.Append(
+                [|"calls", x.Add calls :> obj|],
+                "const v = calls.value; for(i = 0; i < v.length; i+=4) { scope.render.draw(v[i], v[i+1], v[i+2], v[i+3]); }"  
+            )
+            
+        member x.DrawIndexed(calls : aval<list<DrawCallInfo>>) =
+            let calls = 
+                calls |> ARef.mapVal (fun calls -> 
+                    let all = 
+                        calls |> List.toArray |> Array.collect (fun c ->
+                            [|
+                                c.FaceVertexCount
+                                c.InstanceCount
+                                c.FirstIndex
+                                c.BaseVertex
+                                c.FirstInstance
+                            |]
+                        )
+                    
+                    Int32Array.op_Implicit(Span all)
+                )
+
+            f.Append(
+                [|"calls", x.Add calls :> obj|],
+                "const v = calls.value; for(i = 0; i < v.length; i+=5) { scope.render.drawIndexed(v[i], v[i+1], v[i+2], v[i+3], v[i+4]); }"  
+            )
+
+        member x.Draw(calls : aval<list<DrawCallInfo>>, indexed : bool) =
+            if indexed then x.DrawIndexed calls
+            else x.Draw calls
+
+
+
+        member x.CopyTextureToBuffer(src : ImageCopyTexture, dst : ImageCopyBuffer, size : V3i) =
+            let pSrc = src.Pin(device, id)
+            let pDst = dst.Pin(device, id)
+            let ex = createObj ["width", size.X :> obj; "height", size.Y :> obj; "depthOrArrayLayers", size.Z :> obj]
+            f.Append(
+                [|"src", pSrc :> obj; "dst", pDst :> obj; "size", ex :> obj|],
+                "scope.cmd.copyTextureToBuffer(src, dst, size);"
+            )
+        
+        member x.CopyBufferToTexture(src : Pixelbuffer<'a>, dst : SubTextureLevel) =
+            
+            let offset, size =
+                let o = dst.Offset
+                let s = dst.Size
+                if dst.TextureLevel.Layers > 1 then
+                    match dst.TextureLevel.Texture.Descriptor.Dimension with
+                    | TextureDimension.D1D -> 
+                        V3i(o.X, 0, dst.TextureLevel.BaseLayer), V3i(s.X, 1, dst.TextureLevel.Layers)
+                    | TextureDimension.D2D -> 
+                        V3i(o.XY, dst.TextureLevel.BaseLayer), V3i(s.XY, dst.TextureLevel.Layers)
+                    | TextureDimension.D3D -> 
+                        o, s
+                    | dim -> 
+                        failwithf "bad TextureDimension: %A" dim
+                else
+                    o, s
+                    
+            let dstImg = 
+                { 
+                    ImageCopyTexture.Texture = dst.TextureLevel.Texture
+                    MipLevel = dst.TextureLevel.Level
+                    Origin = { X = offset.X; Y = offset.Y; Z = offset.Z }
+                    Aspect = dst.TextureLevel.Aspect
+                }
+
+                
+            let pSrc = src.ImageCopyBuffer.Pin(device, id)
+            let pDst = dstImg.Pin(device, id)
+            let ex = createObj ["width", size.X :> obj; "height", size.Y :> obj; "depthOrArrayLayers", size.Z :> obj]
+            f.Append(
+                [|"src", pSrc :> obj; "dst", pDst :> obj; "size", ex :> obj|],
+                "scope.cmd.copyBufferToTexture(src, dst, size);"
+            )
+            
+
+        member x.CopyTextureToBuffer(src : SubTextureLevel, dst : Pixelbuffer<'a>) =
+
+            let offset, size =
+                let o = src.Offset
+                let s = src.Size
+                if src.TextureLevel.Layers > 1 then
+                    match src.TextureLevel.Texture.Descriptor.Dimension with
+                    | TextureDimension.D1D -> 
+                        V3i(o.X, 0, src.TextureLevel.BaseLayer), V3i(s.X, 1, src.TextureLevel.Layers)
+                    | TextureDimension.D2D -> 
+                        V3i(o.XY, src.TextureLevel.BaseLayer), V3i(s.XY, src.TextureLevel.Layers)
+                    | TextureDimension.D3D -> 
+                        o, s
+                    | dim -> 
+                        failwithf "bad TextureDimension: %A" dim
+                else
+                    o, s
+
+            let srcImg = 
+                { 
+                    ImageCopyTexture.Texture = src.TextureLevel.Texture
+                    MipLevel = src.TextureLevel.Level
+                    Origin = { X = offset.X; Y = offset.Y; Z = offset.Z }
+                    Aspect = src.TextureLevel.Aspect
+                }
+
+            let pSrc = srcImg.Pin(device, id)
+            let pDst = dst.ImageCopyBuffer.Pin(device, id)
+            let ex = createObj ["width", size.X :> obj; "height", size.Y :> obj; "depthOrArrayLayers", size.Z :> obj]
+            f.Append(
+                [|"src", pSrc :> obj; "dst", pDst :> obj; "size", ex :> obj|],
+                "scope.cmd.copyTextureToBuffer(src, dst, size);"
+            )
+            
+        //member x.Clear(texture : Texture
+
 
         member x.Log(value : aval<'a>) =
             let w = value |> ARef.mapVal (fun p -> js p)
@@ -1335,14 +1653,11 @@ module FragmentExtensions =
                 "console.log(desc.value);"
             )
 
-        member x.EndRenderPass() =
-            f.Append(
-                [||],
-                "scope.render.endPass(); scope.render = null;"
-            )
 
         interface System.IDisposable with
             member x.Dispose() = x.Dispose()
+
+
 
 [<EntryPoint>]
 let main _argv =
@@ -1414,59 +1729,110 @@ let main _argv =
 
     //) |> ignore
 
+
     let task = 
         async { 
             try
                 let! gpu = Navigator.GPU.RequestAdapter()
                 let! dev = gpu.RequestDevice()
                 
+
+
                 let value = cval 10
 
                 let prog = CommandStream(dev)
                 let f = prog.InsertAfter(null)
                 f.Log(value)
 
+                let! img = ImageData.Load "image.webp"
+
+
+                let size = img.Size
+
+                let queue = dev.GetQueue()
+                let man = ResourceManager(dev)
+                let res = man.CreateBuffer (AVal.constant (Aardvark.Rendering.ArrayBuffer([|V3f.Zero; V3f.IOO; V3f.OIO|]) :> IBuffer))
+                let h = res.Acquire()
+
+                let buffer = 
+                    using queue.ResourceToken (fun _ ->
+                        AVal.force h
+                    )
+
+                Console.Log(buffer.Handle)
+                let t0 = Performance.Now
+                do! queue.WaitIdle()
+                let dt = Performance.Now - t0
+                Log.line "%A" (MicroTime.FromMilliseconds dt)
+
+                let effect =
+                    FShade.Effect.compose [
+                        FShade.Effect.ofFunction DefaultSurfaces.trafo
+                        FShade.Effect.ofFunction DefaultSurfaces.vertexColor
+                    ]
+
+                let s =
+                    { new IFramebufferSignature with
+                        member x.ColorAttachments = Map.ofList [0, (DefaultSemantic.Colors, { format = RenderbufferFormat.Rgba8; samples = 1 })]
+                        member x.DepthAttachment = None
+                        member x.LayerCount = 1
+                        member x.PerLayerUniforms = Set.empty
+                        member x.Runtime = Unchecked.defaultof<_>
+                        member x.StencilAttachment = None
+                    }
+
+                let! test =
+                    man.CreateShaderProgram(effect, s)
+
                 let tex = 
                     dev.CreateTexture { 
                         Label = null
-                        Usage = TextureUsage.RenderAttachment ||| TextureUsage.CopySrc
+                        Usage = TextureUsage.RenderAttachment ||| TextureUsage.CopySrc ||| TextureUsage.CopyDst
                         Dimension = TextureDimension.D2D
-                        Size = { Width = 1024; Height = 768; DepthOrArrayLayers = 1 }
+                        Size = { Width = size.X; Height = size.Y; DepthOrArrayLayers = 1 }
                         Format = TextureFormat.RGBA8Unorm
                         MipLevelCount = 1
                         SampleCount = 1
                     }
 
-                let view = 
-                    tex.CreateView {
-                        Label = null
-                        Format = TextureFormat.RGBA8Unorm
-                        Dimension = TextureViewDimension.D2D
-                        BaseMipLevel = 0
-                        MipLevelCount = 1
-                        BaseArrayLayer = 0
-                        ArrayLayerCount = 1
-                        Aspect = TextureAspect.All
-                    }
+
+                let view = tex.[TextureAspect.All].CreateView()
+
+                //let view = 
+                //    tex.CreateView {
+                //        Label = null
+                //        Format = TextureFormat.RGBA8Unorm
+                //        Dimension = TextureViewDimension.D2D
+                //        BaseMipLevel = 0
+                //        MipLevelCount = 1
+                //        BaseArrayLayer = 0
+                //        ArrayLayerCount = 1
+                //        Aspect = TextureAspect.All
+                //    }
 
                 let g = prog.Append()
-                g.BeginRenderPass {
-                    RenderPassDescriptor.Label = null
-                    ColorAttachments = 
-                        [|
-                            { 
-                                View = view
-                                ResolveTarget = null
-                                LoadOp = LoadOp.Color { R = 1.0; G = 0.0; B = 1.0; A = 1.0}
-                                StoreOp = StoreOp.Store
-                                ClearColor =  { R = 1.0; G = 0.0; B = 1.0; A = 1.0}
-                            }
-                        |]
-                    DepthStencilAttachment = None
-                    OcclusionQuerySet = null
-                }
+                //g.BeginRenderPass {
+                //    RenderPassDescriptor.Label = null
+                //    ColorAttachments = 
+                //        [|
+                //            { 
+                //                View = view
+                //                ResolveTarget = null
+                //                LoadOp = LoadOp.Color { R = 1.0; G = 0.0; B = 0.0; A = 1.0}
+                //                StoreOp = StoreOp.Store
+                //            }
+                //        |]
+                //    DepthStencilAttachment = None
+                //    OcclusionQuerySet = null
+                //}
 
-                g.EndRenderPass()
+
+                let writePbo = dev.CreatePixelbuffer img
+                let pbo = new Pixelbuffer<byte>(dev, Col.Format.RGBA, V3i(size, 1), Read)
+
+
+                g.CopyBufferToTexture(writePbo, tex.[TextureAspect.All, 0, 0])
+                g.CopyTextureToBuffer(tex.[TextureAspect.All, 0, 0], pbo)
 
                 let enc = dev.CreateCommandEncoder()
 
@@ -1477,6 +1843,14 @@ let main _argv =
                 prog.Run(AdaptiveToken.Top, enc)
                 Console.End()
 
+                let queue = dev.GetQueue()
+                let cb = enc.Finish()
+                queue.Submit [|cb|]
+                
+
+
+                let! res = pbo.Read()
+                Console.Log(new Uint8Array(res))
                 transact (fun () ->
                     value.Value <- 200
                 )
@@ -1484,6 +1858,18 @@ let main _argv =
                 Console.Begin "run 2"
                 prog.Run(AdaptiveToken.Top, enc)
                 Console.End()
+
+                
+                let! pimg = PixImage.Load "image.webp"
+                pimg.GetMatrix<C4b>().SetCircle(pimg.Size / 2, 20, C4b.Red) |> ignore
+
+                //let res = ImageData(new Uint8ClampedArray(res), size.X, size.Y)
+                let c = Document.CreateCanvasElement()
+                c.Width <- size.X
+                c.Height <- size.Y
+                let ctx = c.GetContext("2d") 
+                ctx.Call("putImageData", pimg.ToImageData(), 0, 0) |> ignore
+                Document.Body.AppendChild c
 
 
             with e ->

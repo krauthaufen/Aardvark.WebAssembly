@@ -265,10 +265,10 @@
         "members": [
             {"name": "binding", "type": "uint32_t"},
             {"name": "visibility", "type": "shader stage"},
-            {"name": "buffer", "type": "buffer binding layout"},
-            {"name": "sampler", "type": "sampler binding layout"},
-            {"name": "texture", "type": "texture binding layout"},
-            {"name": "storage texture", "type": "storage texture binding layout"}
+            {"name": "buffer", "type": "buffer binding layout", "annotation": "const*", "optional":  true },
+            {"name": "sampler", "type": "sampler binding layout", "annotation": "const*", "optional":  true },
+            {"name": "texture", "type": "texture binding layout", "annotation": "const*", "optional":  true },
+            {"name": "storage texture", "type": "storage texture binding layout", "annotation": "const*", "optional":  true }
         ]
     },
     "bind group layout descriptor": {
@@ -1197,7 +1197,9 @@
         "category": "structure",
         "extensible": "in",
         "members": [
-            {"name": "layout", "type": "texture data layout"},
+            {"name": "offset", "type": "uint64_t", "default": 0},
+            {"name": "bytes per row", "type": "uint32_t", "default": "WGPU_COPY_STRIDE_UNDEFINED"},
+            {"name": "rows per image", "type": "uint32_t", "default": "WGPU_COPY_STRIDE_UNDEFINED"},
             {"name": "buffer", "type": "buffer"}
         ]
     },
@@ -1585,8 +1587,7 @@
             {"name": "view", "type": "texture view"},
             {"name": "resolve target", "type": "texture view", "optional": true},
             {"name": "load op", "type": "load op"},
-            {"name": "store op", "type": "store op"},
-            {"name": "clear color", "type": "color"}
+            {"name": "store op", "type": "store op"}
         ]
     },
 

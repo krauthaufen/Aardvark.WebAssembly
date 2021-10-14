@@ -4875,10 +4875,10 @@ type JSConsole(r : JSObject) =
         r.Invoke("groupEnd") |> ignore
 
     member x.Log([<ParamArray>] values : obj[]) =
-        r.Invoke("log", values) |> ignore
+        r.Invoke("log", values |> Array.map js) |> ignore
     
     member x.Warn([<ParamArray>] values : obj[]) =
-        r.Invoke("warn", values) |> ignore
+        r.Invoke("warn", values |> Array.map js) |> ignore
         
     new(o : JsObj) = JSConsole(o.Reference)
     

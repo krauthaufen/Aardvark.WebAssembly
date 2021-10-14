@@ -6,4 +6,5 @@ DevILSharp
 System.Memory
 System.Collections.Immutable
 Aardvark.Base
+Aardvark.Rendering
 FShade

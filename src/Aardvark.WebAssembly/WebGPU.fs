@@ -11,37 +11,16 @@ open Aardvark.WebAssembly
 type AdapterHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
-type BindGroupHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
 type BindGroupLayoutHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
-type CommandBufferHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
-type ExternalTextureHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
-type PipelineLayoutHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
-type QuerySetHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
-type RenderBundleHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
-type SamplerHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
 type TextureViewHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
-type ComputePipelineHandle(r : JSObject) = 
+type CommandBufferHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
-type RenderPipelineHandle(r : JSObject) = 
+type RenderBundleHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
 type SurfaceHandle(r : JSObject) = 
@@ -53,13 +32,40 @@ type SwapChainHandle(r : JSObject) =
 type BufferHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
+type ExternalTextureHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type PipelineLayoutHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type QuerySetHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type SamplerHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
 type TextureHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
-type ComputePassEncoderHandle(r : JSObject) = 
+type InstanceHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
-type InstanceHandle(r : JSObject) = 
+type QueueHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type ShaderModuleHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type BindGroupHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type ComputePipelineHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type RenderPipelineHandle(r : JSObject) = 
+    inherit JsObj(r)
+[<AllowNullLiteral>]
+type ComputePassEncoderHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
 type RenderBundleEncoderHandle(r : JSObject) = 
@@ -71,33 +77,27 @@ type RenderPassEncoderHandle(r : JSObject) =
 type CommandEncoderHandle(r : JSObject) = 
     inherit JsObj(r)
 [<AllowNullLiteral>]
-type QueueHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
-type ShaderModuleHandle(r : JSObject) = 
-    inherit JsObj(r)
-[<AllowNullLiteral>]
 type DeviceHandle(r : JSObject) = 
     inherit JsObj(r)
-type WGPUBufferMapCallback = delegate of obj * int -> unit
-type WGPUDeviceLostCallback = delegate of obj * string * int -> unit
-type WGPUErrorCallback = delegate of obj * string * int -> unit
-type WGPULoggingCallback = delegate of obj * string * int -> unit
-type WGPUQueueWorkDoneCallback = delegate of obj * int -> unit
-type WGPURequestAdapterCallback = delegate of obj * AdapterHandle * string * int -> unit
-type WGPUCreateComputePipelineAsyncCallback = delegate of obj * ComputePipelineHandle * string * int -> unit
-type WGPUCreateRenderPipelineAsyncCallback = delegate of obj * RenderPipelineHandle * string * int -> unit
-type WGPUCompilationInfoCallback = delegate of obj * DawnRaw.WGPUCompilationInfo * int -> unit
-type WGPURequestDeviceCallback = delegate of obj * DeviceHandle * string * int -> unit
+type WGPUBufferMapCallback = delegate of obj * float -> unit
+type WGPUDeviceLostCallback = delegate of obj * string * float -> unit
+type WGPUErrorCallback = delegate of obj * string * float -> unit
+type WGPULoggingCallback = delegate of obj * string * float -> unit
+type WGPUQueueWorkDoneCallback = delegate of obj * float -> unit
+type WGPURequestAdapterCallback = delegate of obj * AdapterHandle * string * float -> unit
+type WGPUCompilationInfoCallback = delegate of obj * DawnRaw.WGPUCompilationInfo * float -> unit
+type WGPUCreateComputePipelineAsyncCallback = delegate of obj * ComputePipelineHandle * string * float -> unit
+type WGPUCreateRenderPipelineAsyncCallback = delegate of obj * RenderPipelineHandle * string * float -> unit
+type WGPURequestDeviceCallback = delegate of obj * DeviceHandle * string * float -> unit
 type BufferMapCallback = delegate of BufferMapAsyncStatus * nativeint -> unit
 type DeviceLostCallback = delegate of DeviceLostReason * string * nativeint -> unit
 type ErrorCallback = delegate of ErrorType * string * nativeint -> unit
 type LoggingCallback = delegate of LoggingType * string * nativeint -> unit
 type QueueWorkDoneCallback = delegate of QueueWorkDoneStatus * nativeint -> unit
 type RequestAdapterCallback = delegate of RequestAdapterStatus * Adapter * string * nativeint -> unit
+type CompilationInfoCallback = delegate of CompilationInfoRequestStatus * option<CompilationInfo> * nativeint -> unit
 type CreateComputePipelineAsyncCallback = delegate of CreatePipelineAsyncStatus * ComputePipeline * string * nativeint -> unit
 type CreateRenderPipelineAsyncCallback = delegate of CreatePipelineAsyncStatus * RenderPipeline * string * nativeint -> unit
-type CompilationInfoCallback = delegate of CompilationInfoRequestStatus * option<CompilationInfo> * nativeint -> unit
 type RequestDeviceCallback = delegate of RequestDeviceStatus * Device * string * nativeint -> unit
 
 
@@ -1529,14 +1529,14 @@ module DawnRaw =
         inherit JsObj(h)
         new() = WGPUExtent3D(new JSObject())
         member x.Width
-            with get() : int = h.GetObjectProperty("width") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("width", js v)
+            with get() : uint32 = h.GetObjectProperty("width") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("width", js v)
         member x.Height
-            with get() : int = h.GetObjectProperty("height") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("height", js v)
+            with get() : uint32 = h.GetObjectProperty("height") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("height", js v)
         member x.DepthOrArrayLayers
-            with get() : int = h.GetObjectProperty("depthOrArrayLayers") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("depthOrArrayLayers", js v)
+            with get() : uint32 = h.GetObjectProperty("depthOrArrayLayers") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("depthOrArrayLayers", js v)
     [<AllowNullLiteral>]
     type WGPUExternalTextureBindingLayout(h : JSObject) =
         inherit JsObj(h)
@@ -1550,93 +1550,93 @@ module DawnRaw =
         inherit JsObj(h)
         new() = WGPULimits(new JSObject())
         member x.MaxTextureDimension1D
-            with get() : int = h.GetObjectProperty("maxTextureDimension1D") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxTextureDimension1D", js v)
+            with get() : uint32 = h.GetObjectProperty("maxTextureDimension1D") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxTextureDimension1D", js v)
         member x.MaxTextureDimension2D
-            with get() : int = h.GetObjectProperty("maxTextureDimension2D") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxTextureDimension2D", js v)
+            with get() : uint32 = h.GetObjectProperty("maxTextureDimension2D") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxTextureDimension2D", js v)
         member x.MaxTextureDimension3D
-            with get() : int = h.GetObjectProperty("maxTextureDimension3D") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxTextureDimension3D", js v)
+            with get() : uint32 = h.GetObjectProperty("maxTextureDimension3D") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxTextureDimension3D", js v)
         member x.MaxTextureArrayLayers
-            with get() : int = h.GetObjectProperty("maxTextureArrayLayers") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxTextureArrayLayers", js v)
+            with get() : uint32 = h.GetObjectProperty("maxTextureArrayLayers") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxTextureArrayLayers", js v)
         member x.MaxBindGroups
-            with get() : int = h.GetObjectProperty("maxBindGroups") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxBindGroups", js v)
+            with get() : uint32 = h.GetObjectProperty("maxBindGroups") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxBindGroups", js v)
         member x.MaxDynamicUniformBuffersPerPipelineLayout
-            with get() : int = h.GetObjectProperty("maxDynamicUniformBuffersPerPipelineLayout") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxDynamicUniformBuffersPerPipelineLayout", js v)
+            with get() : uint32 = h.GetObjectProperty("maxDynamicUniformBuffersPerPipelineLayout") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxDynamicUniformBuffersPerPipelineLayout", js v)
         member x.MaxDynamicStorageBuffersPerPipelineLayout
-            with get() : int = h.GetObjectProperty("maxDynamicStorageBuffersPerPipelineLayout") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxDynamicStorageBuffersPerPipelineLayout", js v)
+            with get() : uint32 = h.GetObjectProperty("maxDynamicStorageBuffersPerPipelineLayout") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxDynamicStorageBuffersPerPipelineLayout", js v)
         member x.MaxSampledTexturesPerShaderStage
-            with get() : int = h.GetObjectProperty("maxSampledTexturesPerShaderStage") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxSampledTexturesPerShaderStage", js v)
+            with get() : uint32 = h.GetObjectProperty("maxSampledTexturesPerShaderStage") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxSampledTexturesPerShaderStage", js v)
         member x.MaxSamplersPerShaderStage
-            with get() : int = h.GetObjectProperty("maxSamplersPerShaderStage") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxSamplersPerShaderStage", js v)
+            with get() : uint32 = h.GetObjectProperty("maxSamplersPerShaderStage") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxSamplersPerShaderStage", js v)
         member x.MaxStorageBuffersPerShaderStage
-            with get() : int = h.GetObjectProperty("maxStorageBuffersPerShaderStage") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxStorageBuffersPerShaderStage", js v)
+            with get() : uint32 = h.GetObjectProperty("maxStorageBuffersPerShaderStage") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxStorageBuffersPerShaderStage", js v)
         member x.MaxStorageTexturesPerShaderStage
-            with get() : int = h.GetObjectProperty("maxStorageTexturesPerShaderStage") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxStorageTexturesPerShaderStage", js v)
+            with get() : uint32 = h.GetObjectProperty("maxStorageTexturesPerShaderStage") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxStorageTexturesPerShaderStage", js v)
         member x.MaxUniformBuffersPerShaderStage
-            with get() : int = h.GetObjectProperty("maxUniformBuffersPerShaderStage") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxUniformBuffersPerShaderStage", js v)
+            with get() : uint32 = h.GetObjectProperty("maxUniformBuffersPerShaderStage") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxUniformBuffersPerShaderStage", js v)
         member x.MaxUniformBufferBindingSize
-            with get() : int = h.GetObjectProperty("maxUniformBufferBindingSize") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxUniformBufferBindingSize", js v)
+            with get() : float = h.GetObjectProperty("maxUniformBufferBindingSize") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("maxUniformBufferBindingSize", js v)
         member x.MaxStorageBufferBindingSize
-            with get() : int = h.GetObjectProperty("maxStorageBufferBindingSize") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxStorageBufferBindingSize", js v)
+            with get() : float = h.GetObjectProperty("maxStorageBufferBindingSize") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("maxStorageBufferBindingSize", js v)
         member x.MinUniformBufferOffsetAlignment
-            with get() : int = h.GetObjectProperty("minUniformBufferOffsetAlignment") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("minUniformBufferOffsetAlignment", js v)
+            with get() : uint32 = h.GetObjectProperty("minUniformBufferOffsetAlignment") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("minUniformBufferOffsetAlignment", js v)
         member x.MinStorageBufferOffsetAlignment
-            with get() : int = h.GetObjectProperty("minStorageBufferOffsetAlignment") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("minStorageBufferOffsetAlignment", js v)
+            with get() : uint32 = h.GetObjectProperty("minStorageBufferOffsetAlignment") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("minStorageBufferOffsetAlignment", js v)
         member x.MaxVertexBuffers
-            with get() : int = h.GetObjectProperty("maxVertexBuffers") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxVertexBuffers", js v)
+            with get() : uint32 = h.GetObjectProperty("maxVertexBuffers") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxVertexBuffers", js v)
         member x.MaxVertexAttributes
-            with get() : int = h.GetObjectProperty("maxVertexAttributes") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxVertexAttributes", js v)
+            with get() : uint32 = h.GetObjectProperty("maxVertexAttributes") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxVertexAttributes", js v)
         member x.MaxVertexBufferArrayStride
-            with get() : int = h.GetObjectProperty("maxVertexBufferArrayStride") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxVertexBufferArrayStride", js v)
+            with get() : uint32 = h.GetObjectProperty("maxVertexBufferArrayStride") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxVertexBufferArrayStride", js v)
         member x.MaxInterStageShaderComponents
-            with get() : int = h.GetObjectProperty("maxInterStageShaderComponents") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxInterStageShaderComponents", js v)
+            with get() : uint32 = h.GetObjectProperty("maxInterStageShaderComponents") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxInterStageShaderComponents", js v)
         member x.MaxComputeWorkgroupStorageSize
-            with get() : int = h.GetObjectProperty("maxComputeWorkgroupStorageSize") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxComputeWorkgroupStorageSize", js v)
+            with get() : uint32 = h.GetObjectProperty("maxComputeWorkgroupStorageSize") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxComputeWorkgroupStorageSize", js v)
         member x.MaxComputeInvocationsPerWorkgroup
-            with get() : int = h.GetObjectProperty("maxComputeInvocationsPerWorkgroup") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxComputeInvocationsPerWorkgroup", js v)
+            with get() : uint32 = h.GetObjectProperty("maxComputeInvocationsPerWorkgroup") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxComputeInvocationsPerWorkgroup", js v)
         member x.MaxComputeWorkgroupSizeX
-            with get() : int = h.GetObjectProperty("maxComputeWorkgroupSizeX") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxComputeWorkgroupSizeX", js v)
+            with get() : uint32 = h.GetObjectProperty("maxComputeWorkgroupSizeX") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxComputeWorkgroupSizeX", js v)
         member x.MaxComputeWorkgroupSizeY
-            with get() : int = h.GetObjectProperty("maxComputeWorkgroupSizeY") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxComputeWorkgroupSizeY", js v)
+            with get() : uint32 = h.GetObjectProperty("maxComputeWorkgroupSizeY") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxComputeWorkgroupSizeY", js v)
         member x.MaxComputeWorkgroupSizeZ
-            with get() : int = h.GetObjectProperty("maxComputeWorkgroupSizeZ") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxComputeWorkgroupSizeZ", js v)
+            with get() : uint32 = h.GetObjectProperty("maxComputeWorkgroupSizeZ") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxComputeWorkgroupSizeZ", js v)
         member x.MaxComputeWorkgroupsPerDimension
-            with get() : int = h.GetObjectProperty("maxComputeWorkgroupsPerDimension") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxComputeWorkgroupsPerDimension", js v)
+            with get() : uint32 = h.GetObjectProperty("maxComputeWorkgroupsPerDimension") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("maxComputeWorkgroupsPerDimension", js v)
     [<AllowNullLiteral>]
     type WGPUMultisampleState(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUMultisampleState(new JSObject())
         member x.Count
-            with get() : int = h.GetObjectProperty("count") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("count", js v)
+            with get() : uint32 = h.GetObjectProperty("count") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("count", js v)
         member x.Mask
-            with get() : int = h.GetObjectProperty("mask") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("mask", js v)
+            with get() : uint32 = h.GetObjectProperty("mask") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("mask", js v)
         member x.AlphaToCoverageEnabled
             with get() : bool = h.GetObjectProperty("alphaToCoverageEnabled") |> convert<bool>
             and set (v : bool) = h.SetObjectProperty("alphaToCoverageEnabled", js v)
@@ -1645,14 +1645,14 @@ module DawnRaw =
         inherit JsObj(h)
         new() = WGPUOrigin3D(new JSObject())
         member x.X
-            with get() : int = h.GetObjectProperty("x") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("x", js v)
+            with get() : uint32 = h.GetObjectProperty("x") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("x", js v)
         member x.Y
-            with get() : int = h.GetObjectProperty("y") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("y", js v)
+            with get() : uint32 = h.GetObjectProperty("y") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("y", js v)
         member x.Z
-            with get() : int = h.GetObjectProperty("z") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("z", js v)
+            with get() : uint32 = h.GetObjectProperty("z") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("z", js v)
     [<AllowNullLiteral>]
     type WGPUPrimitiveDepthClampingState(h : JSObject) =
         inherit JsObj(h)
@@ -1707,65 +1707,65 @@ module DawnRaw =
         inherit JsObj(h)
         new() = WGPUSurfaceDescriptorFromMetalLayer(new JSObject())
         member x.Layer
-            with get() : int = h.GetObjectProperty("layer") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("layer", js v)
+            with get() : float = h.GetObjectProperty("layer") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("layer", js v)
     [<AllowNullLiteral>]
     type WGPUSurfaceDescriptorFromWindowsHWND(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUSurfaceDescriptorFromWindowsHWND(new JSObject())
         member x.Hinstance
-            with get() : int = h.GetObjectProperty("hinstance") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("hinstance", js v)
+            with get() : float = h.GetObjectProperty("hinstance") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("hinstance", js v)
         member x.Hwnd
-            with get() : int = h.GetObjectProperty("hwnd") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("hwnd", js v)
+            with get() : float = h.GetObjectProperty("hwnd") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("hwnd", js v)
     [<AllowNullLiteral>]
     type WGPUSurfaceDescriptorFromWindowsCoreWindow(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUSurfaceDescriptorFromWindowsCoreWindow(new JSObject())
         member x.CoreWindow
-            with get() : int = h.GetObjectProperty("coreWindow") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("coreWindow", js v)
+            with get() : float = h.GetObjectProperty("coreWindow") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("coreWindow", js v)
     [<AllowNullLiteral>]
     type WGPUSurfaceDescriptorFromWindowsSwapChainPanel(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUSurfaceDescriptorFromWindowsSwapChainPanel(new JSObject())
         member x.SwapChainPanel
-            with get() : int = h.GetObjectProperty("swapChainPanel") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("swapChainPanel", js v)
+            with get() : float = h.GetObjectProperty("swapChainPanel") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("swapChainPanel", js v)
     [<AllowNullLiteral>]
     type WGPUSurfaceDescriptorFromXlib(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUSurfaceDescriptorFromXlib(new JSObject())
         member x.Display
-            with get() : int = h.GetObjectProperty("display") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("display", js v)
+            with get() : float = h.GetObjectProperty("display") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("display", js v)
         member x.Window
-            with get() : int = h.GetObjectProperty("window") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("window", js v)
+            with get() : uint32 = h.GetObjectProperty("window") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("window", js v)
     [<AllowNullLiteral>]
     type WGPUTextureDataLayout(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUTextureDataLayout(new JSObject())
         member x.Offset
-            with get() : int = h.GetObjectProperty("offset") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("offset", js v)
+            with get() : float = h.GetObjectProperty("offset") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("offset", js v)
         member x.BytesPerRow
-            with get() : int = h.GetObjectProperty("bytesPerRow") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("bytesPerRow", js v)
+            with get() : uint32 = h.GetObjectProperty("bytesPerRow") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("bytesPerRow", js v)
         member x.RowsPerImage
-            with get() : int = h.GetObjectProperty("rowsPerImage") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("rowsPerImage", js v)
+            with get() : uint32 = h.GetObjectProperty("rowsPerImage") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("rowsPerImage", js v)
     [<AllowNullLiteral>]
     type WGPUAdapterProperties(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUAdapterProperties(new JSObject())
         member x.VendorID
-            with get() : int = h.GetObjectProperty("vendorID") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("vendorID", js v)
+            with get() : uint32 = h.GetObjectProperty("vendorID") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("vendorID", js v)
         member x.DeviceID
-            with get() : int = h.GetObjectProperty("deviceID") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("deviceID", js v)
+            with get() : uint32 = h.GetObjectProperty("deviceID") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("deviceID", js v)
         member x.Name
             with get() : string = h.GetObjectProperty("name") |> convert<string>
             and set (v : string) = h.SetObjectProperty("name", js v)
@@ -1802,8 +1802,8 @@ module DawnRaw =
             with get() : bool = h.GetObjectProperty("hasDynamicOffset") |> convert<bool>
             and set (v : bool) = h.SetObjectProperty("hasDynamicOffset", js v)
         member x.MinBindingSize
-            with get() : int = h.GetObjectProperty("minBindingSize") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("minBindingSize", js v)
+            with get() : float = h.GetObjectProperty("minBindingSize") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("minBindingSize", js v)
     [<AllowNullLiteral>]
     type WGPUBufferDescriptor(h : JSObject) =
         inherit JsObj(h)
@@ -1815,8 +1815,8 @@ module DawnRaw =
             with get() : int = h.GetObjectProperty("usage") |> convert<int>
             and set (v : int) = h.SetObjectProperty("usage", v)
         member x.Size
-            with get() : int = h.GetObjectProperty("size") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("size", js v)
+            with get() : float = h.GetObjectProperty("size") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("size", js v)
         member x.MappedAtCreation
             with get() : bool = h.GetObjectProperty("mappedAtCreation") |> convert<bool>
             and set (v : bool) = h.SetObjectProperty("mappedAtCreation", js v)
@@ -1831,17 +1831,17 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("type") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("type", v)
         member x.LineNum
-            with get() : int = h.GetObjectProperty("lineNum") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("lineNum", js v)
+            with get() : float = h.GetObjectProperty("lineNum") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("lineNum", js v)
         member x.LinePos
-            with get() : int = h.GetObjectProperty("linePos") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("linePos", js v)
+            with get() : float = h.GetObjectProperty("linePos") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("linePos", js v)
         member x.Offset
-            with get() : int = h.GetObjectProperty("offset") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("offset", js v)
+            with get() : float = h.GetObjectProperty("offset") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("offset", js v)
         member x.Length
-            with get() : int = h.GetObjectProperty("length") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("length", js v)
+            with get() : float = h.GetObjectProperty("length") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("length", js v)
     [<AllowNullLiteral>]
     type WGPUCopyTextureForBrowserOptions(h : JSObject) =
         inherit JsObj(h)
@@ -1859,13 +1859,6 @@ module DawnRaw =
         member x.InternalUsage
             with get() : int = h.GetObjectProperty("internalUsage") |> convert<int>
             and set (v : int) = h.SetObjectProperty("internalUsage", v)
-    [<AllowNullLiteral>]
-    type WGPUExternalTextureBindingEntry(h : JSObject) =
-        inherit JsObj(h)
-        new() = WGPUExternalTextureBindingEntry(new JSObject())
-        member x.ExternalTexture
-            with get() : ExternalTextureHandle = h.GetObjectProperty("externalTexture") |> convert<ExternalTextureHandle>
-            and set (v : ExternalTextureHandle) = if not (isNull v) then h.SetObjectProperty("externalTexture", js v)
     [<AllowNullLiteral>]
     type WGPUExternalTextureDescriptor(h : JSObject) =
         inherit JsObj(h)
@@ -1916,14 +1909,14 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("type") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("type", v)
         member x.Count
-            with get() : int = h.GetObjectProperty("count") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("count", js v)
+            with get() : uint32 = h.GetObjectProperty("count") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("count", js v)
         member x.PipelineStatistics
             with get() : obj = h.GetObjectProperty("pipelineStatistics") |> convert<obj>
             and set (v : obj) = if not (isNull v) then h.SetObjectProperty("pipelineStatistics", js v)
         member x.PipelineStatisticsCount
-            with get() : int = h.GetObjectProperty("pipelineStatisticsCount") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("pipelineStatisticsCount", js v)
+            with get() : uint32 = h.GetObjectProperty("pipelineStatisticsCount") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("pipelineStatisticsCount", js v)
     [<AllowNullLiteral>]
     type WGPURenderBundleEncoderDescriptor(h : JSObject) =
         inherit JsObj(h)
@@ -1938,8 +1931,8 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("depthStencilFormat") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("depthStencilFormat", v)
         member x.SampleCount
-            with get() : int = h.GetObjectProperty("sampleCount") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("sampleCount", js v)
+            with get() : uint32 = h.GetObjectProperty("sampleCount") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("sampleCount", js v)
     [<AllowNullLiteral>]
     type WGPURenderPassColorAttachment(h : JSObject) =
         inherit JsObj(h)
@@ -1956,9 +1949,6 @@ module DawnRaw =
         member x.StoreOp
             with get() : obj = h.GetObjectProperty("storeOp") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("storeOp", v)
-        member x.ClearColor
-            with get() : DawnRaw.WGPUColor = h.GetObjectProperty("clearColor") |> convert<DawnRaw.WGPUColor>
-            and set (v : DawnRaw.WGPUColor) = if not (isNull v) then h.SetObjectProperty("clearColor", js v)
     [<AllowNullLiteral>]
     type WGPURenderPassDepthStencilAttachment(h : JSObject) =
         inherit JsObj(h)
@@ -1985,8 +1975,8 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("stencilStoreOp") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("stencilStoreOp", v)
         member x.ClearStencil
-            with get() : int = h.GetObjectProperty("clearStencil") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("clearStencil", js v)
+            with get() : uint32 = h.GetObjectProperty("clearStencil") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("clearStencil", js v)
         member x.StencilReadOnly
             with get() : bool = h.GetObjectProperty("stencilReadOnly") |> convert<bool>
             and set (v : bool) = h.SetObjectProperty("stencilReadOnly", js v)
@@ -2039,8 +2029,8 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("compare") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("compare", v)
         member x.MaxAnisotropy
-            with get() : int = h.GetObjectProperty("maxAnisotropy") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("maxAnisotropy", js v)
+            with get() : uint16 = h.GetObjectProperty("maxAnisotropy") |> convert<uint16>
+            and set (v : uint16) = h.SetObjectProperty("maxAnisotropy", js v)
     [<AllowNullLiteral>]
     type WGPUStencilFaceState(h : JSObject) =
         inherit JsObj(h)
@@ -2091,17 +2081,17 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("format") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("format", v)
         member x.Width
-            with get() : int = h.GetObjectProperty("width") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("width", js v)
+            with get() : uint32 = h.GetObjectProperty("width") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("width", js v)
         member x.Height
-            with get() : int = h.GetObjectProperty("height") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("height", js v)
+            with get() : uint32 = h.GetObjectProperty("height") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("height", js v)
         member x.PresentMode
             with get() : obj = h.GetObjectProperty("presentMode") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("presentMode", v)
         member x.Implementation
-            with get() : int = h.GetObjectProperty("implementation") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("implementation", js v)
+            with get() : float = h.GetObjectProperty("implementation") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("implementation", js v)
     [<AllowNullLiteral>]
     type WGPUTextureBindingLayout(h : JSObject) =
         inherit JsObj(h)
@@ -2135,11 +2125,11 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("format") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("format", v)
         member x.MipLevelCount
-            with get() : int = h.GetObjectProperty("mipLevelCount") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("mipLevelCount", js v)
+            with get() : uint32 = h.GetObjectProperty("mipLevelCount") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("mipLevelCount", js v)
         member x.SampleCount
-            with get() : int = h.GetObjectProperty("sampleCount") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("sampleCount", js v)
+            with get() : uint32 = h.GetObjectProperty("sampleCount") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("sampleCount", js v)
     [<AllowNullLiteral>]
     type WGPUTextureViewDescriptor(h : JSObject) =
         inherit JsObj(h)
@@ -2154,17 +2144,17 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("dimension") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("dimension", v)
         member x.BaseMipLevel
-            with get() : int = h.GetObjectProperty("baseMipLevel") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("baseMipLevel", js v)
+            with get() : uint32 = h.GetObjectProperty("baseMipLevel") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("baseMipLevel", js v)
         member x.MipLevelCount
-            with get() : int = h.GetObjectProperty("mipLevelCount") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("mipLevelCount", js v)
+            with get() : uint32 = h.GetObjectProperty("mipLevelCount") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("mipLevelCount", js v)
         member x.BaseArrayLayer
-            with get() : int = h.GetObjectProperty("baseArrayLayer") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("baseArrayLayer", js v)
+            with get() : uint32 = h.GetObjectProperty("baseArrayLayer") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("baseArrayLayer", js v)
         member x.ArrayLayerCount
-            with get() : int = h.GetObjectProperty("arrayLayerCount") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("arrayLayerCount", js v)
+            with get() : uint32 = h.GetObjectProperty("arrayLayerCount") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("arrayLayerCount", js v)
         member x.Aspect
             with get() : obj = h.GetObjectProperty("aspect") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("aspect", v)
@@ -2176,18 +2166,18 @@ module DawnRaw =
             with get() : obj = h.GetObjectProperty("format") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("format", v)
         member x.Offset
-            with get() : int = h.GetObjectProperty("offset") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("offset", js v)
+            with get() : float = h.GetObjectProperty("offset") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("offset", js v)
         member x.ShaderLocation
-            with get() : int = h.GetObjectProperty("shaderLocation") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("shaderLocation", js v)
+            with get() : uint32 = h.GetObjectProperty("shaderLocation") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("shaderLocation", js v)
     [<AllowNullLiteral>]
     type WGPUBindGroupLayoutEntry(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUBindGroupLayoutEntry(new JSObject())
         member x.Binding
-            with get() : int = h.GetObjectProperty("binding") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("binding", js v)
+            with get() : uint32 = h.GetObjectProperty("binding") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("binding", js v)
         member x.Visibility
             with get() : int = h.GetObjectProperty("visibility") |> convert<int>
             and set (v : int) = h.SetObjectProperty("visibility", v)
@@ -2240,11 +2230,11 @@ module DawnRaw =
             with get() : DawnRaw.WGPUStencilFaceState = h.GetObjectProperty("stencilBack") |> convert<DawnRaw.WGPUStencilFaceState>
             and set (v : DawnRaw.WGPUStencilFaceState) = if not (isNull v) then h.SetObjectProperty("stencilBack", js v)
         member x.StencilReadMask
-            with get() : int = h.GetObjectProperty("stencilReadMask") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("stencilReadMask", js v)
+            with get() : uint32 = h.GetObjectProperty("stencilReadMask") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("stencilReadMask", js v)
         member x.StencilWriteMask
-            with get() : int = h.GetObjectProperty("stencilWriteMask") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("stencilWriteMask", js v)
+            with get() : uint32 = h.GetObjectProperty("stencilWriteMask") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("stencilWriteMask", js v)
         member x.DepthBias
             with get() : int = h.GetObjectProperty("depthBias") |> convert<int>
             and set (v : int) = h.SetObjectProperty("depthBias", js v)
@@ -2269,11 +2259,11 @@ module DawnRaw =
         inherit JsObj(h)
         new() = WGPUDeviceProperties(new JSObject())
         member x.DeviceID
-            with get() : int = h.GetObjectProperty("deviceID") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("deviceID", js v)
+            with get() : uint32 = h.GetObjectProperty("deviceID") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("deviceID", js v)
         member x.VendorID
-            with get() : int = h.GetObjectProperty("vendorID") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("vendorID", js v)
+            with get() : uint32 = h.GetObjectProperty("vendorID") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("vendorID", js v)
         member x.TextureCompressionBC
             with get() : bool = h.GetObjectProperty("textureCompressionBC") |> convert<bool>
             and set (v : bool) = h.SetObjectProperty("textureCompressionBC", js v)
@@ -2311,22 +2301,6 @@ module DawnRaw =
             with get() : DawnRaw.WGPUSupportedLimits = h.GetObjectProperty("limits") |> convert<DawnRaw.WGPUSupportedLimits>
             and set (v : DawnRaw.WGPUSupportedLimits) = if not (isNull v) then h.SetObjectProperty("limits", js v)
     [<AllowNullLiteral>]
-    type WGPURenderPassDescriptor(h : JSObject) =
-        inherit JsObj(h)
-        new() = WGPURenderPassDescriptor(new JSObject())
-        member x.Label
-            with get() : string = h.GetObjectProperty("label") |> convert<string>
-            and set (v : string) = h.SetObjectProperty("label", js v)
-        member x.ColorAttachments
-            with get() : JSObject = h.GetObjectProperty("colorAttachments") |> convert<JSObject>
-            and set (v : JSObject) = h.SetObjectProperty("colorAttachments", js v)
-        member x.DepthStencilAttachment
-            with get() : DawnRaw.WGPURenderPassDepthStencilAttachment = h.GetObjectProperty("depthStencilAttachment") |> convert<DawnRaw.WGPURenderPassDepthStencilAttachment>
-            and set (v : DawnRaw.WGPURenderPassDepthStencilAttachment) = if not (isNull v) then h.SetObjectProperty("depthStencilAttachment", js v)
-        member x.OcclusionQuerySet
-            with get() : QuerySetHandle = h.GetObjectProperty("occlusionQuerySet") |> convert<QuerySetHandle>
-            and set (v : QuerySetHandle) = if not (isNull v) then h.SetObjectProperty("occlusionQuerySet", js v)
-    [<AllowNullLiteral>]
     type WGPURequestAdapterOptions(h : JSObject) =
         inherit JsObj(h)
         new() = WGPURequestAdapterOptions(new JSObject())
@@ -2344,8 +2318,8 @@ module DawnRaw =
         inherit JsObj(h)
         new() = WGPUVertexBufferLayout(new JSObject())
         member x.ArrayStride
-            with get() : int = h.GetObjectProperty("arrayStride") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("arrayStride", js v)
+            with get() : float = h.GetObjectProperty("arrayStride") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("arrayStride", js v)
         member x.StepMode
             with get() : obj = h.GetObjectProperty("stepMode") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("stepMode", v)
@@ -2357,17 +2331,17 @@ module DawnRaw =
         inherit JsObj(h)
         new() = WGPUBindGroupEntry(new JSObject())
         member x.Binding
-            with get() : int = h.GetObjectProperty("binding") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("binding", js v)
+            with get() : uint32 = h.GetObjectProperty("binding") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("binding", js v)
         member x.Buffer
             with get() : BufferHandle = h.GetObjectProperty("buffer") |> convert<BufferHandle>
             and set (v : BufferHandle) = if not (isNull v) then h.SetObjectProperty("buffer", js v)
         member x.Offset
-            with get() : int = h.GetObjectProperty("offset") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("offset", js v)
+            with get() : float = h.GetObjectProperty("offset") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("offset", js v)
         member x.Size
-            with get() : int = h.GetObjectProperty("size") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("size", js v)
+            with get() : float = h.GetObjectProperty("size") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("size", js v)
         member x.Sampler
             with get() : SamplerHandle = h.GetObjectProperty("sampler") |> convert<SamplerHandle>
             and set (v : SamplerHandle) = if not (isNull v) then h.SetObjectProperty("sampler", js v)
@@ -2398,12 +2372,25 @@ module DawnRaw =
             with get() : int = h.GetObjectProperty("writeMask") |> convert<int>
             and set (v : int) = h.SetObjectProperty("writeMask", v)
     [<AllowNullLiteral>]
+    type WGPUExternalTextureBindingEntry(h : JSObject) =
+        inherit JsObj(h)
+        new() = WGPUExternalTextureBindingEntry(new JSObject())
+        member x.ExternalTexture
+            with get() : ExternalTextureHandle = h.GetObjectProperty("externalTexture") |> convert<ExternalTextureHandle>
+            and set (v : ExternalTextureHandle) = if not (isNull v) then h.SetObjectProperty("externalTexture", js v)
+    [<AllowNullLiteral>]
     type WGPUImageCopyBuffer(h : JSObject) =
         inherit JsObj(h)
         new() = WGPUImageCopyBuffer(new JSObject())
-        member x.Layout
-            with get() : DawnRaw.WGPUTextureDataLayout = h.GetObjectProperty("layout") |> convert<DawnRaw.WGPUTextureDataLayout>
-            and set (v : DawnRaw.WGPUTextureDataLayout) = if not (isNull v) then h.SetObjectProperty("layout", js v)
+        member x.Offset
+            with get() : float = h.GetObjectProperty("offset") |> convert<float>
+            and set (v : float) = h.SetObjectProperty("offset", js v)
+        member x.BytesPerRow
+            with get() : uint32 = h.GetObjectProperty("bytesPerRow") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("bytesPerRow", js v)
+        member x.RowsPerImage
+            with get() : uint32 = h.GetObjectProperty("rowsPerImage") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("rowsPerImage", js v)
         member x.Buffer
             with get() : BufferHandle = h.GetObjectProperty("buffer") |> convert<BufferHandle>
             and set (v : BufferHandle) = if not (isNull v) then h.SetObjectProperty("buffer", js v)
@@ -2415,14 +2402,30 @@ module DawnRaw =
             with get() : TextureHandle = h.GetObjectProperty("texture") |> convert<TextureHandle>
             and set (v : TextureHandle) = if not (isNull v) then h.SetObjectProperty("texture", js v)
         member x.MipLevel
-            with get() : int = h.GetObjectProperty("mipLevel") |> convert<int>
-            and set (v : int) = h.SetObjectProperty("mipLevel", js v)
+            with get() : uint32 = h.GetObjectProperty("mipLevel") |> convert<uint32>
+            and set (v : uint32) = h.SetObjectProperty("mipLevel", js v)
         member x.Origin
             with get() : DawnRaw.WGPUOrigin3D = h.GetObjectProperty("origin") |> convert<DawnRaw.WGPUOrigin3D>
             and set (v : DawnRaw.WGPUOrigin3D) = if not (isNull v) then h.SetObjectProperty("origin", js v)
         member x.Aspect
             with get() : obj = h.GetObjectProperty("aspect") |> convert<obj>
             and set (v : obj) = h.SetObjectProperty("aspect", v)
+    [<AllowNullLiteral>]
+    type WGPURenderPassDescriptor(h : JSObject) =
+        inherit JsObj(h)
+        new() = WGPURenderPassDescriptor(new JSObject())
+        member x.Label
+            with get() : string = h.GetObjectProperty("label") |> convert<string>
+            and set (v : string) = h.SetObjectProperty("label", js v)
+        member x.ColorAttachments
+            with get() : JSObject = h.GetObjectProperty("colorAttachments") |> convert<JSObject>
+            and set (v : JSObject) = h.SetObjectProperty("colorAttachments", js v)
+        member x.DepthStencilAttachment
+            with get() : DawnRaw.WGPURenderPassDepthStencilAttachment = h.GetObjectProperty("depthStencilAttachment") |> convert<DawnRaw.WGPURenderPassDepthStencilAttachment>
+            and set (v : DawnRaw.WGPURenderPassDepthStencilAttachment) = if not (isNull v) then h.SetObjectProperty("depthStencilAttachment", js v)
+        member x.OcclusionQuerySet
+            with get() : QuerySetHandle = h.GetObjectProperty("occlusionQuerySet") |> convert<QuerySetHandle>
+            and set (v : QuerySetHandle) = if not (isNull v) then h.SetObjectProperty("occlusionQuerySet", js v)
     [<AllowNullLiteral>]
     type WGPUBindGroupDescriptor(h : JSObject) =
         inherit JsObj(h)
@@ -2615,9 +2618,9 @@ type Extent3D =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUExtent3D -> 'a) : 'a = 
         let x = x
-        let _Width_int = int (x.Width)
-        let _Height_int = int (x.Height)
-        let _DepthOrArrayLayers_int = int (x.DepthOrArrayLayers)
+        let _Width_int = uint32 (x.Width)
+        let _Height_int = uint32 (x.Height)
+        let _DepthOrArrayLayers_int = uint32 (x.DepthOrArrayLayers)
         let native = DawnRaw.WGPUExtent3D()
         native.Width <- _Width_int
         native.Height <- _Height_int
@@ -2665,32 +2668,32 @@ type Limits =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPULimits -> 'a) : 'a = 
         let x = x
-        let _MaxTextureDimension1D_int = int (x.MaxTextureDimension1D)
-        let _MaxTextureDimension2D_int = int (x.MaxTextureDimension2D)
-        let _MaxTextureDimension3D_int = int (x.MaxTextureDimension3D)
-        let _MaxTextureArrayLayers_int = int (x.MaxTextureArrayLayers)
-        let _MaxBindGroups_int = int (x.MaxBindGroups)
-        let _MaxDynamicUniformBuffersPerPipelineLayout_int = int (x.MaxDynamicUniformBuffersPerPipelineLayout)
-        let _MaxDynamicStorageBuffersPerPipelineLayout_int = int (x.MaxDynamicStorageBuffersPerPipelineLayout)
-        let _MaxSampledTexturesPerShaderStage_int = int (x.MaxSampledTexturesPerShaderStage)
-        let _MaxSamplersPerShaderStage_int = int (x.MaxSamplersPerShaderStage)
-        let _MaxStorageBuffersPerShaderStage_int = int (x.MaxStorageBuffersPerShaderStage)
-        let _MaxStorageTexturesPerShaderStage_int = int (x.MaxStorageTexturesPerShaderStage)
-        let _MaxUniformBuffersPerShaderStage_int = int (x.MaxUniformBuffersPerShaderStage)
-        let _MaxUniformBufferBindingSize_uint64 = int (x.MaxUniformBufferBindingSize)
-        let _MaxStorageBufferBindingSize_uint64 = int (x.MaxStorageBufferBindingSize)
-        let _MinUniformBufferOffsetAlignment_int = int (x.MinUniformBufferOffsetAlignment)
-        let _MinStorageBufferOffsetAlignment_int = int (x.MinStorageBufferOffsetAlignment)
-        let _MaxVertexBuffers_int = int (x.MaxVertexBuffers)
-        let _MaxVertexAttributes_int = int (x.MaxVertexAttributes)
-        let _MaxVertexBufferArrayStride_int = int (x.MaxVertexBufferArrayStride)
-        let _MaxInterStageShaderComponents_int = int (x.MaxInterStageShaderComponents)
-        let _MaxComputeWorkgroupStorageSize_int = int (x.MaxComputeWorkgroupStorageSize)
-        let _MaxComputeInvocationsPerWorkgroup_int = int (x.MaxComputeInvocationsPerWorkgroup)
-        let _MaxComputeWorkgroupSizeX_int = int (x.MaxComputeWorkgroupSizeX)
-        let _MaxComputeWorkgroupSizeY_int = int (x.MaxComputeWorkgroupSizeY)
-        let _MaxComputeWorkgroupSizeZ_int = int (x.MaxComputeWorkgroupSizeZ)
-        let _MaxComputeWorkgroupsPerDimension_int = int (x.MaxComputeWorkgroupsPerDimension)
+        let _MaxTextureDimension1D_int = uint32 (x.MaxTextureDimension1D)
+        let _MaxTextureDimension2D_int = uint32 (x.MaxTextureDimension2D)
+        let _MaxTextureDimension3D_int = uint32 (x.MaxTextureDimension3D)
+        let _MaxTextureArrayLayers_int = uint32 (x.MaxTextureArrayLayers)
+        let _MaxBindGroups_int = uint32 (x.MaxBindGroups)
+        let _MaxDynamicUniformBuffersPerPipelineLayout_int = uint32 (x.MaxDynamicUniformBuffersPerPipelineLayout)
+        let _MaxDynamicStorageBuffersPerPipelineLayout_int = uint32 (x.MaxDynamicStorageBuffersPerPipelineLayout)
+        let _MaxSampledTexturesPerShaderStage_int = uint32 (x.MaxSampledTexturesPerShaderStage)
+        let _MaxSamplersPerShaderStage_int = uint32 (x.MaxSamplersPerShaderStage)
+        let _MaxStorageBuffersPerShaderStage_int = uint32 (x.MaxStorageBuffersPerShaderStage)
+        let _MaxStorageTexturesPerShaderStage_int = uint32 (x.MaxStorageTexturesPerShaderStage)
+        let _MaxUniformBuffersPerShaderStage_int = uint32 (x.MaxUniformBuffersPerShaderStage)
+        let _MaxUniformBufferBindingSize_uint64 = float (x.MaxUniformBufferBindingSize)
+        let _MaxStorageBufferBindingSize_uint64 = float (x.MaxStorageBufferBindingSize)
+        let _MinUniformBufferOffsetAlignment_int = uint32 (x.MinUniformBufferOffsetAlignment)
+        let _MinStorageBufferOffsetAlignment_int = uint32 (x.MinStorageBufferOffsetAlignment)
+        let _MaxVertexBuffers_int = uint32 (x.MaxVertexBuffers)
+        let _MaxVertexAttributes_int = uint32 (x.MaxVertexAttributes)
+        let _MaxVertexBufferArrayStride_int = uint32 (x.MaxVertexBufferArrayStride)
+        let _MaxInterStageShaderComponents_int = uint32 (x.MaxInterStageShaderComponents)
+        let _MaxComputeWorkgroupStorageSize_int = uint32 (x.MaxComputeWorkgroupStorageSize)
+        let _MaxComputeInvocationsPerWorkgroup_int = uint32 (x.MaxComputeInvocationsPerWorkgroup)
+        let _MaxComputeWorkgroupSizeX_int = uint32 (x.MaxComputeWorkgroupSizeX)
+        let _MaxComputeWorkgroupSizeY_int = uint32 (x.MaxComputeWorkgroupSizeY)
+        let _MaxComputeWorkgroupSizeZ_int = uint32 (x.MaxComputeWorkgroupSizeZ)
+        let _MaxComputeWorkgroupsPerDimension_int = uint32 (x.MaxComputeWorkgroupsPerDimension)
         let native = DawnRaw.WGPULimits()
         native.MaxTextureDimension1D <- _MaxTextureDimension1D_int
         native.MaxTextureDimension2D <- _MaxTextureDimension2D_int
@@ -2734,8 +2737,8 @@ type MultisampleState =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUMultisampleState -> 'a) : 'a = 
         let x = x
-        let _Count_int = int (x.Count)
-        let _Mask_int = int (x.Mask)
+        let _Count_int = uint32 (x.Count)
+        let _Mask_int = uint32 (x.Mask)
         let _AlphaToCoverageEnabled_bool = x.AlphaToCoverageEnabled
         let native = DawnRaw.WGPUMultisampleState()
         native.Count <- _Count_int
@@ -2757,9 +2760,9 @@ type Origin3D =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUOrigin3D -> 'a) : 'a = 
         let x = x
-        let _X_int = int (x.X)
-        let _Y_int = int (x.Y)
-        let _Z_int = int (x.Z)
+        let _X_int = uint32 (x.X)
+        let _Y_int = uint32 (x.Y)
+        let _Z_int = uint32 (x.Z)
         let native = DawnRaw.WGPUOrigin3D()
         native.X <- _X_int
         native.Y <- _Y_int
@@ -2866,7 +2869,7 @@ type SurfaceDescriptorFromMetalLayer =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUSurfaceDescriptorFromMetalLayer -> 'a) : 'a = 
         let x = x
-        let _Layer_nativeint = int (x.Layer)
+        let _Layer_nativeint = float (x.Layer)
         let native = DawnRaw.WGPUSurfaceDescriptorFromMetalLayer()
         native.Layer <- _Layer_nativeint
         callback native
@@ -2878,8 +2881,8 @@ type SurfaceDescriptorFromWindowsHWND =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUSurfaceDescriptorFromWindowsHWND -> 'a) : 'a = 
         let x = x
-        let _Hinstance_nativeint = int (x.Hinstance)
-        let _Hwnd_nativeint = int (x.Hwnd)
+        let _Hinstance_nativeint = float (x.Hinstance)
+        let _Hwnd_nativeint = float (x.Hwnd)
         let native = DawnRaw.WGPUSurfaceDescriptorFromWindowsHWND()
         native.Hinstance <- _Hinstance_nativeint
         native.Hwnd <- _Hwnd_nativeint
@@ -2891,7 +2894,7 @@ type SurfaceDescriptorFromWindowsCoreWindow =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUSurfaceDescriptorFromWindowsCoreWindow -> 'a) : 'a = 
         let x = x
-        let _CoreWindow_nativeint = int (x.CoreWindow)
+        let _CoreWindow_nativeint = float (x.CoreWindow)
         let native = DawnRaw.WGPUSurfaceDescriptorFromWindowsCoreWindow()
         native.CoreWindow <- _CoreWindow_nativeint
         callback native
@@ -2902,7 +2905,7 @@ type SurfaceDescriptorFromWindowsSwapChainPanel =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUSurfaceDescriptorFromWindowsSwapChainPanel -> 'a) : 'a = 
         let x = x
-        let _SwapChainPanel_nativeint = int (x.SwapChainPanel)
+        let _SwapChainPanel_nativeint = float (x.SwapChainPanel)
         let native = DawnRaw.WGPUSurfaceDescriptorFromWindowsSwapChainPanel()
         native.SwapChainPanel <- _SwapChainPanel_nativeint
         callback native
@@ -2914,8 +2917,8 @@ type SurfaceDescriptorFromXlib =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUSurfaceDescriptorFromXlib -> 'a) : 'a = 
         let x = x
-        let _Display_nativeint = int (x.Display)
-        let _Window_int = int (x.Window)
+        let _Display_nativeint = float (x.Display)
+        let _Window_int = uint32 (x.Window)
         let native = DawnRaw.WGPUSurfaceDescriptorFromXlib()
         native.Display <- _Display_nativeint
         native.Window <- _Window_int
@@ -2935,9 +2938,9 @@ type TextureDataLayout =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUTextureDataLayout -> 'a) : 'a = 
         let x = x
-        let _Offset_uint64 = int (x.Offset)
-        let _BytesPerRow_int = int (x.BytesPerRow)
-        let _RowsPerImage_int = int (x.RowsPerImage)
+        let _Offset_uint64 = float (x.Offset)
+        let _BytesPerRow_int = uint32 (x.BytesPerRow)
+        let _RowsPerImage_int = uint32 (x.RowsPerImage)
         let native = DawnRaw.WGPUTextureDataLayout()
         native.Offset <- _Offset_uint64
         native.BytesPerRow <- _BytesPerRow_int
@@ -2955,8 +2958,8 @@ type AdapterProperties =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUAdapterProperties -> 'a) : 'a = 
         let x = x
-        let _VendorID_int = int (x.VendorID)
-        let _DeviceID_int = int (x.DeviceID)
+        let _VendorID_int = uint32 (x.VendorID)
+        let _DeviceID_int = uint32 (x.DeviceID)
         let _Name_string = x.Name
         let _DriverDescription_string = x.DriverDescription
         let _AdapterType_AdapterType = x.AdapterType.GetValue()
@@ -3009,7 +3012,7 @@ type BufferBindingLayout =
         let x = x
         let _Type_BufferBindingType = x.Type.GetValue()
         let _HasDynamicOffset_bool = x.HasDynamicOffset
-        let _MinBindingSize_uint64 = int (x.MinBindingSize)
+        let _MinBindingSize_uint64 = float (x.MinBindingSize)
         let native = DawnRaw.WGPUBufferBindingLayout()
         native.Type <- _Type_BufferBindingType
         native.HasDynamicOffset <- _HasDynamicOffset_bool
@@ -3034,7 +3037,7 @@ type BufferDescriptor =
         let x = x
         let _Label_string = x.Label
         let _Usage_BufferUsage = int (x.Usage)
-        let _Size_uint64 = int (x.Size)
+        let _Size_uint64 = float (x.Size)
         let _MappedAtCreation_bool = x.MappedAtCreation
         let native = DawnRaw.WGPUBufferDescriptor()
         native.Label <- _Label_string
@@ -3056,10 +3059,10 @@ type CompilationMessage =
         let x = x
         let _Message_string = x.Message
         let _Type_CompilationMessageType = x.Type.GetValue()
-        let _LineNum_uint64 = int (x.LineNum)
-        let _LinePos_uint64 = int (x.LinePos)
-        let _Offset_uint64 = int (x.Offset)
-        let _Length_uint64 = int (x.Length)
+        let _LineNum_uint64 = float (x.LineNum)
+        let _LinePos_uint64 = float (x.LinePos)
+        let _Offset_uint64 = float (x.Offset)
+        let _Length_uint64 = float (x.Length)
         let native = DawnRaw.WGPUCompilationMessage()
         native.Message <- _Message_string
         native.Type <- _Type_CompilationMessageType
@@ -3101,17 +3104,6 @@ type DawnTextureInternalUsageDescriptor =
         let _InternalUsage_TextureUsage = int (x.InternalUsage)
         let native = DawnRaw.WGPUDawnTextureInternalUsageDescriptor()
         native.InternalUsage <- _InternalUsage_TextureUsage
-        callback native
-type ExternalTextureBindingEntry =
-    {
-        ExternalTexture : ExternalTexture
-    }
-
-    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUExternalTextureBindingEntry -> 'a) : 'a = 
-        let x = x
-        let _ExternalTexture_ExternalTexture = (if isNull x.ExternalTexture then null else x.ExternalTexture.Handle)
-        let native = DawnRaw.WGPUExternalTextureBindingEntry()
-        native.ExternalTexture <- _ExternalTexture_ExternalTexture
         callback native
 type ExternalTextureDescriptor =
     {
@@ -3208,9 +3200,9 @@ type QuerySetDescriptor =
         let x = x
         let _Label_string = x.Label
         let _Type_QueryType = x.Type.GetValue()
-        let _Count_int = int (x.Count)
+        let _Count_int = uint32 (x.Count)
         let inline _PipelineStatistics_PipelineStatisticNameOptCont _PipelineStatistics_PipelineStatisticNameOpt =
-            let _PipelineStatisticsCount_int = int (x.PipelineStatisticsCount)
+            let _PipelineStatisticsCount_int = uint32 (x.PipelineStatisticsCount)
             let native = DawnRaw.WGPUQuerySetDescriptor()
             native.Label <- _Label_string
             native.Type <- _Type_QueryType
@@ -3247,7 +3239,7 @@ type RenderBundleEncoderDescriptor =
             _ColorFormats_TextureFormatArrArray.[i] <- x.ColorFormats.[i].GetValue()
         let _ColorFormats_TextureFormatArr = _ColorFormats_TextureFormatArrArray.Reference
         let _DepthStencilFormat_TextureFormat = x.DepthStencilFormat.GetValue()
-        let _SampleCount_int = int (x.SampleCount)
+        let _SampleCount_int = uint32 (x.SampleCount)
         let native = DawnRaw.WGPURenderBundleEncoderDescriptor()
         native.Label <- _Label_string
         native.ColorFormats <- _ColorFormats_TextureFormatArr
@@ -3260,7 +3252,6 @@ type RenderPassColorAttachment =
         ResolveTarget : TextureView
         LoadOp : LoadOp
         StoreOp : StoreOp
-        ClearColor : Color
     }
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPURenderPassColorAttachment -> 'a) : 'a = 
@@ -3269,22 +3260,11 @@ type RenderPassColorAttachment =
         let _ResolveTarget_TextureView = (if isNull x.ResolveTarget then null else x.ResolveTarget.Handle)
         let _LoadOp_LoadOp = x.LoadOp.GetValue()
         let _StoreOp_StoreOp = x.StoreOp.GetValue()
-        let _R_float = (x.ClearColor.R)
-        let _G_float = (x.ClearColor.G)
-        let _B_float = (x.ClearColor.B)
-        let _A_float = (x.ClearColor.A)
-        let _ClearColor_Color = new DawnRaw.WGPUColor()
-        _ClearColor_Color.R <- _R_float
-        _ClearColor_Color.G <- _G_float
-        _ClearColor_Color.B <- _B_float
-        _ClearColor_Color.A <- _A_float
-        let _ClearColor_Color = _ClearColor_Color
         let native = DawnRaw.WGPURenderPassColorAttachment()
         native.View <- _View_TextureView
         native.ResolveTarget <- _ResolveTarget_TextureView
         native.LoadOp <- _LoadOp_LoadOp
         native.StoreOp <- _StoreOp_StoreOp
-        native.ClearColor <- _ClearColor_Color
         callback native
 type RenderPassDepthStencilAttachment =
     {
@@ -3320,7 +3300,7 @@ type RenderPassDepthStencilAttachment =
         let _DepthReadOnly_bool = x.DepthReadOnly
         let _StencilLoadOp_LoadOp = x.StencilLoadOp.GetValue()
         let _StencilStoreOp_StoreOp = x.StencilStoreOp.GetValue()
-        let _ClearStencil_int = int (x.ClearStencil)
+        let _ClearStencil_int = uint32 (x.ClearStencil)
         let _StencilReadOnly_bool = x.StencilReadOnly
         let native = DawnRaw.WGPURenderPassDepthStencilAttachment()
         native.View <- _View_TextureView
@@ -3340,32 +3320,32 @@ type RequiredLimits =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPURequiredLimits -> 'a) : 'a = 
         let x = x
-        let _MaxTextureDimension1D_int = int (x.Limits.MaxTextureDimension1D)
-        let _MaxTextureDimension2D_int = int (x.Limits.MaxTextureDimension2D)
-        let _MaxTextureDimension3D_int = int (x.Limits.MaxTextureDimension3D)
-        let _MaxTextureArrayLayers_int = int (x.Limits.MaxTextureArrayLayers)
-        let _MaxBindGroups_int = int (x.Limits.MaxBindGroups)
-        let _MaxDynamicUniformBuffersPerPipelineLayout_int = int (x.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
-        let _MaxDynamicStorageBuffersPerPipelineLayout_int = int (x.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
-        let _MaxSampledTexturesPerShaderStage_int = int (x.Limits.MaxSampledTexturesPerShaderStage)
-        let _MaxSamplersPerShaderStage_int = int (x.Limits.MaxSamplersPerShaderStage)
-        let _MaxStorageBuffersPerShaderStage_int = int (x.Limits.MaxStorageBuffersPerShaderStage)
-        let _MaxStorageTexturesPerShaderStage_int = int (x.Limits.MaxStorageTexturesPerShaderStage)
-        let _MaxUniformBuffersPerShaderStage_int = int (x.Limits.MaxUniformBuffersPerShaderStage)
-        let _MaxUniformBufferBindingSize_uint64 = int (x.Limits.MaxUniformBufferBindingSize)
-        let _MaxStorageBufferBindingSize_uint64 = int (x.Limits.MaxStorageBufferBindingSize)
-        let _MinUniformBufferOffsetAlignment_int = int (x.Limits.MinUniformBufferOffsetAlignment)
-        let _MinStorageBufferOffsetAlignment_int = int (x.Limits.MinStorageBufferOffsetAlignment)
-        let _MaxVertexBuffers_int = int (x.Limits.MaxVertexBuffers)
-        let _MaxVertexAttributes_int = int (x.Limits.MaxVertexAttributes)
-        let _MaxVertexBufferArrayStride_int = int (x.Limits.MaxVertexBufferArrayStride)
-        let _MaxInterStageShaderComponents_int = int (x.Limits.MaxInterStageShaderComponents)
-        let _MaxComputeWorkgroupStorageSize_int = int (x.Limits.MaxComputeWorkgroupStorageSize)
-        let _MaxComputeInvocationsPerWorkgroup_int = int (x.Limits.MaxComputeInvocationsPerWorkgroup)
-        let _MaxComputeWorkgroupSizeX_int = int (x.Limits.MaxComputeWorkgroupSizeX)
-        let _MaxComputeWorkgroupSizeY_int = int (x.Limits.MaxComputeWorkgroupSizeY)
-        let _MaxComputeWorkgroupSizeZ_int = int (x.Limits.MaxComputeWorkgroupSizeZ)
-        let _MaxComputeWorkgroupsPerDimension_int = int (x.Limits.MaxComputeWorkgroupsPerDimension)
+        let _MaxTextureDimension1D_int = uint32 (x.Limits.MaxTextureDimension1D)
+        let _MaxTextureDimension2D_int = uint32 (x.Limits.MaxTextureDimension2D)
+        let _MaxTextureDimension3D_int = uint32 (x.Limits.MaxTextureDimension3D)
+        let _MaxTextureArrayLayers_int = uint32 (x.Limits.MaxTextureArrayLayers)
+        let _MaxBindGroups_int = uint32 (x.Limits.MaxBindGroups)
+        let _MaxDynamicUniformBuffersPerPipelineLayout_int = uint32 (x.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
+        let _MaxDynamicStorageBuffersPerPipelineLayout_int = uint32 (x.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
+        let _MaxSampledTexturesPerShaderStage_int = uint32 (x.Limits.MaxSampledTexturesPerShaderStage)
+        let _MaxSamplersPerShaderStage_int = uint32 (x.Limits.MaxSamplersPerShaderStage)
+        let _MaxStorageBuffersPerShaderStage_int = uint32 (x.Limits.MaxStorageBuffersPerShaderStage)
+        let _MaxStorageTexturesPerShaderStage_int = uint32 (x.Limits.MaxStorageTexturesPerShaderStage)
+        let _MaxUniformBuffersPerShaderStage_int = uint32 (x.Limits.MaxUniformBuffersPerShaderStage)
+        let _MaxUniformBufferBindingSize_uint64 = float (x.Limits.MaxUniformBufferBindingSize)
+        let _MaxStorageBufferBindingSize_uint64 = float (x.Limits.MaxStorageBufferBindingSize)
+        let _MinUniformBufferOffsetAlignment_int = uint32 (x.Limits.MinUniformBufferOffsetAlignment)
+        let _MinStorageBufferOffsetAlignment_int = uint32 (x.Limits.MinStorageBufferOffsetAlignment)
+        let _MaxVertexBuffers_int = uint32 (x.Limits.MaxVertexBuffers)
+        let _MaxVertexAttributes_int = uint32 (x.Limits.MaxVertexAttributes)
+        let _MaxVertexBufferArrayStride_int = uint32 (x.Limits.MaxVertexBufferArrayStride)
+        let _MaxInterStageShaderComponents_int = uint32 (x.Limits.MaxInterStageShaderComponents)
+        let _MaxComputeWorkgroupStorageSize_int = uint32 (x.Limits.MaxComputeWorkgroupStorageSize)
+        let _MaxComputeInvocationsPerWorkgroup_int = uint32 (x.Limits.MaxComputeInvocationsPerWorkgroup)
+        let _MaxComputeWorkgroupSizeX_int = uint32 (x.Limits.MaxComputeWorkgroupSizeX)
+        let _MaxComputeWorkgroupSizeY_int = uint32 (x.Limits.MaxComputeWorkgroupSizeY)
+        let _MaxComputeWorkgroupSizeZ_int = uint32 (x.Limits.MaxComputeWorkgroupSizeZ)
+        let _MaxComputeWorkgroupsPerDimension_int = uint32 (x.Limits.MaxComputeWorkgroupsPerDimension)
         let _Limits_Limits = new DawnRaw.WGPULimits()
         _Limits_Limits.MaxTextureDimension1D <- _MaxTextureDimension1D_int
         _Limits_Limits.MaxTextureDimension2D <- _MaxTextureDimension2D_int
@@ -3453,7 +3433,7 @@ type SamplerDescriptor =
         let _LodMinClamp_float32 = (x.LodMinClamp)
         let _LodMaxClamp_float32 = (x.LodMaxClamp)
         let _Compare_CompareFunction = x.Compare.GetValue()
-        let _MaxAnisotropy_uint16 = int (x.MaxAnisotropy)
+        let _MaxAnisotropy_uint16 = uint16 (x.MaxAnisotropy)
         let native = DawnRaw.WGPUSamplerDescriptor()
         native.Label <- _Label_string
         native.AddressModeU <- _AddressModeU_AddressMode
@@ -3524,32 +3504,32 @@ type SupportedLimits =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUSupportedLimits -> 'a) : 'a = 
         let x = x
-        let _MaxTextureDimension1D_int = int (x.Limits.MaxTextureDimension1D)
-        let _MaxTextureDimension2D_int = int (x.Limits.MaxTextureDimension2D)
-        let _MaxTextureDimension3D_int = int (x.Limits.MaxTextureDimension3D)
-        let _MaxTextureArrayLayers_int = int (x.Limits.MaxTextureArrayLayers)
-        let _MaxBindGroups_int = int (x.Limits.MaxBindGroups)
-        let _MaxDynamicUniformBuffersPerPipelineLayout_int = int (x.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
-        let _MaxDynamicStorageBuffersPerPipelineLayout_int = int (x.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
-        let _MaxSampledTexturesPerShaderStage_int = int (x.Limits.MaxSampledTexturesPerShaderStage)
-        let _MaxSamplersPerShaderStage_int = int (x.Limits.MaxSamplersPerShaderStage)
-        let _MaxStorageBuffersPerShaderStage_int = int (x.Limits.MaxStorageBuffersPerShaderStage)
-        let _MaxStorageTexturesPerShaderStage_int = int (x.Limits.MaxStorageTexturesPerShaderStage)
-        let _MaxUniformBuffersPerShaderStage_int = int (x.Limits.MaxUniformBuffersPerShaderStage)
-        let _MaxUniformBufferBindingSize_uint64 = int (x.Limits.MaxUniformBufferBindingSize)
-        let _MaxStorageBufferBindingSize_uint64 = int (x.Limits.MaxStorageBufferBindingSize)
-        let _MinUniformBufferOffsetAlignment_int = int (x.Limits.MinUniformBufferOffsetAlignment)
-        let _MinStorageBufferOffsetAlignment_int = int (x.Limits.MinStorageBufferOffsetAlignment)
-        let _MaxVertexBuffers_int = int (x.Limits.MaxVertexBuffers)
-        let _MaxVertexAttributes_int = int (x.Limits.MaxVertexAttributes)
-        let _MaxVertexBufferArrayStride_int = int (x.Limits.MaxVertexBufferArrayStride)
-        let _MaxInterStageShaderComponents_int = int (x.Limits.MaxInterStageShaderComponents)
-        let _MaxComputeWorkgroupStorageSize_int = int (x.Limits.MaxComputeWorkgroupStorageSize)
-        let _MaxComputeInvocationsPerWorkgroup_int = int (x.Limits.MaxComputeInvocationsPerWorkgroup)
-        let _MaxComputeWorkgroupSizeX_int = int (x.Limits.MaxComputeWorkgroupSizeX)
-        let _MaxComputeWorkgroupSizeY_int = int (x.Limits.MaxComputeWorkgroupSizeY)
-        let _MaxComputeWorkgroupSizeZ_int = int (x.Limits.MaxComputeWorkgroupSizeZ)
-        let _MaxComputeWorkgroupsPerDimension_int = int (x.Limits.MaxComputeWorkgroupsPerDimension)
+        let _MaxTextureDimension1D_int = uint32 (x.Limits.MaxTextureDimension1D)
+        let _MaxTextureDimension2D_int = uint32 (x.Limits.MaxTextureDimension2D)
+        let _MaxTextureDimension3D_int = uint32 (x.Limits.MaxTextureDimension3D)
+        let _MaxTextureArrayLayers_int = uint32 (x.Limits.MaxTextureArrayLayers)
+        let _MaxBindGroups_int = uint32 (x.Limits.MaxBindGroups)
+        let _MaxDynamicUniformBuffersPerPipelineLayout_int = uint32 (x.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
+        let _MaxDynamicStorageBuffersPerPipelineLayout_int = uint32 (x.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
+        let _MaxSampledTexturesPerShaderStage_int = uint32 (x.Limits.MaxSampledTexturesPerShaderStage)
+        let _MaxSamplersPerShaderStage_int = uint32 (x.Limits.MaxSamplersPerShaderStage)
+        let _MaxStorageBuffersPerShaderStage_int = uint32 (x.Limits.MaxStorageBuffersPerShaderStage)
+        let _MaxStorageTexturesPerShaderStage_int = uint32 (x.Limits.MaxStorageTexturesPerShaderStage)
+        let _MaxUniformBuffersPerShaderStage_int = uint32 (x.Limits.MaxUniformBuffersPerShaderStage)
+        let _MaxUniformBufferBindingSize_uint64 = float (x.Limits.MaxUniformBufferBindingSize)
+        let _MaxStorageBufferBindingSize_uint64 = float (x.Limits.MaxStorageBufferBindingSize)
+        let _MinUniformBufferOffsetAlignment_int = uint32 (x.Limits.MinUniformBufferOffsetAlignment)
+        let _MinStorageBufferOffsetAlignment_int = uint32 (x.Limits.MinStorageBufferOffsetAlignment)
+        let _MaxVertexBuffers_int = uint32 (x.Limits.MaxVertexBuffers)
+        let _MaxVertexAttributes_int = uint32 (x.Limits.MaxVertexAttributes)
+        let _MaxVertexBufferArrayStride_int = uint32 (x.Limits.MaxVertexBufferArrayStride)
+        let _MaxInterStageShaderComponents_int = uint32 (x.Limits.MaxInterStageShaderComponents)
+        let _MaxComputeWorkgroupStorageSize_int = uint32 (x.Limits.MaxComputeWorkgroupStorageSize)
+        let _MaxComputeInvocationsPerWorkgroup_int = uint32 (x.Limits.MaxComputeInvocationsPerWorkgroup)
+        let _MaxComputeWorkgroupSizeX_int = uint32 (x.Limits.MaxComputeWorkgroupSizeX)
+        let _MaxComputeWorkgroupSizeY_int = uint32 (x.Limits.MaxComputeWorkgroupSizeY)
+        let _MaxComputeWorkgroupSizeZ_int = uint32 (x.Limits.MaxComputeWorkgroupSizeZ)
+        let _MaxComputeWorkgroupsPerDimension_int = uint32 (x.Limits.MaxComputeWorkgroupsPerDimension)
         let _Limits_Limits = new DawnRaw.WGPULimits()
         _Limits_Limits.MaxTextureDimension1D <- _MaxTextureDimension1D_int
         _Limits_Limits.MaxTextureDimension2D <- _MaxTextureDimension2D_int
@@ -3607,10 +3587,10 @@ type SwapChainDescriptor =
         let _Label_string = x.Label
         let _Usage_TextureUsage = int (x.Usage)
         let _Format_TextureFormat = x.Format.GetValue()
-        let _Width_int = int (x.Width)
-        let _Height_int = int (x.Height)
+        let _Width_int = uint32 (x.Width)
+        let _Height_int = uint32 (x.Height)
         let _PresentMode_PresentMode = x.PresentMode.GetValue()
-        let _Implementation_uint64 = int (x.Implementation)
+        let _Implementation_uint64 = float (x.Implementation)
         let native = DawnRaw.WGPUSwapChainDescriptor()
         native.Label <- _Label_string
         native.Usage <- _Usage_TextureUsage
@@ -3669,17 +3649,17 @@ type TextureDescriptor =
         let _Label_string = x.Label
         let _Usage_TextureUsage = int (x.Usage)
         let _Dimension_TextureDimension = x.Dimension.GetValue()
-        let _Width_int = int (x.Size.Width)
-        let _Height_int = int (x.Size.Height)
-        let _DepthOrArrayLayers_int = int (x.Size.DepthOrArrayLayers)
+        let _Width_int = uint32 (x.Size.Width)
+        let _Height_int = uint32 (x.Size.Height)
+        let _DepthOrArrayLayers_int = uint32 (x.Size.DepthOrArrayLayers)
         let _Size_Extent3D = new DawnRaw.WGPUExtent3D()
         _Size_Extent3D.Width <- _Width_int
         _Size_Extent3D.Height <- _Height_int
         _Size_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
         let _Size_Extent3D = _Size_Extent3D
         let _Format_TextureFormat = x.Format.GetValue()
-        let _MipLevelCount_int = int (x.MipLevelCount)
-        let _SampleCount_int = int (x.SampleCount)
+        let _MipLevelCount_int = uint32 (x.MipLevelCount)
+        let _SampleCount_int = uint32 (x.SampleCount)
         let native = DawnRaw.WGPUTextureDescriptor()
         native.Label <- _Label_string
         native.Usage <- _Usage_TextureUsage
@@ -3717,10 +3697,10 @@ type TextureViewDescriptor =
         let _Label_string = x.Label
         let _Format_TextureFormat = x.Format.GetValue()
         let _Dimension_TextureViewDimension = x.Dimension.GetValue()
-        let _BaseMipLevel_int = int (x.BaseMipLevel)
-        let _MipLevelCount_int = int (x.MipLevelCount)
-        let _BaseArrayLayer_int = int (x.BaseArrayLayer)
-        let _ArrayLayerCount_int = int (x.ArrayLayerCount)
+        let _BaseMipLevel_int = uint32 (x.BaseMipLevel)
+        let _MipLevelCount_int = uint32 (x.MipLevelCount)
+        let _BaseArrayLayer_int = uint32 (x.BaseArrayLayer)
+        let _ArrayLayerCount_int = uint32 (x.ArrayLayerCount)
         let _Aspect_TextureAspect = x.Aspect.GetValue()
         let native = DawnRaw.WGPUTextureViewDescriptor()
         native.Label <- _Label_string
@@ -3742,8 +3722,8 @@ type VertexAttribute =
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUVertexAttribute -> 'a) : 'a = 
         let x = x
         let _Format_VertexFormat = x.Format.GetValue()
-        let _Offset_uint64 = int (x.Offset)
-        let _ShaderLocation_int = int (x.ShaderLocation)
+        let _Offset_uint64 = float (x.Offset)
+        let _ShaderLocation_int = uint32 (x.ShaderLocation)
         let native = DawnRaw.WGPUVertexAttribute()
         native.Format <- _Format_VertexFormat
         native.Offset <- _Offset_uint64
@@ -3753,61 +3733,72 @@ type BindGroupLayoutEntry =
     {
         Binding : int
         Visibility : ShaderStage
-        Buffer : BufferBindingLayout
-        Sampler : SamplerBindingLayout
-        Texture : TextureBindingLayout
-        StorageTexture : StorageTextureBindingLayout
+        Buffer : option<BufferBindingLayout>
+        Sampler : option<SamplerBindingLayout>
+        Texture : option<TextureBindingLayout>
+        StorageTexture : option<StorageTextureBindingLayout>
     }
-    static member Default(Binding: int, Visibility: ShaderStage) : BindGroupLayoutEntry =
-        {
-            Binding = Binding
-            Visibility = Visibility
-            Buffer = BufferBindingLayout.Default
-            Sampler = SamplerBindingLayout.Default
-            Texture = TextureBindingLayout.Default
-            StorageTexture = StorageTextureBindingLayout.Default
-        }
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUBindGroupLayoutEntry -> 'a) : 'a = 
         let x = x
-        let _Binding_int = int (x.Binding)
+        let _Binding_int = uint32 (x.Binding)
         let _Visibility_ShaderStage = int (x.Visibility)
-        let _Type_BufferBindingType = x.Buffer.Type.GetValue()
-        let _HasDynamicOffset_bool = x.Buffer.HasDynamicOffset
-        let _MinBindingSize_uint64 = int (x.Buffer.MinBindingSize)
-        let _Buffer_BufferBindingLayout = new DawnRaw.WGPUBufferBindingLayout()
-        _Buffer_BufferBindingLayout.Type <- _Type_BufferBindingType
-        _Buffer_BufferBindingLayout.HasDynamicOffset <- _HasDynamicOffset_bool
-        _Buffer_BufferBindingLayout.MinBindingSize <- _MinBindingSize_uint64
-        let _Buffer_BufferBindingLayout = _Buffer_BufferBindingLayout
-        let _Type_SamplerBindingType = x.Sampler.Type.GetValue()
-        let _Sampler_SamplerBindingLayout = new DawnRaw.WGPUSamplerBindingLayout()
-        _Sampler_SamplerBindingLayout.Type <- _Type_SamplerBindingType
-        let _Sampler_SamplerBindingLayout = _Sampler_SamplerBindingLayout
-        let _SampleType_TextureSampleType = x.Texture.SampleType.GetValue()
-        let _ViewDimension_TextureViewDimension = x.Texture.ViewDimension.GetValue()
-        let _Multisampled_bool = x.Texture.Multisampled
-        let _Texture_TextureBindingLayout = new DawnRaw.WGPUTextureBindingLayout()
-        _Texture_TextureBindingLayout.SampleType <- _SampleType_TextureSampleType
-        _Texture_TextureBindingLayout.ViewDimension <- _ViewDimension_TextureViewDimension
-        _Texture_TextureBindingLayout.Multisampled <- _Multisampled_bool
-        let _Texture_TextureBindingLayout = _Texture_TextureBindingLayout
-        let _Access_StorageTextureAccess = x.StorageTexture.Access.GetValue()
-        let _Format_TextureFormat = x.StorageTexture.Format.GetValue()
-        let _ViewDimension_TextureViewDimension = x.StorageTexture.ViewDimension.GetValue()
-        let _StorageTexture_StorageTextureBindingLayout = new DawnRaw.WGPUStorageTextureBindingLayout()
-        _StorageTexture_StorageTextureBindingLayout.Access <- _Access_StorageTextureAccess
-        _StorageTexture_StorageTextureBindingLayout.Format <- _Format_TextureFormat
-        _StorageTexture_StorageTextureBindingLayout.ViewDimension <- _ViewDimension_TextureViewDimension
-        let _StorageTexture_StorageTextureBindingLayout = _StorageTexture_StorageTextureBindingLayout
-        let native = DawnRaw.WGPUBindGroupLayoutEntry()
-        native.Binding <- _Binding_int
-        native.Visibility <- _Visibility_ShaderStage
-        native.Buffer <- _Buffer_BufferBindingLayout
-        native.Sampler <- _Sampler_SamplerBindingLayout
-        native.Texture <- _Texture_TextureBindingLayout
-        native.StorageTexture <- _StorageTexture_StorageTextureBindingLayout
-        callback native
+        let inline _Buffer_BufferBindingLayoutOptCont _Buffer_BufferBindingLayoutOpt = 
+            let inline _Sampler_SamplerBindingLayoutOptCont _Sampler_SamplerBindingLayoutOpt = 
+                let inline _Texture_TextureBindingLayoutOptCont _Texture_TextureBindingLayoutOpt = 
+                    let inline _StorageTexture_StorageTextureBindingLayoutOptCont _StorageTexture_StorageTextureBindingLayoutOpt = 
+                        let native = DawnRaw.WGPUBindGroupLayoutEntry()
+                        native.Binding <- _Binding_int
+                        native.Visibility <- _Visibility_ShaderStage
+                        native.Buffer <- _Buffer_BufferBindingLayoutOpt
+                        native.Sampler <- _Sampler_SamplerBindingLayoutOpt
+                        native.Texture <- _Texture_TextureBindingLayoutOpt
+                        native.StorageTexture <- _StorageTexture_StorageTextureBindingLayoutOpt
+                        callback native
+                    match x.StorageTexture with
+                    | Some v ->
+                        let _Access_StorageTextureAccess = v.Access.GetValue()
+                        let _Format_TextureFormat = v.Format.GetValue()
+                        let _ViewDimension_TextureViewDimension = v.ViewDimension.GetValue()
+                        let _n = new DawnRaw.WGPUStorageTextureBindingLayout()
+                        _n.Access <- _Access_StorageTextureAccess
+                        _n.Format <- _Format_TextureFormat
+                        _n.ViewDimension <- _ViewDimension_TextureViewDimension
+                        let _n = _n
+                        _StorageTexture_StorageTextureBindingLayoutOptCont _n
+                    | None -> _StorageTexture_StorageTextureBindingLayoutOptCont null
+                match x.Texture with
+                | Some v ->
+                    let _SampleType_TextureSampleType = v.SampleType.GetValue()
+                    let _ViewDimension_TextureViewDimension = v.ViewDimension.GetValue()
+                    let _Multisampled_bool = v.Multisampled
+                    let _n = new DawnRaw.WGPUTextureBindingLayout()
+                    _n.SampleType <- _SampleType_TextureSampleType
+                    _n.ViewDimension <- _ViewDimension_TextureViewDimension
+                    _n.Multisampled <- _Multisampled_bool
+                    let _n = _n
+                    _Texture_TextureBindingLayoutOptCont _n
+                | None -> _Texture_TextureBindingLayoutOptCont null
+            match x.Sampler with
+            | Some v ->
+                let _Type_SamplerBindingType = v.Type.GetValue()
+                let _n = new DawnRaw.WGPUSamplerBindingLayout()
+                _n.Type <- _Type_SamplerBindingType
+                let _n = _n
+                _Sampler_SamplerBindingLayoutOptCont _n
+            | None -> _Sampler_SamplerBindingLayoutOptCont null
+        match x.Buffer with
+        | Some v ->
+            let _Type_BufferBindingType = v.Type.GetValue()
+            let _HasDynamicOffset_bool = v.HasDynamicOffset
+            let _MinBindingSize_uint64 = float (v.MinBindingSize)
+            let _n = new DawnRaw.WGPUBufferBindingLayout()
+            _n.Type <- _Type_BufferBindingType
+            _n.HasDynamicOffset <- _HasDynamicOffset_bool
+            _n.MinBindingSize <- _MinBindingSize_uint64
+            let _n = _n
+            _Buffer_BufferBindingLayoutOptCont _n
+        | None -> _Buffer_BufferBindingLayoutOptCont null
 type BlendState =
     {
         Color : BlendComponent
@@ -3858,10 +3849,10 @@ type CompilationInfo =
             else
                 let _Message_string = _Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].Message
                 let _Type_CompilationMessageType = _Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].Type.GetValue()
-                let _LineNum_uint64 = int (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].LineNum)
-                let _LinePos_uint64 = int (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].LinePos)
-                let _Offset_uint64 = int (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].Offset)
-                let _Length_uint64 = int (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].Length)
+                let _LineNum_uint64 = float (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].LineNum)
+                let _LinePos_uint64 = float (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].LinePos)
+                let _Offset_uint64 = float (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].Offset)
+                let _Length_uint64 = float (_Messages_CompilationMessageArrinputs.[_Messages_CompilationMessageArri].Length)
                 let _n = new DawnRaw.WGPUCompilationMessage()
                 _n.Message <- _Message_string
                 _n.Type <- _Type_CompilationMessageType
@@ -3925,9 +3916,9 @@ type DepthStencilState =
         _StencilBack_StencilFaceState.DepthFailOp <- _DepthFailOp_StencilOperation
         _StencilBack_StencilFaceState.PassOp <- _PassOp_StencilOperation
         let _StencilBack_StencilFaceState = _StencilBack_StencilFaceState
-        let _StencilReadMask_int = int (x.StencilReadMask)
-        let _StencilWriteMask_int = int (x.StencilWriteMask)
-        let _DepthBias_int32 = int (x.DepthBias)
+        let _StencilReadMask_int = uint32 (x.StencilReadMask)
+        let _StencilWriteMask_int = uint32 (x.StencilWriteMask)
+        let _DepthBias_int32 = int32 (x.DepthBias)
         let _DepthBiasSlopeScale_float32 = (x.DepthBiasSlopeScale)
         let _DepthBiasClamp_float32 = (x.DepthBiasClamp)
         let native = DawnRaw.WGPUDepthStencilState()
@@ -3962,32 +3953,32 @@ type DeviceDescriptor =
             callback native
         match x.RequiredLimits with
         | Some v ->
-            let _MaxTextureDimension1D_int = int (v.Limits.MaxTextureDimension1D)
-            let _MaxTextureDimension2D_int = int (v.Limits.MaxTextureDimension2D)
-            let _MaxTextureDimension3D_int = int (v.Limits.MaxTextureDimension3D)
-            let _MaxTextureArrayLayers_int = int (v.Limits.MaxTextureArrayLayers)
-            let _MaxBindGroups_int = int (v.Limits.MaxBindGroups)
-            let _MaxDynamicUniformBuffersPerPipelineLayout_int = int (v.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
-            let _MaxDynamicStorageBuffersPerPipelineLayout_int = int (v.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
-            let _MaxSampledTexturesPerShaderStage_int = int (v.Limits.MaxSampledTexturesPerShaderStage)
-            let _MaxSamplersPerShaderStage_int = int (v.Limits.MaxSamplersPerShaderStage)
-            let _MaxStorageBuffersPerShaderStage_int = int (v.Limits.MaxStorageBuffersPerShaderStage)
-            let _MaxStorageTexturesPerShaderStage_int = int (v.Limits.MaxStorageTexturesPerShaderStage)
-            let _MaxUniformBuffersPerShaderStage_int = int (v.Limits.MaxUniformBuffersPerShaderStage)
-            let _MaxUniformBufferBindingSize_uint64 = int (v.Limits.MaxUniformBufferBindingSize)
-            let _MaxStorageBufferBindingSize_uint64 = int (v.Limits.MaxStorageBufferBindingSize)
-            let _MinUniformBufferOffsetAlignment_int = int (v.Limits.MinUniformBufferOffsetAlignment)
-            let _MinStorageBufferOffsetAlignment_int = int (v.Limits.MinStorageBufferOffsetAlignment)
-            let _MaxVertexBuffers_int = int (v.Limits.MaxVertexBuffers)
-            let _MaxVertexAttributes_int = int (v.Limits.MaxVertexAttributes)
-            let _MaxVertexBufferArrayStride_int = int (v.Limits.MaxVertexBufferArrayStride)
-            let _MaxInterStageShaderComponents_int = int (v.Limits.MaxInterStageShaderComponents)
-            let _MaxComputeWorkgroupStorageSize_int = int (v.Limits.MaxComputeWorkgroupStorageSize)
-            let _MaxComputeInvocationsPerWorkgroup_int = int (v.Limits.MaxComputeInvocationsPerWorkgroup)
-            let _MaxComputeWorkgroupSizeX_int = int (v.Limits.MaxComputeWorkgroupSizeX)
-            let _MaxComputeWorkgroupSizeY_int = int (v.Limits.MaxComputeWorkgroupSizeY)
-            let _MaxComputeWorkgroupSizeZ_int = int (v.Limits.MaxComputeWorkgroupSizeZ)
-            let _MaxComputeWorkgroupsPerDimension_int = int (v.Limits.MaxComputeWorkgroupsPerDimension)
+            let _MaxTextureDimension1D_int = uint32 (v.Limits.MaxTextureDimension1D)
+            let _MaxTextureDimension2D_int = uint32 (v.Limits.MaxTextureDimension2D)
+            let _MaxTextureDimension3D_int = uint32 (v.Limits.MaxTextureDimension3D)
+            let _MaxTextureArrayLayers_int = uint32 (v.Limits.MaxTextureArrayLayers)
+            let _MaxBindGroups_int = uint32 (v.Limits.MaxBindGroups)
+            let _MaxDynamicUniformBuffersPerPipelineLayout_int = uint32 (v.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
+            let _MaxDynamicStorageBuffersPerPipelineLayout_int = uint32 (v.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
+            let _MaxSampledTexturesPerShaderStage_int = uint32 (v.Limits.MaxSampledTexturesPerShaderStage)
+            let _MaxSamplersPerShaderStage_int = uint32 (v.Limits.MaxSamplersPerShaderStage)
+            let _MaxStorageBuffersPerShaderStage_int = uint32 (v.Limits.MaxStorageBuffersPerShaderStage)
+            let _MaxStorageTexturesPerShaderStage_int = uint32 (v.Limits.MaxStorageTexturesPerShaderStage)
+            let _MaxUniformBuffersPerShaderStage_int = uint32 (v.Limits.MaxUniformBuffersPerShaderStage)
+            let _MaxUniformBufferBindingSize_uint64 = float (v.Limits.MaxUniformBufferBindingSize)
+            let _MaxStorageBufferBindingSize_uint64 = float (v.Limits.MaxStorageBufferBindingSize)
+            let _MinUniformBufferOffsetAlignment_int = uint32 (v.Limits.MinUniformBufferOffsetAlignment)
+            let _MinStorageBufferOffsetAlignment_int = uint32 (v.Limits.MinStorageBufferOffsetAlignment)
+            let _MaxVertexBuffers_int = uint32 (v.Limits.MaxVertexBuffers)
+            let _MaxVertexAttributes_int = uint32 (v.Limits.MaxVertexAttributes)
+            let _MaxVertexBufferArrayStride_int = uint32 (v.Limits.MaxVertexBufferArrayStride)
+            let _MaxInterStageShaderComponents_int = uint32 (v.Limits.MaxInterStageShaderComponents)
+            let _MaxComputeWorkgroupStorageSize_int = uint32 (v.Limits.MaxComputeWorkgroupStorageSize)
+            let _MaxComputeInvocationsPerWorkgroup_int = uint32 (v.Limits.MaxComputeInvocationsPerWorkgroup)
+            let _MaxComputeWorkgroupSizeX_int = uint32 (v.Limits.MaxComputeWorkgroupSizeX)
+            let _MaxComputeWorkgroupSizeY_int = uint32 (v.Limits.MaxComputeWorkgroupSizeY)
+            let _MaxComputeWorkgroupSizeZ_int = uint32 (v.Limits.MaxComputeWorkgroupSizeZ)
+            let _MaxComputeWorkgroupsPerDimension_int = uint32 (v.Limits.MaxComputeWorkgroupsPerDimension)
             let _Limits_Limits = new DawnRaw.WGPULimits()
             _Limits_Limits.MaxTextureDimension1D <- _MaxTextureDimension1D_int
             _Limits_Limits.MaxTextureDimension2D <- _MaxTextureDimension2D_int
@@ -4058,8 +4049,8 @@ type DeviceProperties =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUDeviceProperties -> 'a) : 'a = 
         let x = x
-        let _DeviceID_int = int (x.DeviceID)
-        let _VendorID_int = int (x.VendorID)
+        let _DeviceID_int = uint32 (x.DeviceID)
+        let _VendorID_int = uint32 (x.VendorID)
         let _TextureCompressionBC_bool = x.TextureCompressionBC
         let _TextureCompressionETC2_bool = x.TextureCompressionETC2
         let _TextureCompressionASTC_bool = x.TextureCompressionASTC
@@ -4071,32 +4062,32 @@ type DeviceProperties =
         let _InvalidExtension_bool = x.InvalidExtension
         let _InvalidFeature_bool = x.InvalidFeature
         let _DawnInternalUsages_bool = x.DawnInternalUsages
-        let _MaxTextureDimension1D_int = int (x.Limits.Limits.MaxTextureDimension1D)
-        let _MaxTextureDimension2D_int = int (x.Limits.Limits.MaxTextureDimension2D)
-        let _MaxTextureDimension3D_int = int (x.Limits.Limits.MaxTextureDimension3D)
-        let _MaxTextureArrayLayers_int = int (x.Limits.Limits.MaxTextureArrayLayers)
-        let _MaxBindGroups_int = int (x.Limits.Limits.MaxBindGroups)
-        let _MaxDynamicUniformBuffersPerPipelineLayout_int = int (x.Limits.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
-        let _MaxDynamicStorageBuffersPerPipelineLayout_int = int (x.Limits.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
-        let _MaxSampledTexturesPerShaderStage_int = int (x.Limits.Limits.MaxSampledTexturesPerShaderStage)
-        let _MaxSamplersPerShaderStage_int = int (x.Limits.Limits.MaxSamplersPerShaderStage)
-        let _MaxStorageBuffersPerShaderStage_int = int (x.Limits.Limits.MaxStorageBuffersPerShaderStage)
-        let _MaxStorageTexturesPerShaderStage_int = int (x.Limits.Limits.MaxStorageTexturesPerShaderStage)
-        let _MaxUniformBuffersPerShaderStage_int = int (x.Limits.Limits.MaxUniformBuffersPerShaderStage)
-        let _MaxUniformBufferBindingSize_uint64 = int (x.Limits.Limits.MaxUniformBufferBindingSize)
-        let _MaxStorageBufferBindingSize_uint64 = int (x.Limits.Limits.MaxStorageBufferBindingSize)
-        let _MinUniformBufferOffsetAlignment_int = int (x.Limits.Limits.MinUniformBufferOffsetAlignment)
-        let _MinStorageBufferOffsetAlignment_int = int (x.Limits.Limits.MinStorageBufferOffsetAlignment)
-        let _MaxVertexBuffers_int = int (x.Limits.Limits.MaxVertexBuffers)
-        let _MaxVertexAttributes_int = int (x.Limits.Limits.MaxVertexAttributes)
-        let _MaxVertexBufferArrayStride_int = int (x.Limits.Limits.MaxVertexBufferArrayStride)
-        let _MaxInterStageShaderComponents_int = int (x.Limits.Limits.MaxInterStageShaderComponents)
-        let _MaxComputeWorkgroupStorageSize_int = int (x.Limits.Limits.MaxComputeWorkgroupStorageSize)
-        let _MaxComputeInvocationsPerWorkgroup_int = int (x.Limits.Limits.MaxComputeInvocationsPerWorkgroup)
-        let _MaxComputeWorkgroupSizeX_int = int (x.Limits.Limits.MaxComputeWorkgroupSizeX)
-        let _MaxComputeWorkgroupSizeY_int = int (x.Limits.Limits.MaxComputeWorkgroupSizeY)
-        let _MaxComputeWorkgroupSizeZ_int = int (x.Limits.Limits.MaxComputeWorkgroupSizeZ)
-        let _MaxComputeWorkgroupsPerDimension_int = int (x.Limits.Limits.MaxComputeWorkgroupsPerDimension)
+        let _MaxTextureDimension1D_int = uint32 (x.Limits.Limits.MaxTextureDimension1D)
+        let _MaxTextureDimension2D_int = uint32 (x.Limits.Limits.MaxTextureDimension2D)
+        let _MaxTextureDimension3D_int = uint32 (x.Limits.Limits.MaxTextureDimension3D)
+        let _MaxTextureArrayLayers_int = uint32 (x.Limits.Limits.MaxTextureArrayLayers)
+        let _MaxBindGroups_int = uint32 (x.Limits.Limits.MaxBindGroups)
+        let _MaxDynamicUniformBuffersPerPipelineLayout_int = uint32 (x.Limits.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
+        let _MaxDynamicStorageBuffersPerPipelineLayout_int = uint32 (x.Limits.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
+        let _MaxSampledTexturesPerShaderStage_int = uint32 (x.Limits.Limits.MaxSampledTexturesPerShaderStage)
+        let _MaxSamplersPerShaderStage_int = uint32 (x.Limits.Limits.MaxSamplersPerShaderStage)
+        let _MaxStorageBuffersPerShaderStage_int = uint32 (x.Limits.Limits.MaxStorageBuffersPerShaderStage)
+        let _MaxStorageTexturesPerShaderStage_int = uint32 (x.Limits.Limits.MaxStorageTexturesPerShaderStage)
+        let _MaxUniformBuffersPerShaderStage_int = uint32 (x.Limits.Limits.MaxUniformBuffersPerShaderStage)
+        let _MaxUniformBufferBindingSize_uint64 = float (x.Limits.Limits.MaxUniformBufferBindingSize)
+        let _MaxStorageBufferBindingSize_uint64 = float (x.Limits.Limits.MaxStorageBufferBindingSize)
+        let _MinUniformBufferOffsetAlignment_int = uint32 (x.Limits.Limits.MinUniformBufferOffsetAlignment)
+        let _MinStorageBufferOffsetAlignment_int = uint32 (x.Limits.Limits.MinStorageBufferOffsetAlignment)
+        let _MaxVertexBuffers_int = uint32 (x.Limits.Limits.MaxVertexBuffers)
+        let _MaxVertexAttributes_int = uint32 (x.Limits.Limits.MaxVertexAttributes)
+        let _MaxVertexBufferArrayStride_int = uint32 (x.Limits.Limits.MaxVertexBufferArrayStride)
+        let _MaxInterStageShaderComponents_int = uint32 (x.Limits.Limits.MaxInterStageShaderComponents)
+        let _MaxComputeWorkgroupStorageSize_int = uint32 (x.Limits.Limits.MaxComputeWorkgroupStorageSize)
+        let _MaxComputeInvocationsPerWorkgroup_int = uint32 (x.Limits.Limits.MaxComputeInvocationsPerWorkgroup)
+        let _MaxComputeWorkgroupSizeX_int = uint32 (x.Limits.Limits.MaxComputeWorkgroupSizeX)
+        let _MaxComputeWorkgroupSizeY_int = uint32 (x.Limits.Limits.MaxComputeWorkgroupSizeY)
+        let _MaxComputeWorkgroupSizeZ_int = uint32 (x.Limits.Limits.MaxComputeWorkgroupSizeZ)
+        let _MaxComputeWorkgroupsPerDimension_int = uint32 (x.Limits.Limits.MaxComputeWorkgroupsPerDimension)
         let _Limits_Limits = new DawnRaw.WGPULimits()
         _Limits_Limits.MaxTextureDimension1D <- _MaxTextureDimension1D_int
         _Limits_Limits.MaxTextureDimension2D <- _MaxTextureDimension2D_int
@@ -4144,85 +4135,6 @@ type DeviceProperties =
         native.DawnInternalUsages <- _DawnInternalUsages_bool
         native.Limits <- _Limits_SupportedLimits
         callback native
-type RenderPassDescriptor =
-    {
-        Label : string
-        ColorAttachments : array<RenderPassColorAttachment>
-        DepthStencilAttachment : option<RenderPassDepthStencilAttachment>
-        OcclusionQuerySet : QuerySet
-    }
-    static member Default(ColorAttachments: array<RenderPassColorAttachment>, DepthStencilAttachment: option<RenderPassDepthStencilAttachment>, OcclusionQuerySet: QuerySet) : RenderPassDescriptor =
-        {
-            Label = null
-            ColorAttachments = ColorAttachments
-            DepthStencilAttachment = DepthStencilAttachment
-            OcclusionQuerySet = OcclusionQuerySet
-        }
-
-    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPURenderPassDescriptor -> 'a) : 'a = 
-        let x = x
-        let _Label_string = x.Label
-        let _ColorAttachments_RenderPassColorAttachmentArrCount = if isNull x.ColorAttachments then 0 else x.ColorAttachments.Length
-        let rec _ColorAttachments_RenderPassColorAttachmentArrCont (_ColorAttachments_RenderPassColorAttachmentArrinputs : array<RenderPassColorAttachment>) (_ColorAttachments_RenderPassColorAttachmentArroutputs : JsArray) (_ColorAttachments_RenderPassColorAttachmentArri : int) =
-            if _ColorAttachments_RenderPassColorAttachmentArri >= _ColorAttachments_RenderPassColorAttachmentArrCount then
-                let _ColorAttachments_RenderPassColorAttachmentArr = _ColorAttachments_RenderPassColorAttachmentArroutputs.Reference
-                let inline _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt = 
-                    let _OcclusionQuerySet_QuerySet = (if isNull x.OcclusionQuerySet then null else x.OcclusionQuerySet.Handle)
-                    let native = DawnRaw.WGPURenderPassDescriptor()
-                    native.Label <- _Label_string
-                    native.ColorAttachments <- _ColorAttachments_RenderPassColorAttachmentArr
-                    native.DepthStencilAttachment <- _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt
-                    native.OcclusionQuerySet <- _OcclusionQuerySet_QuerySet
-                    callback native
-                match x.DepthStencilAttachment with
-                | Some v ->
-                    let _View_TextureView = (if isNull v.View then null else v.View.Handle)
-                    let _DepthLoadOp_LoadOp = v.DepthLoadOp.GetValue()
-                    let _DepthStoreOp_StoreOp = v.DepthStoreOp.GetValue()
-                    let _ClearDepth_float32 = (v.ClearDepth)
-                    let _DepthReadOnly_bool = v.DepthReadOnly
-                    let _StencilLoadOp_LoadOp = v.StencilLoadOp.GetValue()
-                    let _StencilStoreOp_StoreOp = v.StencilStoreOp.GetValue()
-                    let _ClearStencil_int = int (v.ClearStencil)
-                    let _StencilReadOnly_bool = v.StencilReadOnly
-                    let _n = new DawnRaw.WGPURenderPassDepthStencilAttachment()
-                    _n.View <- _View_TextureView
-                    _n.DepthLoadOp <- _DepthLoadOp_LoadOp
-                    _n.DepthStoreOp <- _DepthStoreOp_StoreOp
-                    _n.ClearDepth <- _ClearDepth_float32
-                    _n.DepthReadOnly <- _DepthReadOnly_bool
-                    _n.StencilLoadOp <- _StencilLoadOp_LoadOp
-                    _n.StencilStoreOp <- _StencilStoreOp_StoreOp
-                    _n.ClearStencil <- _ClearStencil_int
-                    _n.StencilReadOnly <- _StencilReadOnly_bool
-                    let _n = _n
-                    _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _n
-                | None -> _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont null
-            else
-                let _View_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View.Handle)
-                let _ResolveTarget_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget.Handle)
-                let _LoadOp_LoadOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].LoadOp.GetValue()
-                let _StoreOp_StoreOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].StoreOp.GetValue()
-                let _R_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.R)
-                let _G_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.G)
-                let _B_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.B)
-                let _A_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.A)
-                let _ClearColor_Color = new DawnRaw.WGPUColor()
-                _ClearColor_Color.R <- _R_float
-                _ClearColor_Color.G <- _G_float
-                _ClearColor_Color.B <- _B_float
-                _ClearColor_Color.A <- _A_float
-                let _ClearColor_Color = _ClearColor_Color
-                let _n = new DawnRaw.WGPURenderPassColorAttachment()
-                _n.View <- _View_TextureView
-                _n.ResolveTarget <- _ResolveTarget_TextureView
-                _n.LoadOp <- _LoadOp_LoadOp
-                _n.StoreOp <- _StoreOp_StoreOp
-                _n.ClearColor <- _ClearColor_Color
-                let _n = _n
-                _ColorAttachments_RenderPassColorAttachmentArroutputs.[_ColorAttachments_RenderPassColorAttachmentArri] <- js _n
-                _ColorAttachments_RenderPassColorAttachmentArrCont _ColorAttachments_RenderPassColorAttachmentArrinputs _ColorAttachments_RenderPassColorAttachmentArroutputs (_ColorAttachments_RenderPassColorAttachmentArri + 1)
-        _ColorAttachments_RenderPassColorAttachmentArrCont x.ColorAttachments (if _ColorAttachments_RenderPassColorAttachmentArrCount > 0 then newArray _ColorAttachments_RenderPassColorAttachmentArrCount else null) 0
 type RequestAdapterOptions =
     {
         CompatibleSurface : Surface
@@ -4255,7 +4167,7 @@ type VertexBufferLayout =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUVertexBufferLayout -> 'a) : 'a = 
         let x = x
-        let _ArrayStride_uint64 = int (x.ArrayStride)
+        let _ArrayStride_uint64 = float (x.ArrayStride)
         let _StepMode_VertexStepMode = x.StepMode.GetValue()
         let _Attributes_VertexAttributeArrCount = if isNull x.Attributes then 0 else x.Attributes.Length
         let rec _Attributes_VertexAttributeArrCont (_Attributes_VertexAttributeArrinputs : array<VertexAttribute>) (_Attributes_VertexAttributeArroutputs : JsArray) (_Attributes_VertexAttributeArri : int) =
@@ -4268,8 +4180,8 @@ type VertexBufferLayout =
                 callback native
             else
                 let _Format_VertexFormat = _Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Format.GetValue()
-                let _Offset_uint64 = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
-                let _ShaderLocation_int = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
+                let _Offset_uint64 = float (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
+                let _ShaderLocation_int = uint32 (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
                 let _n = new DawnRaw.WGPUVertexAttribute()
                 _n.Format <- _Format_VertexFormat
                 _n.Offset <- _Offset_uint64
@@ -4299,10 +4211,10 @@ type BindGroupEntry =
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUBindGroupEntry -> 'a) : 'a = 
         let x = x
-        let _Binding_int = int (x.Binding)
+        let _Binding_int = uint32 (x.Binding)
         let _Buffer_Buffer = (if isNull x.Buffer then null else x.Buffer.Handle)
-        let _Offset_uint64 = int (x.Offset)
-        let _Size_uint64 = int (x.Size)
+        let _Offset_uint64 = float (x.Offset)
+        let _Size_uint64 = float (x.Size)
         let _Sampler_Sampler = (if isNull x.Sampler then null else x.Sampler.Handle)
         let _TextureView_TextureView = (if isNull x.TextureView then null else x.TextureView.Handle)
         let native = DawnRaw.WGPUBindGroupEntry()
@@ -4336,46 +4248,66 @@ type BindGroupLayoutDescriptor =
                 native.Entries <- _Entries_BindGroupLayoutEntryArr
                 callback native
             else
-                let _Binding_int = int (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Binding)
+                let _Binding_int = uint32 (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Binding)
                 let _Visibility_ShaderStage = int (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Visibility)
-                let _Type_BufferBindingType = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer.Type.GetValue()
-                let _HasDynamicOffset_bool = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer.HasDynamicOffset
-                let _MinBindingSize_uint64 = int (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer.MinBindingSize)
-                let _Buffer_BufferBindingLayout = new DawnRaw.WGPUBufferBindingLayout()
-                _Buffer_BufferBindingLayout.Type <- _Type_BufferBindingType
-                _Buffer_BufferBindingLayout.HasDynamicOffset <- _HasDynamicOffset_bool
-                _Buffer_BufferBindingLayout.MinBindingSize <- _MinBindingSize_uint64
-                let _Buffer_BufferBindingLayout = _Buffer_BufferBindingLayout
-                let _Type_SamplerBindingType = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Sampler.Type.GetValue()
-                let _Sampler_SamplerBindingLayout = new DawnRaw.WGPUSamplerBindingLayout()
-                _Sampler_SamplerBindingLayout.Type <- _Type_SamplerBindingType
-                let _Sampler_SamplerBindingLayout = _Sampler_SamplerBindingLayout
-                let _SampleType_TextureSampleType = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture.SampleType.GetValue()
-                let _ViewDimension_TextureViewDimension = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture.ViewDimension.GetValue()
-                let _Multisampled_bool = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture.Multisampled
-                let _Texture_TextureBindingLayout = new DawnRaw.WGPUTextureBindingLayout()
-                _Texture_TextureBindingLayout.SampleType <- _SampleType_TextureSampleType
-                _Texture_TextureBindingLayout.ViewDimension <- _ViewDimension_TextureViewDimension
-                _Texture_TextureBindingLayout.Multisampled <- _Multisampled_bool
-                let _Texture_TextureBindingLayout = _Texture_TextureBindingLayout
-                let _Access_StorageTextureAccess = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture.Access.GetValue()
-                let _Format_TextureFormat = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture.Format.GetValue()
-                let _ViewDimension_TextureViewDimension = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture.ViewDimension.GetValue()
-                let _StorageTexture_StorageTextureBindingLayout = new DawnRaw.WGPUStorageTextureBindingLayout()
-                _StorageTexture_StorageTextureBindingLayout.Access <- _Access_StorageTextureAccess
-                _StorageTexture_StorageTextureBindingLayout.Format <- _Format_TextureFormat
-                _StorageTexture_StorageTextureBindingLayout.ViewDimension <- _ViewDimension_TextureViewDimension
-                let _StorageTexture_StorageTextureBindingLayout = _StorageTexture_StorageTextureBindingLayout
-                let _n = new DawnRaw.WGPUBindGroupLayoutEntry()
-                _n.Binding <- _Binding_int
-                _n.Visibility <- _Visibility_ShaderStage
-                _n.Buffer <- _Buffer_BufferBindingLayout
-                _n.Sampler <- _Sampler_SamplerBindingLayout
-                _n.Texture <- _Texture_TextureBindingLayout
-                _n.StorageTexture <- _StorageTexture_StorageTextureBindingLayout
-                let _n = _n
-                _Entries_BindGroupLayoutEntryArroutputs.[_Entries_BindGroupLayoutEntryArri] <- js _n
-                _Entries_BindGroupLayoutEntryArrCont _Entries_BindGroupLayoutEntryArrinputs _Entries_BindGroupLayoutEntryArroutputs (_Entries_BindGroupLayoutEntryArri + 1)
+                let inline _Buffer_BufferBindingLayoutOptCont _Buffer_BufferBindingLayoutOpt = 
+                    let inline _Sampler_SamplerBindingLayoutOptCont _Sampler_SamplerBindingLayoutOpt = 
+                        let inline _Texture_TextureBindingLayoutOptCont _Texture_TextureBindingLayoutOpt = 
+                            let inline _StorageTexture_StorageTextureBindingLayoutOptCont _StorageTexture_StorageTextureBindingLayoutOpt = 
+                                let _n = new DawnRaw.WGPUBindGroupLayoutEntry()
+                                _n.Binding <- _Binding_int
+                                _n.Visibility <- _Visibility_ShaderStage
+                                _n.Buffer <- _Buffer_BufferBindingLayoutOpt
+                                _n.Sampler <- _Sampler_SamplerBindingLayoutOpt
+                                _n.Texture <- _Texture_TextureBindingLayoutOpt
+                                _n.StorageTexture <- _StorageTexture_StorageTextureBindingLayoutOpt
+                                let _n = _n
+                                _Entries_BindGroupLayoutEntryArroutputs.[_Entries_BindGroupLayoutEntryArri] <- js _n
+                                _Entries_BindGroupLayoutEntryArrCont _Entries_BindGroupLayoutEntryArrinputs _Entries_BindGroupLayoutEntryArroutputs (_Entries_BindGroupLayoutEntryArri + 1)
+                            match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture with
+                            | Some v ->
+                                let _Access_StorageTextureAccess = v.Access.GetValue()
+                                let _Format_TextureFormat = v.Format.GetValue()
+                                let _ViewDimension_TextureViewDimension = v.ViewDimension.GetValue()
+                                let _n = new DawnRaw.WGPUStorageTextureBindingLayout()
+                                _n.Access <- _Access_StorageTextureAccess
+                                _n.Format <- _Format_TextureFormat
+                                _n.ViewDimension <- _ViewDimension_TextureViewDimension
+                                let _n = _n
+                                _StorageTexture_StorageTextureBindingLayoutOptCont _n
+                            | None -> _StorageTexture_StorageTextureBindingLayoutOptCont null
+                        match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture with
+                        | Some v ->
+                            let _SampleType_TextureSampleType = v.SampleType.GetValue()
+                            let _ViewDimension_TextureViewDimension = v.ViewDimension.GetValue()
+                            let _Multisampled_bool = v.Multisampled
+                            let _n = new DawnRaw.WGPUTextureBindingLayout()
+                            _n.SampleType <- _SampleType_TextureSampleType
+                            _n.ViewDimension <- _ViewDimension_TextureViewDimension
+                            _n.Multisampled <- _Multisampled_bool
+                            let _n = _n
+                            _Texture_TextureBindingLayoutOptCont _n
+                        | None -> _Texture_TextureBindingLayoutOptCont null
+                    match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Sampler with
+                    | Some v ->
+                        let _Type_SamplerBindingType = v.Type.GetValue()
+                        let _n = new DawnRaw.WGPUSamplerBindingLayout()
+                        _n.Type <- _Type_SamplerBindingType
+                        let _n = _n
+                        _Sampler_SamplerBindingLayoutOptCont _n
+                    | None -> _Sampler_SamplerBindingLayoutOptCont null
+                match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer with
+                | Some v ->
+                    let _Type_BufferBindingType = v.Type.GetValue()
+                    let _HasDynamicOffset_bool = v.HasDynamicOffset
+                    let _MinBindingSize_uint64 = float (v.MinBindingSize)
+                    let _n = new DawnRaw.WGPUBufferBindingLayout()
+                    _n.Type <- _Type_BufferBindingType
+                    _n.HasDynamicOffset <- _HasDynamicOffset_bool
+                    _n.MinBindingSize <- _MinBindingSize_uint64
+                    let _n = _n
+                    _Buffer_BufferBindingLayoutOptCont _n
+                | None -> _Buffer_BufferBindingLayoutOptCont null
         _Entries_BindGroupLayoutEntryArrCont x.Entries (if _Entries_BindGroupLayoutEntryArrCount > 0 then newArray _Entries_BindGroupLayoutEntryArrCount else null) 0
 type ColorTargetState =
     {
@@ -4424,25 +4356,42 @@ type ColorTargetState =
             let _n = _n
             _Blend_BlendStateOptCont _n
         | None -> _Blend_BlendStateOptCont null
+type ExternalTextureBindingEntry =
+    {
+        ExternalTexture : ExternalTexture
+    }
+
+    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUExternalTextureBindingEntry -> 'a) : 'a = 
+        let x = x
+        let _ExternalTexture_ExternalTexture = (if isNull x.ExternalTexture then null else x.ExternalTexture.Handle)
+        let native = DawnRaw.WGPUExternalTextureBindingEntry()
+        native.ExternalTexture <- _ExternalTexture_ExternalTexture
+        callback native
 type ImageCopyBuffer =
     {
-        Layout : TextureDataLayout
+        Offset : uint64
+        BytesPerRow : int
+        RowsPerImage : int
         Buffer : Buffer
     }
+    static member Default(BytesPerRow: int, RowsPerImage: int, Buffer: Buffer) : ImageCopyBuffer =
+        {
+            Offset = 0UL
+            BytesPerRow = BytesPerRow
+            RowsPerImage = RowsPerImage
+            Buffer = Buffer
+        }
 
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUImageCopyBuffer -> 'a) : 'a = 
         let x = x
-        let _Offset_uint64 = int (x.Layout.Offset)
-        let _BytesPerRow_int = int (x.Layout.BytesPerRow)
-        let _RowsPerImage_int = int (x.Layout.RowsPerImage)
-        let _Layout_TextureDataLayout = new DawnRaw.WGPUTextureDataLayout()
-        _Layout_TextureDataLayout.Offset <- _Offset_uint64
-        _Layout_TextureDataLayout.BytesPerRow <- _BytesPerRow_int
-        _Layout_TextureDataLayout.RowsPerImage <- _RowsPerImage_int
-        let _Layout_TextureDataLayout = _Layout_TextureDataLayout
+        let _Offset_uint64 = float (x.Offset)
+        let _BytesPerRow_int = uint32 (x.BytesPerRow)
+        let _RowsPerImage_int = uint32 (x.RowsPerImage)
         let _Buffer_Buffer = (if isNull x.Buffer then null else x.Buffer.Handle)
         let native = DawnRaw.WGPUImageCopyBuffer()
-        native.Layout <- _Layout_TextureDataLayout
+        native.Offset <- _Offset_uint64
+        native.BytesPerRow <- _BytesPerRow_int
+        native.RowsPerImage <- _RowsPerImage_int
         native.Buffer <- _Buffer_Buffer
         callback native
 type ImageCopyTexture =
@@ -4463,10 +4412,10 @@ type ImageCopyTexture =
     member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPUImageCopyTexture -> 'a) : 'a = 
         let x = x
         let _Texture_Texture = (if isNull x.Texture then null else x.Texture.Handle)
-        let _MipLevel_int = int (x.MipLevel)
-        let _X_int = int (x.Origin.X)
-        let _Y_int = int (x.Origin.Y)
-        let _Z_int = int (x.Origin.Z)
+        let _MipLevel_int = uint32 (x.MipLevel)
+        let _X_int = uint32 (x.Origin.X)
+        let _Y_int = uint32 (x.Origin.Y)
+        let _Z_int = uint32 (x.Origin.Z)
         let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
         _Origin_Origin3D.X <- _X_int
         _Origin_Origin3D.Y <- _Y_int
@@ -4479,6 +4428,74 @@ type ImageCopyTexture =
         native.Origin <- _Origin_Origin3D
         native.Aspect <- _Aspect_TextureAspect
         callback native
+type RenderPassDescriptor =
+    {
+        Label : string
+        ColorAttachments : array<RenderPassColorAttachment>
+        DepthStencilAttachment : option<RenderPassDepthStencilAttachment>
+        OcclusionQuerySet : QuerySet
+    }
+    static member Default(ColorAttachments: array<RenderPassColorAttachment>, DepthStencilAttachment: option<RenderPassDepthStencilAttachment>, OcclusionQuerySet: QuerySet) : RenderPassDescriptor =
+        {
+            Label = null
+            ColorAttachments = ColorAttachments
+            DepthStencilAttachment = DepthStencilAttachment
+            OcclusionQuerySet = OcclusionQuerySet
+        }
+
+    member inline internal x.Pin<'a>(device : Device, callback : DawnRaw.WGPURenderPassDescriptor -> 'a) : 'a = 
+        let x = x
+        let _Label_string = x.Label
+        let _ColorAttachments_RenderPassColorAttachmentArrCount = if isNull x.ColorAttachments then 0 else x.ColorAttachments.Length
+        let rec _ColorAttachments_RenderPassColorAttachmentArrCont (_ColorAttachments_RenderPassColorAttachmentArrinputs : array<RenderPassColorAttachment>) (_ColorAttachments_RenderPassColorAttachmentArroutputs : JsArray) (_ColorAttachments_RenderPassColorAttachmentArri : int) =
+            if _ColorAttachments_RenderPassColorAttachmentArri >= _ColorAttachments_RenderPassColorAttachmentArrCount then
+                let _ColorAttachments_RenderPassColorAttachmentArr = _ColorAttachments_RenderPassColorAttachmentArroutputs.Reference
+                let inline _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt = 
+                    let _OcclusionQuerySet_QuerySet = (if isNull x.OcclusionQuerySet then null else x.OcclusionQuerySet.Handle)
+                    let native = DawnRaw.WGPURenderPassDescriptor()
+                    native.Label <- _Label_string
+                    native.ColorAttachments <- _ColorAttachments_RenderPassColorAttachmentArr
+                    native.DepthStencilAttachment <- _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt
+                    native.OcclusionQuerySet <- _OcclusionQuerySet_QuerySet
+                    callback native
+                match x.DepthStencilAttachment with
+                | Some v ->
+                    let _View_TextureView = (if isNull v.View then null else v.View.Handle)
+                    let _DepthLoadOp_LoadOp = v.DepthLoadOp.GetValue()
+                    let _DepthStoreOp_StoreOp = v.DepthStoreOp.GetValue()
+                    let _ClearDepth_float32 = (v.ClearDepth)
+                    let _DepthReadOnly_bool = v.DepthReadOnly
+                    let _StencilLoadOp_LoadOp = v.StencilLoadOp.GetValue()
+                    let _StencilStoreOp_StoreOp = v.StencilStoreOp.GetValue()
+                    let _ClearStencil_int = uint32 (v.ClearStencil)
+                    let _StencilReadOnly_bool = v.StencilReadOnly
+                    let _n = new DawnRaw.WGPURenderPassDepthStencilAttachment()
+                    _n.View <- _View_TextureView
+                    _n.DepthLoadOp <- _DepthLoadOp_LoadOp
+                    _n.DepthStoreOp <- _DepthStoreOp_StoreOp
+                    _n.ClearDepth <- _ClearDepth_float32
+                    _n.DepthReadOnly <- _DepthReadOnly_bool
+                    _n.StencilLoadOp <- _StencilLoadOp_LoadOp
+                    _n.StencilStoreOp <- _StencilStoreOp_StoreOp
+                    _n.ClearStencil <- _ClearStencil_int
+                    _n.StencilReadOnly <- _StencilReadOnly_bool
+                    let _n = _n
+                    _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _n
+                | None -> _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont null
+            else
+                let _View_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View.Handle)
+                let _ResolveTarget_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget.Handle)
+                let _LoadOp_LoadOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].LoadOp.GetValue()
+                let _StoreOp_StoreOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].StoreOp.GetValue()
+                let _n = new DawnRaw.WGPURenderPassColorAttachment()
+                _n.View <- _View_TextureView
+                _n.ResolveTarget <- _ResolveTarget_TextureView
+                _n.LoadOp <- _LoadOp_LoadOp
+                _n.StoreOp <- _StoreOp_StoreOp
+                let _n = _n
+                _ColorAttachments_RenderPassColorAttachmentArroutputs.[_ColorAttachments_RenderPassColorAttachmentArri] <- js _n
+                _ColorAttachments_RenderPassColorAttachmentArrCont _ColorAttachments_RenderPassColorAttachmentArrinputs _ColorAttachments_RenderPassColorAttachmentArroutputs (_ColorAttachments_RenderPassColorAttachmentArri + 1)
+        _ColorAttachments_RenderPassColorAttachmentArrCont x.ColorAttachments (if _ColorAttachments_RenderPassColorAttachmentArrCount > 0 then newArray _ColorAttachments_RenderPassColorAttachmentArrCount else null) 0
 type BindGroupDescriptor =
     {
         Label : string
@@ -4506,10 +4523,10 @@ type BindGroupDescriptor =
                 native.Entries <- _Entries_BindGroupEntryArr
                 callback native
             else
-                let _Binding_int = int (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Binding)
+                let _Binding_int = uint32 (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Binding)
                 let _Buffer_Buffer = (if isNull _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Buffer then null else _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Buffer.Handle)
-                let _Offset_uint64 = int (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Offset)
-                let _Size_uint64 = int (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Size)
+                let _Offset_uint64 = float (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Offset)
+                let _Size_uint64 = float (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Size)
                 let _Sampler_Sampler = (if isNull _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Sampler then null else _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Sampler.Handle)
                 let _TextureView_TextureView = (if isNull _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].TextureView then null else _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].TextureView.Handle)
                 let _n = new DawnRaw.WGPUBindGroupEntry()
@@ -4652,7 +4669,7 @@ type VertexState =
                         native.Buffers <- _Buffers_VertexBufferLayoutArr
                         callback native
                     else
-                        let _ArrayStride_uint64 = int (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
+                        let _ArrayStride_uint64 = float (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
                         let _StepMode_VertexStepMode = _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].StepMode.GetValue()
                         let _Attributes_VertexAttributeArrCount = if isNull _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes then 0 else _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes.Length
                         let rec _Attributes_VertexAttributeArrCont (_Attributes_VertexAttributeArrinputs : array<VertexAttribute>) (_Attributes_VertexAttributeArroutputs : JsArray) (_Attributes_VertexAttributeArri : int) =
@@ -4667,8 +4684,8 @@ type VertexState =
                                 _Buffers_VertexBufferLayoutArrCont _Buffers_VertexBufferLayoutArrinputs _Buffers_VertexBufferLayoutArroutputs (_Buffers_VertexBufferLayoutArri + 1)
                             else
                                 let _Format_VertexFormat = _Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Format.GetValue()
-                                let _Offset_uint64 = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
-                                let _ShaderLocation_int = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
+                                let _Offset_uint64 = float (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
+                                let _ShaderLocation_int = uint32 (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
                                 let _n = new DawnRaw.WGPUVertexAttribute()
                                 _n.Format <- _Format_VertexFormat
                                 _n.Offset <- _Offset_uint64
@@ -4783,8 +4800,8 @@ type RenderPipelineDescriptor =
                         _Primitive_PrimitiveState.CullMode <- _CullMode_CullMode
                         let _Primitive_PrimitiveState = _Primitive_PrimitiveState
                         let inline _DepthStencil_DepthStencilStateOptCont _DepthStencil_DepthStencilStateOpt = 
-                            let _Count_int = int (x.Multisample.Count)
-                            let _Mask_int = int (x.Multisample.Mask)
+                            let _Count_int = uint32 (x.Multisample.Count)
+                            let _Mask_int = uint32 (x.Multisample.Mask)
                             let _AlphaToCoverageEnabled_bool = x.Multisample.AlphaToCoverageEnabled
                             let _Multisample_MultisampleState = new DawnRaw.WGPUMultisampleState()
                             _Multisample_MultisampleState.Count <- _Count_int
@@ -4892,9 +4909,9 @@ type RenderPipelineDescriptor =
                             _StencilBack_StencilFaceState.DepthFailOp <- _DepthFailOp_StencilOperation
                             _StencilBack_StencilFaceState.PassOp <- _PassOp_StencilOperation
                             let _StencilBack_StencilFaceState = _StencilBack_StencilFaceState
-                            let _StencilReadMask_int = int (v.StencilReadMask)
-                            let _StencilWriteMask_int = int (v.StencilWriteMask)
-                            let _DepthBias_int32 = int (v.DepthBias)
+                            let _StencilReadMask_int = uint32 (v.StencilReadMask)
+                            let _StencilWriteMask_int = uint32 (v.StencilWriteMask)
+                            let _DepthBias_int32 = int32 (v.DepthBias)
                             let _DepthBiasSlopeScale_float32 = (v.DepthBiasSlopeScale)
                             let _DepthBiasClamp_float32 = (v.DepthBiasClamp)
                             let _n = new DawnRaw.WGPUDepthStencilState()
@@ -4912,7 +4929,7 @@ type RenderPipelineDescriptor =
                             _DepthStencil_DepthStencilStateOptCont _n
                         | None -> _DepthStencil_DepthStencilStateOptCont null
                     else
-                        let _ArrayStride_uint64 = int (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
+                        let _ArrayStride_uint64 = float (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
                         let _StepMode_VertexStepMode = _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].StepMode.GetValue()
                         let _Attributes_VertexAttributeArrCount = if isNull _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes then 0 else _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes.Length
                         let rec _Attributes_VertexAttributeArrCont (_Attributes_VertexAttributeArrinputs : array<VertexAttribute>) (_Attributes_VertexAttributeArroutputs : JsArray) (_Attributes_VertexAttributeArri : int) =
@@ -4927,8 +4944,8 @@ type RenderPipelineDescriptor =
                                 _Buffers_VertexBufferLayoutArrCont _Buffers_VertexBufferLayoutArrinputs _Buffers_VertexBufferLayoutArroutputs (_Buffers_VertexBufferLayoutArri + 1)
                             else
                                 let _Format_VertexFormat = _Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Format.GetValue()
-                                let _Offset_uint64 = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
-                                let _ShaderLocation_int = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
+                                let _Offset_uint64 = float (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
+                                let _ShaderLocation_int = uint32 (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
                                 let _n = new DawnRaw.WGPUVertexAttribute()
                                 _n.Format <- _Format_VertexFormat
                                 _n.Offset <- _Offset_uint64
@@ -4975,30 +4992,6 @@ type Adapter(device : Device, handle : AdapterHandle, refCount : ref<int>) =
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : AdapterHandle) = new Adapter(device, handle, ref 1)
 [<AllowNullLiteral>]
-type BindGroup(device : Device, handle : BindGroupHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : BindGroupHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("BindGroup")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("BindGroup")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new BindGroup(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : BindGroupHandle) = new BindGroup(device, handle, ref 1)
-[<AllowNullLiteral>]
 type BindGroupLayout(device : Device, handle : BindGroupLayoutHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
@@ -5022,154 +5015,6 @@ type BindGroupLayout(device : Device, handle : BindGroupLayoutHandle, refCount :
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : BindGroupLayoutHandle) = new BindGroupLayout(device, handle, ref 1)
-[<AllowNullLiteral>]
-type CommandBuffer(device : Device, handle : CommandBufferHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : CommandBufferHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("CommandBuffer")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("CommandBuffer")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new CommandBuffer(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : CommandBufferHandle) = new CommandBuffer(device, handle, ref 1)
-[<AllowNullLiteral>]
-type ExternalTexture(device : Device, handle : ExternalTextureHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : ExternalTextureHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("ExternalTexture")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("ExternalTexture")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new ExternalTexture(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : ExternalTextureHandle) = new ExternalTexture(device, handle, ref 1)
-    member x.Destroy() : unit = 
-        x.Handle.Reference.Invoke("destroy") |> ignore
-[<AllowNullLiteral>]
-type PipelineLayout(device : Device, handle : PipelineLayoutHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : PipelineLayoutHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("PipelineLayout")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("PipelineLayout")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new PipelineLayout(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : PipelineLayoutHandle) = new PipelineLayout(device, handle, ref 1)
-[<AllowNullLiteral>]
-type QuerySet(device : Device, handle : QuerySetHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : QuerySetHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("QuerySet")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("QuerySet")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new QuerySet(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : QuerySetHandle) = new QuerySet(device, handle, ref 1)
-    member x.Destroy() : unit = 
-        x.Handle.Reference.Invoke("destroy") |> ignore
-[<AllowNullLiteral>]
-type RenderBundle(device : Device, handle : RenderBundleHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : RenderBundleHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("RenderBundle")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("RenderBundle")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new RenderBundle(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : RenderBundleHandle) = new RenderBundle(device, handle, ref 1)
-[<AllowNullLiteral>]
-type Sampler(device : Device, handle : SamplerHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : SamplerHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("Sampler")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("Sampler")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new Sampler(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : SamplerHandle) = new Sampler(device, handle, ref 1)
 [<AllowNullLiteral>]
 type TextureView(device : Device, handle : TextureViewHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
@@ -5195,11 +5040,12 @@ type TextureView(device : Device, handle : TextureViewHandle, refCount : ref<int
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : TextureViewHandle) = new TextureView(device, handle, ref 1)
 [<AllowNullLiteral>]
-type ComputePipeline(device : Device, handle : ComputePipelineHandle, refCount : ref<int>) = 
+type CommandBuffer(device : Device, handle : CommandBufferHandle, descriptor : CommandBufferDescriptor, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
+    member x.Descriptor = descriptor
     member x.ReferenceCount = !refCount
-    member x.Handle : ComputePipelineHandle = handle
+    member x.Handle : CommandBufferHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -5208,30 +5054,23 @@ type ComputePipeline(device : Device, handle : ComputePipelineHandle, refCount :
     member x.Dispose() = x.Dispose(true)
     member x.Clone() = 
         let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("ComputePipeline")
+        if o = 0 then raise <| System.ObjectDisposedException("CommandBuffer")
         let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
         while o <> n do
             o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("ComputePipeline")
+            if o = 0 then raise <| System.ObjectDisposedException("CommandBuffer")
             n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new ComputePipeline(device, handle, refCount)
+        new CommandBuffer(device, handle, descriptor, refCount)
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
-    new(device : Device, handle : ComputePipelineHandle) = new ComputePipeline(device, handle, ref 1)
-    member x.GetBindGroupLayout(GroupIndex : int) : BindGroupLayout = 
-        let _GroupIndex_int = int (GroupIndex)
-        new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex_int)))
-    member x.SetLabel() : unit = 
-        x.Handle.Reference.Invoke("setLabel") |> ignore
-    member x.SetLabel(Label : string) : unit = 
-        let _Label_string = Label
-        x.Handle.Reference.Invoke("setLabel", js _Label_string) |> ignore
+    new(device : Device, handle : CommandBufferHandle, descriptor : CommandBufferDescriptor) = new CommandBuffer(device, handle, descriptor, ref 1)
 [<AllowNullLiteral>]
-type RenderPipeline(device : Device, handle : RenderPipelineHandle, refCount : ref<int>) = 
+type RenderBundle(device : Device, handle : RenderBundleHandle, descriptor : RenderBundleDescriptor, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
+    member x.Descriptor = descriptor
     member x.ReferenceCount = !refCount
-    member x.Handle : RenderPipelineHandle = handle
+    member x.Handle : RenderBundleHandle = handle
     member x.IsDisposed = isDisposed
     member private x.Dispose(disposing : bool) =
         if not isDisposed then 
@@ -5240,28 +5079,21 @@ type RenderPipeline(device : Device, handle : RenderPipelineHandle, refCount : r
     member x.Dispose() = x.Dispose(true)
     member x.Clone() = 
         let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("RenderPipeline")
+        if o = 0 then raise <| System.ObjectDisposedException("RenderBundle")
         let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
         while o <> n do
             o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("RenderPipeline")
+            if o = 0 then raise <| System.ObjectDisposedException("RenderBundle")
             n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new RenderPipeline(device, handle, refCount)
+        new RenderBundle(device, handle, descriptor, refCount)
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
-    new(device : Device, handle : RenderPipelineHandle) = new RenderPipeline(device, handle, ref 1)
-    member x.GetBindGroupLayout(GroupIndex : int) : BindGroupLayout = 
-        let _GroupIndex_int = int (GroupIndex)
-        new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex_int)))
-    member x.SetLabel() : unit = 
-        x.Handle.Reference.Invoke("setLabel") |> ignore
-    member x.SetLabel(Label : string) : unit = 
-        let _Label_string = Label
-        x.Handle.Reference.Invoke("setLabel", js _Label_string) |> ignore
+    new(device : Device, handle : RenderBundleHandle, descriptor : RenderBundleDescriptor) = new RenderBundle(device, handle, descriptor, ref 1)
 [<AllowNullLiteral>]
-type Surface(device : Device, handle : SurfaceHandle, refCount : ref<int>) = 
+type Surface(device : Device, handle : SurfaceHandle, descriptor : SurfaceDescriptor, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
+    member x.Descriptor = descriptor
     member x.ReferenceCount = !refCount
     member x.Handle : SurfaceHandle = handle
     member x.IsDisposed = isDisposed
@@ -5278,10 +5110,10 @@ type Surface(device : Device, handle : SurfaceHandle, refCount : ref<int>) =
             o <- n
             if o = 0 then raise <| System.ObjectDisposedException("Surface")
             n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new Surface(device, handle, refCount)
+        new Surface(device, handle, descriptor, refCount)
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
-    new(device : Device, handle : SurfaceHandle) = new Surface(device, handle, ref 1)
+    new(device : Device, handle : SurfaceHandle, descriptor : SurfaceDescriptor) = new Surface(device, handle, descriptor, ref 1)
     member x.GetPreferredFormat(Adapter : Adapter) : TextureFormat = 
         let _Adapter_Adapter = (if isNull Adapter then null else Adapter.Handle)
         x.Handle.Reference.Invoke("getPreferredFormat", js _Adapter_Adapter) |> System.Convert.ToInt32 |> unbox<TextureFormat>
@@ -5312,8 +5144,8 @@ type SwapChain(device : Device, handle : SwapChainHandle, refCount : ref<int>) =
     member x.Configure(Format : TextureFormat, AllowedUsage : TextureUsage, Width : int, Height : int) : unit = 
         let _Format_TextureFormat = Format.GetValue()
         let _AllowedUsage_TextureUsage = int (AllowedUsage)
-        let _Width_int = int (Width)
-        let _Height_int = int (Height)
+        let _Width_int = uint32 (Width)
+        let _Height_int = uint32 (Height)
         x.Handle.Reference.Invoke("configure", js _Format_TextureFormat, js _AllowedUsage_TextureUsage, js _Width_int, js _Height_int) |> ignore
     member x.GetCurrentTextureView() : TextureView = 
         new TextureView(x.Device, convert(x.Handle.Reference.Invoke("getCurrentTextureView")))
@@ -5345,10 +5177,10 @@ type Buffer(device : Device, handle : BufferHandle, refCount : ref<int>) =
     new(device : Device, handle : BufferHandle) = new Buffer(device, handle, ref 1)
     member x.MapAsync(Mode : MapMode, Offset : unativeint, Size : unativeint, Callback : BufferMapCallback) : unit = 
         let _Mode_MapMode = int (Mode)
-        let _Offset_unativeint = int (Offset)
-        let _Size_unativeint = int (Size)
+        let _Offset_unativeint = float (Offset)
+        let _Size_unativeint = float (Size)
         let mutable _Callback_BufferMapCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_BufferMapCallbackFunction (Status : obj) (Userdata : int) = 
+        let _Callback_BufferMapCallbackFunction (Status : obj) (Userdata : float) = 
             let _Status_BufferMapAsyncStatus = Status |> System.Convert.ToInt32 |> unbox<BufferMapAsyncStatus>
             let _Userdata_nativeint = Userdata
             if _Callback_BufferMapCallbackGC.IsAllocated then _Callback_BufferMapCallbackGC.Free()
@@ -5359,10 +5191,10 @@ type Buffer(device : Device, handle : BufferHandle, refCount : ref<int>) =
         x.Handle.Reference.Invoke("mapAsync", js _Mode_MapMode, js _Offset_unativeint, js _Size_unativeint, js _Callback_BufferMapCallback) |> ignore
     member x.MapAsync(Mode : MapMode, Offset : unativeint, Size : unativeint, Callback : BufferMapCallback, Userdata : nativeint) : unit = 
         let _Mode_MapMode = int (Mode)
-        let _Offset_unativeint = int (Offset)
-        let _Size_unativeint = int (Size)
+        let _Offset_unativeint = float (Offset)
+        let _Size_unativeint = float (Size)
         let mutable _Callback_BufferMapCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_BufferMapCallbackFunction (Status : obj) (Userdata : int) = 
+        let _Callback_BufferMapCallbackFunction (Status : obj) (Userdata : float) = 
             let _Status_BufferMapAsyncStatus = Status |> System.Convert.ToInt32 |> unbox<BufferMapAsyncStatus>
             let _Userdata_nativeint = Userdata
             if _Callback_BufferMapCallbackGC.IsAllocated then _Callback_BufferMapCallbackGC.Free()
@@ -5370,25 +5202,25 @@ type Buffer(device : Device, handle : BufferHandle, refCount : ref<int>) =
         let _Callback_BufferMapCallbackDel = WGPUBufferMapCallback(_Callback_BufferMapCallbackFunction)
         _Callback_BufferMapCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_BufferMapCallbackDel)
         let _Callback_BufferMapCallback = _Callback_BufferMapCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("mapAsync", js _Mode_MapMode, js _Offset_unativeint, js _Size_unativeint, js _Callback_BufferMapCallback, js _Userdata_nativeint) |> ignore
     member x.GetMappedRange() : ArrayBuffer = 
         x.Handle.Reference.Invoke("getMappedRange") |> unbox<ArrayBuffer>
     member x.GetMappedRange(Offset : unativeint) : ArrayBuffer = 
-        let _Offset_unativeint = int (Offset)
+        let _Offset_unativeint = float (Offset)
         x.Handle.Reference.Invoke("getMappedRange", js _Offset_unativeint) |> unbox<ArrayBuffer>
     member x.GetMappedRange(Offset : unativeint, Size : unativeint) : ArrayBuffer = 
-        let _Offset_unativeint = int (Offset)
-        let _Size_unativeint = int (Size)
+        let _Offset_unativeint = float (Offset)
+        let _Size_unativeint = float (Size)
         x.Handle.Reference.Invoke("getMappedRange", js _Offset_unativeint, js _Size_unativeint) |> unbox<ArrayBuffer>
     member x.GetConstMappedRange() : ArrayBuffer = 
         x.Handle.Reference.Invoke("getConstMappedRange") |> unbox<ArrayBuffer>
     member x.GetConstMappedRange(Offset : unativeint) : ArrayBuffer = 
-        let _Offset_unativeint = int (Offset)
+        let _Offset_unativeint = float (Offset)
         x.Handle.Reference.Invoke("getConstMappedRange", js _Offset_unativeint) |> unbox<ArrayBuffer>
     member x.GetConstMappedRange(Offset : unativeint, Size : unativeint) : ArrayBuffer = 
-        let _Offset_unativeint = int (Offset)
-        let _Size_unativeint = int (Size)
+        let _Offset_unativeint = float (Offset)
+        let _Size_unativeint = float (Size)
         x.Handle.Reference.Invoke("getConstMappedRange", js _Offset_unativeint, js _Size_unativeint) |> unbox<ArrayBuffer>
     member x.SetLabel() : unit = 
         x.Handle.Reference.Invoke("setLabel") |> ignore
@@ -5400,9 +5232,114 @@ type Buffer(device : Device, handle : BufferHandle, refCount : ref<int>) =
     member x.Destroy() : unit = 
         x.Handle.Reference.Invoke("destroy") |> ignore
 [<AllowNullLiteral>]
-type Texture(device : Device, handle : TextureHandle, refCount : ref<int>) = 
+type ExternalTexture(device : Device, handle : ExternalTextureHandle, externalTextureDescriptor : ExternalTextureDescriptor, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
+    member x.ExternalTextureDescriptor = externalTextureDescriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : ExternalTextureHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("ExternalTexture")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("ExternalTexture")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new ExternalTexture(device, handle, externalTextureDescriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : ExternalTextureHandle, externalTextureDescriptor : ExternalTextureDescriptor) = new ExternalTexture(device, handle, externalTextureDescriptor, ref 1)
+    member x.Destroy() : unit = 
+        x.Handle.Reference.Invoke("destroy") |> ignore
+[<AllowNullLiteral>]
+type PipelineLayout(device : Device, handle : PipelineLayoutHandle, descriptor : PipelineLayoutDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : PipelineLayoutHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("PipelineLayout")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("PipelineLayout")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new PipelineLayout(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : PipelineLayoutHandle, descriptor : PipelineLayoutDescriptor) = new PipelineLayout(device, handle, descriptor, ref 1)
+[<AllowNullLiteral>]
+type QuerySet(device : Device, handle : QuerySetHandle, descriptor : QuerySetDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : QuerySetHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("QuerySet")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("QuerySet")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new QuerySet(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : QuerySetHandle, descriptor : QuerySetDescriptor) = new QuerySet(device, handle, descriptor, ref 1)
+    member x.Destroy() : unit = 
+        x.Handle.Reference.Invoke("destroy") |> ignore
+[<AllowNullLiteral>]
+type Sampler(device : Device, handle : SamplerHandle, descriptor : SamplerDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : SamplerHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("Sampler")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("Sampler")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new Sampler(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : SamplerHandle, descriptor : SamplerDescriptor) = new Sampler(device, handle, descriptor, ref 1)
+[<AllowNullLiteral>]
+type Texture(device : Device, handle : TextureHandle, descriptor : TextureDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
     member x.ReferenceCount = !refCount
     member x.Handle : TextureHandle = handle
     member x.IsDisposed = isDisposed
@@ -5419,18 +5356,18 @@ type Texture(device : Device, handle : TextureHandle, refCount : ref<int>) =
             o <- n
             if o = 0 then raise <| System.ObjectDisposedException("Texture")
             n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new Texture(device, handle, refCount)
+        new Texture(device, handle, descriptor, refCount)
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
-    new(device : Device, handle : TextureHandle) = new Texture(device, handle, ref 1)
+    new(device : Device, handle : TextureHandle, descriptor : TextureDescriptor) = new Texture(device, handle, descriptor, ref 1)
     member x.CreateView(Descriptor : TextureViewDescriptor) : TextureView = 
         let _Label_string = Descriptor.Label
         let _Format_TextureFormat = Descriptor.Format.GetValue()
         let _Dimension_TextureViewDimension = Descriptor.Dimension.GetValue()
-        let _BaseMipLevel_int = int (Descriptor.BaseMipLevel)
-        let _MipLevelCount_int = int (Descriptor.MipLevelCount)
-        let _BaseArrayLayer_int = int (Descriptor.BaseArrayLayer)
-        let _ArrayLayerCount_int = int (Descriptor.ArrayLayerCount)
+        let _BaseMipLevel_int = uint32 (Descriptor.BaseMipLevel)
+        let _MipLevelCount_int = uint32 (Descriptor.MipLevelCount)
+        let _BaseArrayLayer_int = uint32 (Descriptor.BaseArrayLayer)
+        let _ArrayLayerCount_int = uint32 (Descriptor.ArrayLayerCount)
         let _Aspect_TextureAspect = Descriptor.Aspect.GetValue()
         let _Descriptor_TextureViewDescriptor = new DawnRaw.WGPUTextureViewDescriptor()
         _Descriptor_TextureViewDescriptor.Label <- _Label_string
@@ -5450,75 +5387,6 @@ type Texture(device : Device, handle : TextureHandle, refCount : ref<int>) =
         x.Handle.Reference.Invoke("setLabel", js _Label_string) |> ignore
     member x.Destroy() : unit = 
         x.Handle.Reference.Invoke("destroy") |> ignore
-[<AllowNullLiteral>]
-type ComputePassEncoder(device : Device, handle : ComputePassEncoderHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : ComputePassEncoderHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("ComputePassEncoder")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("ComputePassEncoder")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new ComputePassEncoder(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : ComputePassEncoderHandle) = new ComputePassEncoder(device, handle, ref 1)
-    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
-        let _MarkerLabel_string = MarkerLabel
-        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
-    member x.PopDebugGroup() : unit = 
-        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-    member x.PushDebugGroup(GroupLabel : string) : unit = 
-        let _GroupLabel_string = GroupLabel
-        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
-    member x.SetPipeline(Pipeline : ComputePipeline) : unit = 
-        let _Pipeline_ComputePipeline = (if isNull Pipeline then null else Pipeline.Handle)
-        x.Handle.Reference.Invoke("setPipeline", js _Pipeline_ComputePipeline) |> ignore
-    member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
-        let _GroupIndex_int = int (GroupIndex)
-        let _Group_BindGroup = (if isNull Group then null else Group.Handle)
-        let _DynamicOffsets_uint32Arr = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
-        let _DynamicOffsets_uint32ArrCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
-        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex_int, js _Group_BindGroup, js _DynamicOffsets_uint32Arr) |> ignore
-    member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
-        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
-        let _QueryIndex_int = int (QueryIndex)
-        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
-    member x.BeginPipelineStatisticsQuery(QuerySet : QuerySet, QueryIndex : int) : unit = 
-        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
-        let _QueryIndex_int = int (QueryIndex)
-        x.Handle.Reference.Invoke("beginPipelineStatisticsQuery", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
-    member x.Dispatch(X : int) : unit = 
-        let _X_int = int (X)
-        x.Handle.Reference.Invoke("dispatch", js _X_int) |> ignore
-    member x.Dispatch(X : int, Y : int) : unit = 
-        let _X_int = int (X)
-        let _Y_int = int (Y)
-        x.Handle.Reference.Invoke("dispatch", js _X_int, js _Y_int) |> ignore
-    member x.Dispatch(X : int, Y : int, Z : int) : unit = 
-        let _X_int = int (X)
-        let _Y_int = int (Y)
-        let _Z_int = int (Z)
-        x.Handle.Reference.Invoke("dispatch", js _X_int, js _Y_int, js _Z_int) |> ignore
-    member x.DispatchIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
-        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
-        let _IndirectOffset_uint64 = int (IndirectOffset)
-        x.Handle.Reference.Invoke("dispatchIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
-    member x.EndPass() : unit = 
-        x.Handle.Reference.Invoke("endPass") |> ignore
-    member x.EndPipelineStatisticsQuery() : unit = 
-        x.Handle.Reference.Invoke("endPipelineStatisticsQuery") |> ignore
 [<AllowNullLiteral>]
 type Instance(device : Device, handle : InstanceHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
@@ -5544,13 +5412,13 @@ type Instance(device : Device, handle : InstanceHandle, refCount : ref<int>) =
         member x.Dispose() = x.Dispose()
     new(device : Device, handle : InstanceHandle) = new Instance(device, handle, ref 1)
     member x.CreateSurface() : Surface = 
-        new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface")))
+        new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface")), SurfaceDescriptor.Default)
     member x.CreateSurface(Descriptor : SurfaceDescriptor) : Surface = 
         let _Label_string = Descriptor.Label
         let _Descriptor_SurfaceDescriptor = new DawnRaw.WGPUSurfaceDescriptor()
         _Descriptor_SurfaceDescriptor.Label <- _Label_string
         let _Descriptor_SurfaceDescriptor = _Descriptor_SurfaceDescriptor
-        new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface", js _Descriptor_SurfaceDescriptor)))
+        new Surface(x.Device, convert(x.Handle.Reference.Invoke("createSurface", js _Descriptor_SurfaceDescriptor)), Descriptor)
     member x.ProcessEvents() : unit = 
         x.Handle.Reference.Invoke("processEvents") |> ignore
     member x.RequestAdapter(Options : RequestAdapterOptions, Callback : RequestAdapterCallback) : unit = 
@@ -5563,7 +5431,7 @@ type Instance(device : Device, handle : InstanceHandle, refCount : ref<int>) =
         _Options_RequestAdapterOptions.ForceFallbackAdapter <- _ForceFallbackAdapter_bool
         let _Options_RequestAdapterOptions = _Options_RequestAdapterOptions
         let mutable _Callback_RequestAdapterCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_RequestAdapterCallbackFunction (Status : obj) (Adapter : AdapterHandle) (Message : string) (Userdata : int) = 
+        let _Callback_RequestAdapterCallbackFunction (Status : obj) (Adapter : AdapterHandle) (Message : string) (Userdata : float) = 
             let _Status_RequestAdapterStatus = Status |> System.Convert.ToInt32 |> unbox<RequestAdapterStatus>
             let _Adapter_Adapter = Adapter
             let _Message_string = Message
@@ -5584,7 +5452,7 @@ type Instance(device : Device, handle : InstanceHandle, refCount : ref<int>) =
         _Options_RequestAdapterOptions.ForceFallbackAdapter <- _ForceFallbackAdapter_bool
         let _Options_RequestAdapterOptions = _Options_RequestAdapterOptions
         let mutable _Callback_RequestAdapterCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_RequestAdapterCallbackFunction (Status : obj) (Adapter : AdapterHandle) (Message : string) (Userdata : int) = 
+        let _Callback_RequestAdapterCallbackFunction (Status : obj) (Adapter : AdapterHandle) (Message : string) (Userdata : float) = 
             let _Status_RequestAdapterStatus = Status |> System.Convert.ToInt32 |> unbox<RequestAdapterStatus>
             let _Adapter_Adapter = Adapter
             let _Message_string = Message
@@ -5594,601 +5462,8 @@ type Instance(device : Device, handle : InstanceHandle, refCount : ref<int>) =
         let _Callback_RequestAdapterCallbackDel = WGPURequestAdapterCallback(_Callback_RequestAdapterCallbackFunction)
         _Callback_RequestAdapterCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_RequestAdapterCallbackDel)
         let _Callback_RequestAdapterCallback = _Callback_RequestAdapterCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("requestAdapter", js _Options_RequestAdapterOptions, js _Callback_RequestAdapterCallback, js _Userdata_nativeint) |> ignore
-[<AllowNullLiteral>]
-type RenderBundleEncoder(device : Device, handle : RenderBundleEncoderHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : RenderBundleEncoderHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("RenderBundleEncoder")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("RenderBundleEncoder")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new RenderBundleEncoder(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : RenderBundleEncoderHandle) = new RenderBundleEncoder(device, handle, ref 1)
-    member x.SetPipeline(Pipeline : RenderPipeline) : unit = 
-        let _Pipeline_RenderPipeline = (if isNull Pipeline then null else Pipeline.Handle)
-        x.Handle.Reference.Invoke("setPipeline", js _Pipeline_RenderPipeline) |> ignore
-    member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
-        let _GroupIndex_int = int (GroupIndex)
-        let _Group_BindGroup = (if isNull Group then null else Group.Handle)
-        let _DynamicOffsets_uint32Arr = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
-        let _DynamicOffsets_uint32ArrCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
-        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex_int, js _Group_BindGroup, js _DynamicOffsets_uint32Arr) |> ignore
-    member x.Draw(VertexCount : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int) |> ignore
-    member x.Draw(VertexCount : int, InstanceCount : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int) |> ignore
-    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstVertex_int = int (FirstVertex)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int) |> ignore
-    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int, FirstInstance : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstVertex_int = int (FirstVertex)
-        let _FirstInstance_int = int (FirstInstance)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int, js _FirstInstance_int) |> ignore
-    member x.DrawIndexed(IndexCount : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstIndex_int = int (FirstIndex)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstIndex_int = int (FirstIndex)
-        let _BaseVertex_int32 = int (BaseVertex)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32, FirstInstance : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstIndex_int = int (FirstIndex)
-        let _BaseVertex_int32 = int (BaseVertex)
-        let _FirstInstance_int = int (FirstInstance)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32, js _FirstInstance_int) |> ignore
-    member x.DrawIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
-        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
-        let _IndirectOffset_uint64 = int (IndirectOffset)
-        x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
-    member x.DrawIndexedIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
-        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
-        let _IndirectOffset_uint64 = int (IndirectOffset)
-        x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
-    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
-        let _MarkerLabel_string = MarkerLabel
-        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
-    member x.PopDebugGroup() : unit = 
-        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-    member x.PushDebugGroup(GroupLabel : string) : unit = 
-        let _GroupLabel_string = GroupLabel
-        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
-    member x.SetVertexBuffer(Slot : int, Buffer : Buffer) : unit = 
-        let _Slot_int = int (Slot)
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer) |> ignore
-    member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64, Size : uint64) : unit = 
-        let _Slot_int = int (Slot)
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _Offset_uint64 = int (Offset)
-        let _Size_uint64 = int (Size)
-        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer, js _Offset_uint64, js _Size_uint64) |> ignore
-    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat) : unit = 
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _Format_IndexFormat = Format.GetValue()
-        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat) |> ignore
-    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64, Size : uint64) : unit = 
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _Format_IndexFormat = Format.GetValue()
-        let _Offset_uint64 = int (Offset)
-        let _Size_uint64 = int (Size)
-        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat, js _Offset_uint64, js _Size_uint64) |> ignore
-    member x.Finish() : RenderBundle = 
-        new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish")))
-    member x.Finish(Descriptor : RenderBundleDescriptor) : RenderBundle = 
-        let _Label_string = Descriptor.Label
-        let _Descriptor_RenderBundleDescriptor = new DawnRaw.WGPURenderBundleDescriptor()
-        _Descriptor_RenderBundleDescriptor.Label <- _Label_string
-        let _Descriptor_RenderBundleDescriptor = _Descriptor_RenderBundleDescriptor
-        new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor_RenderBundleDescriptor)))
-[<AllowNullLiteral>]
-type RenderPassEncoder(device : Device, handle : RenderPassEncoderHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : RenderPassEncoderHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("RenderPassEncoder")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("RenderPassEncoder")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new RenderPassEncoder(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : RenderPassEncoderHandle) = new RenderPassEncoder(device, handle, ref 1)
-    member x.SetPipeline(Pipeline : RenderPipeline) : unit = 
-        let _Pipeline_RenderPipeline = (if isNull Pipeline then null else Pipeline.Handle)
-        x.Handle.Reference.Invoke("setPipeline", js _Pipeline_RenderPipeline) |> ignore
-    member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
-        let _GroupIndex_int = int (GroupIndex)
-        let _Group_BindGroup = (if isNull Group then null else Group.Handle)
-        let _DynamicOffsets_uint32Arr = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
-        let _DynamicOffsets_uint32ArrCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
-        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex_int, js _Group_BindGroup, js _DynamicOffsets_uint32Arr) |> ignore
-    member x.Draw(VertexCount : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int) |> ignore
-    member x.Draw(VertexCount : int, InstanceCount : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int) |> ignore
-    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstVertex_int = int (FirstVertex)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int) |> ignore
-    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int, FirstInstance : int) : unit = 
-        let _VertexCount_int = int (VertexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstVertex_int = int (FirstVertex)
-        let _FirstInstance_int = int (FirstInstance)
-        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int, js _FirstInstance_int) |> ignore
-    member x.DrawIndexed(IndexCount : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstIndex_int = int (FirstIndex)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstIndex_int = int (FirstIndex)
-        let _BaseVertex_int32 = int (BaseVertex)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32) |> ignore
-    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32, FirstInstance : int) : unit = 
-        let _IndexCount_int = int (IndexCount)
-        let _InstanceCount_int = int (InstanceCount)
-        let _FirstIndex_int = int (FirstIndex)
-        let _BaseVertex_int32 = int (BaseVertex)
-        let _FirstInstance_int = int (FirstInstance)
-        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32, js _FirstInstance_int) |> ignore
-    member x.DrawIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
-        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
-        let _IndirectOffset_uint64 = int (IndirectOffset)
-        x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
-    member x.DrawIndexedIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
-        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
-        let _IndirectOffset_uint64 = int (IndirectOffset)
-        x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
-    member x.ExecuteBundles(Bundles : array<RenderBundle>) : unit = 
-        let _Bundles_RenderBundleArrCount = Bundles.Length
-        let _Bundles_RenderBundleArrArray = newArray _Bundles_RenderBundleArrCount
-        for i in 0 .. _Bundles_RenderBundleArrCount-1 do
-            if isNull Bundles.[i] then _Bundles_RenderBundleArrArray.[i] <- null
-            else _Bundles_RenderBundleArrArray.[i] <- Bundles.[i].Handle
-        let _Bundles_RenderBundleArr = _Bundles_RenderBundleArrArray.Reference
-        x.Handle.Reference.Invoke("executeBundles", js _Bundles_RenderBundleArr) |> ignore
-    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
-        let _MarkerLabel_string = MarkerLabel
-        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
-    member x.PopDebugGroup() : unit = 
-        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-    member x.PushDebugGroup(GroupLabel : string) : unit = 
-        let _GroupLabel_string = GroupLabel
-        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
-    member x.SetStencilReference(Reference : int) : unit = 
-        let _Reference_int = int (Reference)
-        x.Handle.Reference.Invoke("setStencilReference", js _Reference_int) |> ignore
-    member x.SetBlendConstant(Color : Color) : unit = 
-        let _R_float = (Color.R)
-        let _G_float = (Color.G)
-        let _B_float = (Color.B)
-        let _A_float = (Color.A)
-        let _Color_Color = new DawnRaw.WGPUColor()
-        _Color_Color.R <- _R_float
-        _Color_Color.G <- _G_float
-        _Color_Color.B <- _B_float
-        _Color_Color.A <- _A_float
-        let _Color_Color = _Color_Color
-        x.Handle.Reference.Invoke("setBlendConstant", js _Color_Color) |> ignore
-    member x.SetViewport(X : float32, Y : float32, Width : float32, Height : float32, MinDepth : float32, MaxDepth : float32) : unit = 
-        let _X_float32 = (X)
-        let _Y_float32 = (Y)
-        let _Width_float32 = (Width)
-        let _Height_float32 = (Height)
-        let _MinDepth_float32 = (MinDepth)
-        let _MaxDepth_float32 = (MaxDepth)
-        x.Handle.Reference.Invoke("setViewport", js _X_float32, js _Y_float32, js _Width_float32, js _Height_float32, js _MinDepth_float32, js _MaxDepth_float32) |> ignore
-    member x.SetScissorRect(X : int, Y : int, Width : int, Height : int) : unit = 
-        let _X_int = int (X)
-        let _Y_int = int (Y)
-        let _Width_int = int (Width)
-        let _Height_int = int (Height)
-        x.Handle.Reference.Invoke("setScissorRect", js _X_int, js _Y_int, js _Width_int, js _Height_int) |> ignore
-    member x.SetVertexBuffer(Slot : int, Buffer : Buffer) : unit = 
-        let _Slot_int = int (Slot)
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer) |> ignore
-    member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64, Size : uint64) : unit = 
-        let _Slot_int = int (Slot)
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _Offset_uint64 = int (Offset)
-        let _Size_uint64 = int (Size)
-        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer, js _Offset_uint64, js _Size_uint64) |> ignore
-    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat) : unit = 
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _Format_IndexFormat = Format.GetValue()
-        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat) |> ignore
-    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64, Size : uint64) : unit = 
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _Format_IndexFormat = Format.GetValue()
-        let _Offset_uint64 = int (Offset)
-        let _Size_uint64 = int (Size)
-        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat, js _Offset_uint64, js _Size_uint64) |> ignore
-    member x.BeginOcclusionQuery(QueryIndex : int) : unit = 
-        let _QueryIndex_int = int (QueryIndex)
-        x.Handle.Reference.Invoke("beginOcclusionQuery", js _QueryIndex_int) |> ignore
-    member x.BeginPipelineStatisticsQuery(QuerySet : QuerySet, QueryIndex : int) : unit = 
-        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
-        let _QueryIndex_int = int (QueryIndex)
-        x.Handle.Reference.Invoke("beginPipelineStatisticsQuery", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
-    member x.EndOcclusionQuery() : unit = 
-        x.Handle.Reference.Invoke("endOcclusionQuery") |> ignore
-    member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
-        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
-        let _QueryIndex_int = int (QueryIndex)
-        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
-    member x.EndPass() : unit = 
-        x.Handle.Reference.Invoke("endPass") |> ignore
-    member x.EndPipelineStatisticsQuery() : unit = 
-        x.Handle.Reference.Invoke("endPipelineStatisticsQuery") |> ignore
-[<AllowNullLiteral>]
-type CommandEncoder(device : Device, handle : CommandEncoderHandle, refCount : ref<int>) = 
-    let mutable isDisposed = false
-    member x.Device = device
-    member x.ReferenceCount = !refCount
-    member x.Handle : CommandEncoderHandle = handle
-    member x.IsDisposed = isDisposed
-    member private x.Dispose(disposing : bool) =
-        if not isDisposed then 
-            let r = Interlocked.Decrement(&refCount.contents)
-            isDisposed <- true
-    member x.Dispose() = x.Dispose(true)
-    member x.Clone() = 
-        let mutable o = refCount.contents
-        if o = 0 then raise <| System.ObjectDisposedException("CommandEncoder")
-        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        while o <> n do
-            o <- n
-            if o = 0 then raise <| System.ObjectDisposedException("CommandEncoder")
-            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new CommandEncoder(device, handle, refCount)
-    interface System.IDisposable with
-        member x.Dispose() = x.Dispose()
-    new(device : Device, handle : CommandEncoderHandle) = new CommandEncoder(device, handle, ref 1)
-    member x.Finish() : CommandBuffer = 
-        new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish")))
-    member x.Finish(Descriptor : CommandBufferDescriptor) : CommandBuffer = 
-        let _Label_string = Descriptor.Label
-        let _Descriptor_CommandBufferDescriptor = new DawnRaw.WGPUCommandBufferDescriptor()
-        _Descriptor_CommandBufferDescriptor.Label <- _Label_string
-        let _Descriptor_CommandBufferDescriptor = _Descriptor_CommandBufferDescriptor
-        new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor_CommandBufferDescriptor)))
-    member x.BeginComputePass() : ComputePassEncoder = 
-        new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass")))
-    member x.BeginComputePass(Descriptor : ComputePassDescriptor) : ComputePassEncoder = 
-        let _Label_string = Descriptor.Label
-        let _Descriptor_ComputePassDescriptor = new DawnRaw.WGPUComputePassDescriptor()
-        _Descriptor_ComputePassDescriptor.Label <- _Label_string
-        let _Descriptor_ComputePassDescriptor = _Descriptor_ComputePassDescriptor
-        new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass", js _Descriptor_ComputePassDescriptor)))
-    member x.BeginRenderPass(Descriptor : RenderPassDescriptor) : RenderPassEncoder = 
-        let _Label_string = Descriptor.Label
-        let _ColorAttachments_RenderPassColorAttachmentArrCount = if isNull Descriptor.ColorAttachments then 0 else Descriptor.ColorAttachments.Length
-        let rec _ColorAttachments_RenderPassColorAttachmentArrCont (_ColorAttachments_RenderPassColorAttachmentArrinputs : array<RenderPassColorAttachment>) (_ColorAttachments_RenderPassColorAttachmentArroutputs : JsArray) (_ColorAttachments_RenderPassColorAttachmentArri : int) =
-            if _ColorAttachments_RenderPassColorAttachmentArri >= _ColorAttachments_RenderPassColorAttachmentArrCount then
-                let _ColorAttachments_RenderPassColorAttachmentArr = _ColorAttachments_RenderPassColorAttachmentArroutputs.Reference
-                let inline _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt = 
-                    let _OcclusionQuerySet_QuerySet = (if isNull Descriptor.OcclusionQuerySet then null else Descriptor.OcclusionQuerySet.Handle)
-                    let _Descriptor_RenderPassDescriptor = new DawnRaw.WGPURenderPassDescriptor()
-                    _Descriptor_RenderPassDescriptor.Label <- _Label_string
-                    _Descriptor_RenderPassDescriptor.ColorAttachments <- _ColorAttachments_RenderPassColorAttachmentArr
-                    _Descriptor_RenderPassDescriptor.DepthStencilAttachment <- _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt
-                    _Descriptor_RenderPassDescriptor.OcclusionQuerySet <- _OcclusionQuerySet_QuerySet
-                    let _Descriptor_RenderPassDescriptor = _Descriptor_RenderPassDescriptor
-                    new RenderPassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginRenderPass", js _Descriptor_RenderPassDescriptor)))
-                match Descriptor.DepthStencilAttachment with
-                | Some v ->
-                    let _View_TextureView = (if isNull v.View then null else v.View.Handle)
-                    let _DepthLoadOp_LoadOp = v.DepthLoadOp.GetValue()
-                    let _DepthStoreOp_StoreOp = v.DepthStoreOp.GetValue()
-                    let _ClearDepth_float32 = (v.ClearDepth)
-                    let _DepthReadOnly_bool = v.DepthReadOnly
-                    let _StencilLoadOp_LoadOp = v.StencilLoadOp.GetValue()
-                    let _StencilStoreOp_StoreOp = v.StencilStoreOp.GetValue()
-                    let _ClearStencil_int = int (v.ClearStencil)
-                    let _StencilReadOnly_bool = v.StencilReadOnly
-                    let _n = new DawnRaw.WGPURenderPassDepthStencilAttachment()
-                    _n.View <- _View_TextureView
-                    _n.DepthLoadOp <- _DepthLoadOp_LoadOp
-                    _n.DepthStoreOp <- _DepthStoreOp_StoreOp
-                    _n.ClearDepth <- _ClearDepth_float32
-                    _n.DepthReadOnly <- _DepthReadOnly_bool
-                    _n.StencilLoadOp <- _StencilLoadOp_LoadOp
-                    _n.StencilStoreOp <- _StencilStoreOp_StoreOp
-                    _n.ClearStencil <- _ClearStencil_int
-                    _n.StencilReadOnly <- _StencilReadOnly_bool
-                    let _n = _n
-                    _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _n
-                | None -> _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont null
-            else
-                let _View_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View.Handle)
-                let _ResolveTarget_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget.Handle)
-                let _LoadOp_LoadOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].LoadOp.GetValue()
-                let _StoreOp_StoreOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].StoreOp.GetValue()
-                let _R_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.R)
-                let _G_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.G)
-                let _B_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.B)
-                let _A_float = (_ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ClearColor.A)
-                let _ClearColor_Color = new DawnRaw.WGPUColor()
-                _ClearColor_Color.R <- _R_float
-                _ClearColor_Color.G <- _G_float
-                _ClearColor_Color.B <- _B_float
-                _ClearColor_Color.A <- _A_float
-                let _ClearColor_Color = _ClearColor_Color
-                let _n = new DawnRaw.WGPURenderPassColorAttachment()
-                _n.View <- _View_TextureView
-                _n.ResolveTarget <- _ResolveTarget_TextureView
-                _n.LoadOp <- _LoadOp_LoadOp
-                _n.StoreOp <- _StoreOp_StoreOp
-                _n.ClearColor <- _ClearColor_Color
-                let _n = _n
-                _ColorAttachments_RenderPassColorAttachmentArroutputs.[_ColorAttachments_RenderPassColorAttachmentArri] <- js _n
-                _ColorAttachments_RenderPassColorAttachmentArrCont _ColorAttachments_RenderPassColorAttachmentArrinputs _ColorAttachments_RenderPassColorAttachmentArroutputs (_ColorAttachments_RenderPassColorAttachmentArri + 1)
-        _ColorAttachments_RenderPassColorAttachmentArrCont Descriptor.ColorAttachments (if _ColorAttachments_RenderPassColorAttachmentArrCount > 0 then newArray _ColorAttachments_RenderPassColorAttachmentArrCount else null) 0
-    member x.CopyBufferToBuffer(Source : Buffer, SourceOffset : uint64, Destination : Buffer, DestinationOffset : uint64, Size : uint64) : unit = 
-        let _Source_Buffer = (if isNull Source then null else Source.Handle)
-        let _SourceOffset_uint64 = int (SourceOffset)
-        let _Destination_Buffer = (if isNull Destination then null else Destination.Handle)
-        let _DestinationOffset_uint64 = int (DestinationOffset)
-        let _Size_uint64 = int (Size)
-        x.Handle.Reference.Invoke("copyBufferToBuffer", js _Source_Buffer, js _SourceOffset_uint64, js _Destination_Buffer, js _DestinationOffset_uint64, js _Size_uint64) |> ignore
-    member x.CopyBufferToTexture(Source : ImageCopyBuffer, Destination : ImageCopyTexture, CopySize : Extent3D) : unit = 
-        let _Offset_uint64 = int (Source.Layout.Offset)
-        let _BytesPerRow_int = int (Source.Layout.BytesPerRow)
-        let _RowsPerImage_int = int (Source.Layout.RowsPerImage)
-        let _Layout_TextureDataLayout = new DawnRaw.WGPUTextureDataLayout()
-        _Layout_TextureDataLayout.Offset <- _Offset_uint64
-        _Layout_TextureDataLayout.BytesPerRow <- _BytesPerRow_int
-        _Layout_TextureDataLayout.RowsPerImage <- _RowsPerImage_int
-        let _Layout_TextureDataLayout = _Layout_TextureDataLayout
-        let _Buffer_Buffer = (if isNull Source.Buffer then null else Source.Buffer.Handle)
-        let _Source_ImageCopyBuffer = new DawnRaw.WGPUImageCopyBuffer()
-        _Source_ImageCopyBuffer.Layout <- _Layout_TextureDataLayout
-        _Source_ImageCopyBuffer.Buffer <- _Buffer_Buffer
-        let _Source_ImageCopyBuffer = _Source_ImageCopyBuffer
-        let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
-        let _MipLevel_int = int (Destination.MipLevel)
-        let _X_int = int (Destination.Origin.X)
-        let _Y_int = int (Destination.Origin.Y)
-        let _Z_int = int (Destination.Origin.Z)
-        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
-        _Origin_Origin3D.X <- _X_int
-        _Origin_Origin3D.Y <- _Y_int
-        _Origin_Origin3D.Z <- _Z_int
-        let _Origin_Origin3D = _Origin_Origin3D
-        let _Aspect_TextureAspect = Destination.Aspect.GetValue()
-        let _Destination_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
-        _Destination_ImageCopyTexture.Texture <- _Texture_Texture
-        _Destination_ImageCopyTexture.MipLevel <- _MipLevel_int
-        _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
-        _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
-        let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
-        let _Width_int = int (CopySize.Width)
-        let _Height_int = int (CopySize.Height)
-        let _DepthOrArrayLayers_int = int (CopySize.DepthOrArrayLayers)
-        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
-        _CopySize_Extent3D.Width <- _Width_int
-        _CopySize_Extent3D.Height <- _Height_int
-        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
-        let _CopySize_Extent3D = _CopySize_Extent3D
-        x.Handle.Reference.Invoke("copyBufferToTexture", js _Source_ImageCopyBuffer, js _Destination_ImageCopyTexture, js _CopySize_Extent3D) |> ignore
-    member x.CopyTextureToBuffer(Source : ImageCopyTexture, Destination : ImageCopyBuffer, CopySize : Extent3D) : unit = 
-        let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
-        let _MipLevel_int = int (Source.MipLevel)
-        let _X_int = int (Source.Origin.X)
-        let _Y_int = int (Source.Origin.Y)
-        let _Z_int = int (Source.Origin.Z)
-        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
-        _Origin_Origin3D.X <- _X_int
-        _Origin_Origin3D.Y <- _Y_int
-        _Origin_Origin3D.Z <- _Z_int
-        let _Origin_Origin3D = _Origin_Origin3D
-        let _Aspect_TextureAspect = Source.Aspect.GetValue()
-        let _Source_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
-        _Source_ImageCopyTexture.Texture <- _Texture_Texture
-        _Source_ImageCopyTexture.MipLevel <- _MipLevel_int
-        _Source_ImageCopyTexture.Origin <- _Origin_Origin3D
-        _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
-        let _Source_ImageCopyTexture = _Source_ImageCopyTexture
-        let _Offset_uint64 = int (Destination.Layout.Offset)
-        let _BytesPerRow_int = int (Destination.Layout.BytesPerRow)
-        let _RowsPerImage_int = int (Destination.Layout.RowsPerImage)
-        let _Layout_TextureDataLayout = new DawnRaw.WGPUTextureDataLayout()
-        _Layout_TextureDataLayout.Offset <- _Offset_uint64
-        _Layout_TextureDataLayout.BytesPerRow <- _BytesPerRow_int
-        _Layout_TextureDataLayout.RowsPerImage <- _RowsPerImage_int
-        let _Layout_TextureDataLayout = _Layout_TextureDataLayout
-        let _Buffer_Buffer = (if isNull Destination.Buffer then null else Destination.Buffer.Handle)
-        let _Destination_ImageCopyBuffer = new DawnRaw.WGPUImageCopyBuffer()
-        _Destination_ImageCopyBuffer.Layout <- _Layout_TextureDataLayout
-        _Destination_ImageCopyBuffer.Buffer <- _Buffer_Buffer
-        let _Destination_ImageCopyBuffer = _Destination_ImageCopyBuffer
-        let _Width_int = int (CopySize.Width)
-        let _Height_int = int (CopySize.Height)
-        let _DepthOrArrayLayers_int = int (CopySize.DepthOrArrayLayers)
-        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
-        _CopySize_Extent3D.Width <- _Width_int
-        _CopySize_Extent3D.Height <- _Height_int
-        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
-        let _CopySize_Extent3D = _CopySize_Extent3D
-        x.Handle.Reference.Invoke("copyTextureToBuffer", js _Source_ImageCopyTexture, js _Destination_ImageCopyBuffer, js _CopySize_Extent3D) |> ignore
-    member x.CopyTextureToTexture(Source : ImageCopyTexture, Destination : ImageCopyTexture, CopySize : Extent3D) : unit = 
-        let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
-        let _MipLevel_int = int (Source.MipLevel)
-        let _X_int = int (Source.Origin.X)
-        let _Y_int = int (Source.Origin.Y)
-        let _Z_int = int (Source.Origin.Z)
-        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
-        _Origin_Origin3D.X <- _X_int
-        _Origin_Origin3D.Y <- _Y_int
-        _Origin_Origin3D.Z <- _Z_int
-        let _Origin_Origin3D = _Origin_Origin3D
-        let _Aspect_TextureAspect = Source.Aspect.GetValue()
-        let _Source_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
-        _Source_ImageCopyTexture.Texture <- _Texture_Texture
-        _Source_ImageCopyTexture.MipLevel <- _MipLevel_int
-        _Source_ImageCopyTexture.Origin <- _Origin_Origin3D
-        _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
-        let _Source_ImageCopyTexture = _Source_ImageCopyTexture
-        let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
-        let _MipLevel_int = int (Destination.MipLevel)
-        let _X_int = int (Destination.Origin.X)
-        let _Y_int = int (Destination.Origin.Y)
-        let _Z_int = int (Destination.Origin.Z)
-        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
-        _Origin_Origin3D.X <- _X_int
-        _Origin_Origin3D.Y <- _Y_int
-        _Origin_Origin3D.Z <- _Z_int
-        let _Origin_Origin3D = _Origin_Origin3D
-        let _Aspect_TextureAspect = Destination.Aspect.GetValue()
-        let _Destination_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
-        _Destination_ImageCopyTexture.Texture <- _Texture_Texture
-        _Destination_ImageCopyTexture.MipLevel <- _MipLevel_int
-        _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
-        _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
-        let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
-        let _Width_int = int (CopySize.Width)
-        let _Height_int = int (CopySize.Height)
-        let _DepthOrArrayLayers_int = int (CopySize.DepthOrArrayLayers)
-        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
-        _CopySize_Extent3D.Width <- _Width_int
-        _CopySize_Extent3D.Height <- _Height_int
-        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
-        let _CopySize_Extent3D = _CopySize_Extent3D
-        x.Handle.Reference.Invoke("copyTextureToTexture", js _Source_ImageCopyTexture, js _Destination_ImageCopyTexture, js _CopySize_Extent3D) |> ignore
-    member x.CopyTextureToTextureInternal(Source : ImageCopyTexture, Destination : ImageCopyTexture, CopySize : Extent3D) : unit = 
-        let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
-        let _MipLevel_int = int (Source.MipLevel)
-        let _X_int = int (Source.Origin.X)
-        let _Y_int = int (Source.Origin.Y)
-        let _Z_int = int (Source.Origin.Z)
-        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
-        _Origin_Origin3D.X <- _X_int
-        _Origin_Origin3D.Y <- _Y_int
-        _Origin_Origin3D.Z <- _Z_int
-        let _Origin_Origin3D = _Origin_Origin3D
-        let _Aspect_TextureAspect = Source.Aspect.GetValue()
-        let _Source_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
-        _Source_ImageCopyTexture.Texture <- _Texture_Texture
-        _Source_ImageCopyTexture.MipLevel <- _MipLevel_int
-        _Source_ImageCopyTexture.Origin <- _Origin_Origin3D
-        _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
-        let _Source_ImageCopyTexture = _Source_ImageCopyTexture
-        let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
-        let _MipLevel_int = int (Destination.MipLevel)
-        let _X_int = int (Destination.Origin.X)
-        let _Y_int = int (Destination.Origin.Y)
-        let _Z_int = int (Destination.Origin.Z)
-        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
-        _Origin_Origin3D.X <- _X_int
-        _Origin_Origin3D.Y <- _Y_int
-        _Origin_Origin3D.Z <- _Z_int
-        let _Origin_Origin3D = _Origin_Origin3D
-        let _Aspect_TextureAspect = Destination.Aspect.GetValue()
-        let _Destination_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
-        _Destination_ImageCopyTexture.Texture <- _Texture_Texture
-        _Destination_ImageCopyTexture.MipLevel <- _MipLevel_int
-        _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
-        _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
-        let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
-        let _Width_int = int (CopySize.Width)
-        let _Height_int = int (CopySize.Height)
-        let _DepthOrArrayLayers_int = int (CopySize.DepthOrArrayLayers)
-        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
-        _CopySize_Extent3D.Width <- _Width_int
-        _CopySize_Extent3D.Height <- _Height_int
-        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
-        let _CopySize_Extent3D = _CopySize_Extent3D
-        x.Handle.Reference.Invoke("copyTextureToTextureInternal", js _Source_ImageCopyTexture, js _Destination_ImageCopyTexture, js _CopySize_Extent3D) |> ignore
-    member x.InjectValidationError(Message : string) : unit = 
-        let _Message_string = Message
-        x.Handle.Reference.Invoke("injectValidationError", js _Message_string) |> ignore
-    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
-        let _MarkerLabel_string = MarkerLabel
-        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
-    member x.PopDebugGroup() : unit = 
-        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
-    member x.PushDebugGroup(GroupLabel : string) : unit = 
-        let _GroupLabel_string = GroupLabel
-        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
-    member x.ResolveQuerySet(QuerySet : QuerySet, FirstQuery : int, QueryCount : int, Destination : Buffer, DestinationOffset : uint64) : unit = 
-        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
-        let _FirstQuery_int = int (FirstQuery)
-        let _QueryCount_int = int (QueryCount)
-        let _Destination_Buffer = (if isNull Destination then null else Destination.Handle)
-        let _DestinationOffset_uint64 = int (DestinationOffset)
-        x.Handle.Reference.Invoke("resolveQuerySet", js _QuerySet_QuerySet, js _FirstQuery_int, js _QueryCount_int, js _Destination_Buffer, js _DestinationOffset_uint64) |> ignore
-    member x.WriteBuffer(Buffer : Buffer, BufferOffset : uint64, Data : string, Size : uint64) : unit = 
-        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _BufferOffset_uint64 = int (BufferOffset)
-        let _Data_string = Data
-        let _Size_uint64 = int (Size)
-        x.Handle.Reference.Invoke("writeBuffer", js _Buffer_Buffer, js _BufferOffset_uint64, js _Data_string, js _Size_uint64) |> ignore
-    member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
-        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
-        let _QueryIndex_int = int (QueryIndex)
-        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
 [<AllowNullLiteral>]
 type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
@@ -6222,9 +5497,9 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         let _Commands_CommandBufferArr = _Commands_CommandBufferArrArray.Reference
         x.Handle.Reference.Invoke("submit", js _Commands_CommandBufferArr) |> ignore
     member x.OnSubmittedWorkDone(SignalValue : uint64, Callback : QueueWorkDoneCallback) : unit = 
-        let _SignalValue_uint64 = int (SignalValue)
+        let _SignalValue_uint64 = float (SignalValue)
         let mutable _Callback_QueueWorkDoneCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_QueueWorkDoneCallbackFunction (Status : obj) (Userdata : int) = 
+        let _Callback_QueueWorkDoneCallbackFunction (Status : obj) (Userdata : float) = 
             let _Status_QueueWorkDoneStatus = Status |> System.Convert.ToInt32 |> unbox<QueueWorkDoneStatus>
             let _Userdata_nativeint = Userdata
             if _Callback_QueueWorkDoneCallbackGC.IsAllocated then _Callback_QueueWorkDoneCallbackGC.Free()
@@ -6234,9 +5509,9 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         let _Callback_QueueWorkDoneCallback = _Callback_QueueWorkDoneCallbackDel
         x.Handle.Reference.Invoke("onSubmittedWorkDone", js _SignalValue_uint64, js _Callback_QueueWorkDoneCallback) |> ignore
     member x.OnSubmittedWorkDone(SignalValue : uint64, Callback : QueueWorkDoneCallback, Userdata : nativeint) : unit = 
-        let _SignalValue_uint64 = int (SignalValue)
+        let _SignalValue_uint64 = float (SignalValue)
         let mutable _Callback_QueueWorkDoneCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_QueueWorkDoneCallbackFunction (Status : obj) (Userdata : int) = 
+        let _Callback_QueueWorkDoneCallbackFunction (Status : obj) (Userdata : float) = 
             let _Status_QueueWorkDoneStatus = Status |> System.Convert.ToInt32 |> unbox<QueueWorkDoneStatus>
             let _Userdata_nativeint = Userdata
             if _Callback_QueueWorkDoneCallbackGC.IsAllocated then _Callback_QueueWorkDoneCallbackGC.Free()
@@ -6244,20 +5519,20 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         let _Callback_QueueWorkDoneCallbackDel = WGPUQueueWorkDoneCallback(_Callback_QueueWorkDoneCallbackFunction)
         _Callback_QueueWorkDoneCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_QueueWorkDoneCallbackDel)
         let _Callback_QueueWorkDoneCallback = _Callback_QueueWorkDoneCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("onSubmittedWorkDone", js _SignalValue_uint64, js _Callback_QueueWorkDoneCallback, js _Userdata_nativeint) |> ignore
     member x.WriteBuffer(Buffer : Buffer, BufferOffset : uint64, Data : nativeint, Size : unativeint) : unit = 
         let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
-        let _BufferOffset_uint64 = int (BufferOffset)
-        let _Data_nativeint = int (Data)
-        let _Size_unativeint = int (Size)
+        let _BufferOffset_uint64 = float (BufferOffset)
+        let _Data_nativeint = float (Data)
+        let _Size_unativeint = float (Size)
         x.Handle.Reference.Invoke("writeBuffer", js _Buffer_Buffer, js _BufferOffset_uint64, js _Data_nativeint, js _Size_unativeint) |> ignore
     member x.WriteTexture(Destination : ImageCopyTexture, Data : nativeint, DataSize : unativeint, DataLayout : TextureDataLayout, WriteSize : Extent3D) : unit = 
         let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
-        let _MipLevel_int = int (Destination.MipLevel)
-        let _X_int = int (Destination.Origin.X)
-        let _Y_int = int (Destination.Origin.Y)
-        let _Z_int = int (Destination.Origin.Z)
+        let _MipLevel_int = uint32 (Destination.MipLevel)
+        let _X_int = uint32 (Destination.Origin.X)
+        let _Y_int = uint32 (Destination.Origin.Y)
+        let _Z_int = uint32 (Destination.Origin.Z)
         let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
         _Origin_Origin3D.X <- _X_int
         _Origin_Origin3D.Y <- _Y_int
@@ -6270,19 +5545,19 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
         _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
         let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
-        let _Data_nativeint = int (Data)
-        let _DataSize_unativeint = int (DataSize)
-        let _Offset_uint64 = int (DataLayout.Offset)
-        let _BytesPerRow_int = int (DataLayout.BytesPerRow)
-        let _RowsPerImage_int = int (DataLayout.RowsPerImage)
+        let _Data_nativeint = float (Data)
+        let _DataSize_unativeint = float (DataSize)
+        let _Offset_uint64 = float (DataLayout.Offset)
+        let _BytesPerRow_int = uint32 (DataLayout.BytesPerRow)
+        let _RowsPerImage_int = uint32 (DataLayout.RowsPerImage)
         let _DataLayout_TextureDataLayout = new DawnRaw.WGPUTextureDataLayout()
         _DataLayout_TextureDataLayout.Offset <- _Offset_uint64
         _DataLayout_TextureDataLayout.BytesPerRow <- _BytesPerRow_int
         _DataLayout_TextureDataLayout.RowsPerImage <- _RowsPerImage_int
         let _DataLayout_TextureDataLayout = _DataLayout_TextureDataLayout
-        let _Width_int = int (WriteSize.Width)
-        let _Height_int = int (WriteSize.Height)
-        let _DepthOrArrayLayers_int = int (WriteSize.DepthOrArrayLayers)
+        let _Width_int = uint32 (WriteSize.Width)
+        let _Height_int = uint32 (WriteSize.Height)
+        let _DepthOrArrayLayers_int = uint32 (WriteSize.DepthOrArrayLayers)
         let _WriteSize_Extent3D = new DawnRaw.WGPUExtent3D()
         _WriteSize_Extent3D.Width <- _Width_int
         _WriteSize_Extent3D.Height <- _Height_int
@@ -6291,10 +5566,10 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         x.Handle.Reference.Invoke("writeTexture", js _Destination_ImageCopyTexture, js _Data_nativeint, js _DataSize_unativeint, js _DataLayout_TextureDataLayout, js _WriteSize_Extent3D) |> ignore
     member x.CopyTextureForBrowser(Source : ImageCopyTexture, Destination : ImageCopyTexture, CopySize : Extent3D) : unit = 
         let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
-        let _MipLevel_int = int (Source.MipLevel)
-        let _X_int = int (Source.Origin.X)
-        let _Y_int = int (Source.Origin.Y)
-        let _Z_int = int (Source.Origin.Z)
+        let _MipLevel_int = uint32 (Source.MipLevel)
+        let _X_int = uint32 (Source.Origin.X)
+        let _Y_int = uint32 (Source.Origin.Y)
+        let _Z_int = uint32 (Source.Origin.Z)
         let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
         _Origin_Origin3D.X <- _X_int
         _Origin_Origin3D.Y <- _Y_int
@@ -6308,10 +5583,10 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
         let _Source_ImageCopyTexture = _Source_ImageCopyTexture
         let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
-        let _MipLevel_int = int (Destination.MipLevel)
-        let _X_int = int (Destination.Origin.X)
-        let _Y_int = int (Destination.Origin.Y)
-        let _Z_int = int (Destination.Origin.Z)
+        let _MipLevel_int = uint32 (Destination.MipLevel)
+        let _X_int = uint32 (Destination.Origin.X)
+        let _Y_int = uint32 (Destination.Origin.Y)
+        let _Z_int = uint32 (Destination.Origin.Z)
         let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
         _Origin_Origin3D.X <- _X_int
         _Origin_Origin3D.Y <- _Y_int
@@ -6324,9 +5599,9 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
         _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
         let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
-        let _Width_int = int (CopySize.Width)
-        let _Height_int = int (CopySize.Height)
-        let _DepthOrArrayLayers_int = int (CopySize.DepthOrArrayLayers)
+        let _Width_int = uint32 (CopySize.Width)
+        let _Height_int = uint32 (CopySize.Height)
+        let _DepthOrArrayLayers_int = uint32 (CopySize.DepthOrArrayLayers)
         let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
         _CopySize_Extent3D.Width <- _Width_int
         _CopySize_Extent3D.Height <- _Height_int
@@ -6335,10 +5610,10 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         x.Handle.Reference.Invoke("copyTextureForBrowser", js _Source_ImageCopyTexture, js _Destination_ImageCopyTexture, js _CopySize_Extent3D) |> ignore
     member x.CopyTextureForBrowser(Source : ImageCopyTexture, Destination : ImageCopyTexture, CopySize : Extent3D, Options : CopyTextureForBrowserOptions) : unit = 
         let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
-        let _MipLevel_int = int (Source.MipLevel)
-        let _X_int = int (Source.Origin.X)
-        let _Y_int = int (Source.Origin.Y)
-        let _Z_int = int (Source.Origin.Z)
+        let _MipLevel_int = uint32 (Source.MipLevel)
+        let _X_int = uint32 (Source.Origin.X)
+        let _Y_int = uint32 (Source.Origin.Y)
+        let _Z_int = uint32 (Source.Origin.Z)
         let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
         _Origin_Origin3D.X <- _X_int
         _Origin_Origin3D.Y <- _Y_int
@@ -6352,10 +5627,10 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
         let _Source_ImageCopyTexture = _Source_ImageCopyTexture
         let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
-        let _MipLevel_int = int (Destination.MipLevel)
-        let _X_int = int (Destination.Origin.X)
-        let _Y_int = int (Destination.Origin.Y)
-        let _Z_int = int (Destination.Origin.Z)
+        let _MipLevel_int = uint32 (Destination.MipLevel)
+        let _X_int = uint32 (Destination.Origin.X)
+        let _Y_int = uint32 (Destination.Origin.Y)
+        let _Z_int = uint32 (Destination.Origin.Z)
         let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
         _Origin_Origin3D.X <- _X_int
         _Origin_Origin3D.Y <- _Y_int
@@ -6368,9 +5643,9 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
         _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
         let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
-        let _Width_int = int (CopySize.Width)
-        let _Height_int = int (CopySize.Height)
-        let _DepthOrArrayLayers_int = int (CopySize.DepthOrArrayLayers)
+        let _Width_int = uint32 (CopySize.Width)
+        let _Height_int = uint32 (CopySize.Height)
+        let _DepthOrArrayLayers_int = uint32 (CopySize.DepthOrArrayLayers)
         let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
         _CopySize_Extent3D.Width <- _Width_int
         _CopySize_Extent3D.Height <- _Height_int
@@ -6384,9 +5659,10 @@ type Queue(device : Device, handle : QueueHandle, refCount : ref<int>) =
         let _Options_CopyTextureForBrowserOptions = _Options_CopyTextureForBrowserOptions
         x.Handle.Reference.Invoke("copyTextureForBrowser", js _Source_ImageCopyTexture, js _Destination_ImageCopyTexture, js _CopySize_Extent3D, js _Options_CopyTextureForBrowserOptions) |> ignore
 [<AllowNullLiteral>]
-type ShaderModule(device : Device, handle : ShaderModuleHandle, refCount : ref<int>) = 
+type ShaderModule(device : Device, handle : ShaderModuleHandle, descriptor : ShaderModuleDescriptor, refCount : ref<int>) = 
     let mutable isDisposed = false
     member x.Device = device
+    member x.Descriptor = descriptor
     member x.ReferenceCount = !refCount
     member x.Handle : ShaderModuleHandle = handle
     member x.IsDisposed = isDisposed
@@ -6403,13 +5679,13 @@ type ShaderModule(device : Device, handle : ShaderModuleHandle, refCount : ref<i
             o <- n
             if o = 0 then raise <| System.ObjectDisposedException("ShaderModule")
             n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
-        new ShaderModule(device, handle, refCount)
+        new ShaderModule(device, handle, descriptor, refCount)
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
-    new(device : Device, handle : ShaderModuleHandle) = new ShaderModule(device, handle, ref 1)
+    new(device : Device, handle : ShaderModuleHandle, descriptor : ShaderModuleDescriptor) = new ShaderModule(device, handle, descriptor, ref 1)
     member x.GetCompilationInfo(Callback : CompilationInfoCallback) : unit = 
         let mutable _Callback_CompilationInfoCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_CompilationInfoCallbackFunction (Status : obj) (CompilationInfo : DawnRaw.WGPUCompilationInfo) (Userdata : int) = 
+        let _Callback_CompilationInfoCallbackFunction (Status : obj) (CompilationInfo : DawnRaw.WGPUCompilationInfo) (Userdata : float) = 
             let _Status_CompilationInfoRequestStatus = Status |> System.Convert.ToInt32 |> unbox<CompilationInfoRequestStatus>
             let _CompilationInfo_CompilationInfoOpt = 
                 if isNull(CompilationInfo) then None
@@ -6465,7 +5741,7 @@ type ShaderModule(device : Device, handle : ShaderModuleHandle, refCount : ref<i
         x.Handle.Reference.Invoke("getCompilationInfo", js _Callback_CompilationInfoCallback) |> ignore
     member x.GetCompilationInfo(Callback : CompilationInfoCallback, Userdata : nativeint) : unit = 
         let mutable _Callback_CompilationInfoCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_CompilationInfoCallbackFunction (Status : obj) (CompilationInfo : DawnRaw.WGPUCompilationInfo) (Userdata : int) = 
+        let _Callback_CompilationInfoCallbackFunction (Status : obj) (CompilationInfo : DawnRaw.WGPUCompilationInfo) (Userdata : float) = 
             let _Status_CompilationInfoRequestStatus = Status |> System.Convert.ToInt32 |> unbox<CompilationInfoRequestStatus>
             let _CompilationInfo_CompilationInfoOpt = 
                 if isNull(CompilationInfo) then None
@@ -6518,13 +5794,753 @@ type ShaderModule(device : Device, handle : ShaderModuleHandle, refCount : ref<i
         let _Callback_CompilationInfoCallbackDel = WGPUCompilationInfoCallback(_Callback_CompilationInfoCallbackFunction)
         _Callback_CompilationInfoCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_CompilationInfoCallbackDel)
         let _Callback_CompilationInfoCallback = _Callback_CompilationInfoCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("getCompilationInfo", js _Callback_CompilationInfoCallback, js _Userdata_nativeint) |> ignore
     member x.SetLabel() : unit = 
         x.Handle.Reference.Invoke("setLabel") |> ignore
     member x.SetLabel(Label : string) : unit = 
         let _Label_string = Label
         x.Handle.Reference.Invoke("setLabel", js _Label_string) |> ignore
+[<AllowNullLiteral>]
+type BindGroup(device : Device, handle : BindGroupHandle, descriptor : BindGroupDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : BindGroupHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("BindGroup")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("BindGroup")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new BindGroup(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : BindGroupHandle, descriptor : BindGroupDescriptor) = new BindGroup(device, handle, descriptor, ref 1)
+[<AllowNullLiteral>]
+type ComputePipeline(device : Device, handle : ComputePipelineHandle, descriptor : ComputePipelineDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : ComputePipelineHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("ComputePipeline")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("ComputePipeline")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new ComputePipeline(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : ComputePipelineHandle, descriptor : ComputePipelineDescriptor) = new ComputePipeline(device, handle, descriptor, ref 1)
+    member x.GetBindGroupLayout(GroupIndex : int) : BindGroupLayout = 
+        let _GroupIndex_int = uint32 (GroupIndex)
+        new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex_int)))
+    member x.SetLabel() : unit = 
+        x.Handle.Reference.Invoke("setLabel") |> ignore
+    member x.SetLabel(Label : string) : unit = 
+        let _Label_string = Label
+        x.Handle.Reference.Invoke("setLabel", js _Label_string) |> ignore
+[<AllowNullLiteral>]
+type RenderPipeline(device : Device, handle : RenderPipelineHandle, descriptor : RenderPipelineDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : RenderPipelineHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("RenderPipeline")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("RenderPipeline")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new RenderPipeline(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : RenderPipelineHandle, descriptor : RenderPipelineDescriptor) = new RenderPipeline(device, handle, descriptor, ref 1)
+    member x.GetBindGroupLayout(GroupIndex : int) : BindGroupLayout = 
+        let _GroupIndex_int = uint32 (GroupIndex)
+        new BindGroupLayout(x.Device, convert(x.Handle.Reference.Invoke("getBindGroupLayout", js _GroupIndex_int)))
+    member x.SetLabel() : unit = 
+        x.Handle.Reference.Invoke("setLabel") |> ignore
+    member x.SetLabel(Label : string) : unit = 
+        let _Label_string = Label
+        x.Handle.Reference.Invoke("setLabel", js _Label_string) |> ignore
+[<AllowNullLiteral>]
+type ComputePassEncoder(device : Device, handle : ComputePassEncoderHandle, descriptor : ComputePassDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : ComputePassEncoderHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("ComputePassEncoder")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("ComputePassEncoder")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new ComputePassEncoder(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : ComputePassEncoderHandle, descriptor : ComputePassDescriptor) = new ComputePassEncoder(device, handle, descriptor, ref 1)
+    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
+        let _MarkerLabel_string = MarkerLabel
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
+    member x.PopDebugGroup() : unit = 
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
+    member x.PushDebugGroup(GroupLabel : string) : unit = 
+        let _GroupLabel_string = GroupLabel
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
+    member x.SetPipeline(Pipeline : ComputePipeline) : unit = 
+        let _Pipeline_ComputePipeline = (if isNull Pipeline then null else Pipeline.Handle)
+        x.Handle.Reference.Invoke("setPipeline", js _Pipeline_ComputePipeline) |> ignore
+    member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
+        let _GroupIndex_int = uint32 (GroupIndex)
+        let _Group_BindGroup = (if isNull Group then null else Group.Handle)
+        let _DynamicOffsets_uint32Arr = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
+        let _DynamicOffsets_uint32ArrCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
+        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex_int, js _Group_BindGroup, js _DynamicOffsets_uint32Arr) |> ignore
+    member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
+        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
+        let _QueryIndex_int = uint32 (QueryIndex)
+        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
+    member x.BeginPipelineStatisticsQuery(QuerySet : QuerySet, QueryIndex : int) : unit = 
+        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
+        let _QueryIndex_int = uint32 (QueryIndex)
+        x.Handle.Reference.Invoke("beginPipelineStatisticsQuery", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
+    member x.Dispatch(X : int) : unit = 
+        let _X_int = uint32 (X)
+        x.Handle.Reference.Invoke("dispatch", js _X_int) |> ignore
+    member x.Dispatch(X : int, Y : int) : unit = 
+        let _X_int = uint32 (X)
+        let _Y_int = uint32 (Y)
+        x.Handle.Reference.Invoke("dispatch", js _X_int, js _Y_int) |> ignore
+    member x.Dispatch(X : int, Y : int, Z : int) : unit = 
+        let _X_int = uint32 (X)
+        let _Y_int = uint32 (Y)
+        let _Z_int = uint32 (Z)
+        x.Handle.Reference.Invoke("dispatch", js _X_int, js _Y_int, js _Z_int) |> ignore
+    member x.DispatchIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
+        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
+        let _IndirectOffset_uint64 = float (IndirectOffset)
+        x.Handle.Reference.Invoke("dispatchIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
+    member x.EndPass() : unit = 
+        x.Handle.Reference.Invoke("endPass") |> ignore
+    member x.EndPipelineStatisticsQuery() : unit = 
+        x.Handle.Reference.Invoke("endPipelineStatisticsQuery") |> ignore
+[<AllowNullLiteral>]
+type RenderBundleEncoder(device : Device, handle : RenderBundleEncoderHandle, descriptor : RenderBundleEncoderDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : RenderBundleEncoderHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("RenderBundleEncoder")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("RenderBundleEncoder")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new RenderBundleEncoder(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : RenderBundleEncoderHandle, descriptor : RenderBundleEncoderDescriptor) = new RenderBundleEncoder(device, handle, descriptor, ref 1)
+    member x.SetPipeline(Pipeline : RenderPipeline) : unit = 
+        let _Pipeline_RenderPipeline = (if isNull Pipeline then null else Pipeline.Handle)
+        x.Handle.Reference.Invoke("setPipeline", js _Pipeline_RenderPipeline) |> ignore
+    member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
+        let _GroupIndex_int = uint32 (GroupIndex)
+        let _Group_BindGroup = (if isNull Group then null else Group.Handle)
+        let _DynamicOffsets_uint32Arr = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
+        let _DynamicOffsets_uint32ArrCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
+        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex_int, js _Group_BindGroup, js _DynamicOffsets_uint32Arr) |> ignore
+    member x.Draw(VertexCount : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int) |> ignore
+    member x.Draw(VertexCount : int, InstanceCount : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int) |> ignore
+    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstVertex_int = uint32 (FirstVertex)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int) |> ignore
+    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int, FirstInstance : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstVertex_int = uint32 (FirstVertex)
+        let _FirstInstance_int = uint32 (FirstInstance)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int, js _FirstInstance_int) |> ignore
+    member x.DrawIndexed(IndexCount : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstIndex_int = uint32 (FirstIndex)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstIndex_int = uint32 (FirstIndex)
+        let _BaseVertex_int32 = int32 (BaseVertex)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32, FirstInstance : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstIndex_int = uint32 (FirstIndex)
+        let _BaseVertex_int32 = int32 (BaseVertex)
+        let _FirstInstance_int = uint32 (FirstInstance)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32, js _FirstInstance_int) |> ignore
+    member x.DrawIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
+        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
+        let _IndirectOffset_uint64 = float (IndirectOffset)
+        x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
+    member x.DrawIndexedIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
+        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
+        let _IndirectOffset_uint64 = float (IndirectOffset)
+        x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
+    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
+        let _MarkerLabel_string = MarkerLabel
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
+    member x.PopDebugGroup() : unit = 
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
+    member x.PushDebugGroup(GroupLabel : string) : unit = 
+        let _GroupLabel_string = GroupLabel
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
+    member x.SetVertexBuffer(Slot : int, Buffer : Buffer) : unit = 
+        let _Slot_int = uint32 (Slot)
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer) |> ignore
+    member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64, Size : uint64) : unit = 
+        let _Slot_int = uint32 (Slot)
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        let _Offset_uint64 = float (Offset)
+        let _Size_uint64 = float (Size)
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer, js _Offset_uint64, js _Size_uint64) |> ignore
+    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat) : unit = 
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        let _Format_IndexFormat = Format.GetValue()
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat) |> ignore
+    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64, Size : uint64) : unit = 
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        let _Format_IndexFormat = Format.GetValue()
+        let _Offset_uint64 = float (Offset)
+        let _Size_uint64 = float (Size)
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat, js _Offset_uint64, js _Size_uint64) |> ignore
+    member x.Finish() : RenderBundle = 
+        new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish")), RenderBundleDescriptor.Default)
+    member x.Finish(Descriptor : RenderBundleDescriptor) : RenderBundle = 
+        let _Label_string = Descriptor.Label
+        let _Descriptor_RenderBundleDescriptor = new DawnRaw.WGPURenderBundleDescriptor()
+        _Descriptor_RenderBundleDescriptor.Label <- _Label_string
+        let _Descriptor_RenderBundleDescriptor = _Descriptor_RenderBundleDescriptor
+        new RenderBundle(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor_RenderBundleDescriptor)), Descriptor)
+[<AllowNullLiteral>]
+type RenderPassEncoder(device : Device, handle : RenderPassEncoderHandle, descriptor : RenderPassDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : RenderPassEncoderHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("RenderPassEncoder")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("RenderPassEncoder")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new RenderPassEncoder(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : RenderPassEncoderHandle, descriptor : RenderPassDescriptor) = new RenderPassEncoder(device, handle, descriptor, ref 1)
+    member x.SetPipeline(Pipeline : RenderPipeline) : unit = 
+        let _Pipeline_RenderPipeline = (if isNull Pipeline then null else Pipeline.Handle)
+        x.Handle.Reference.Invoke("setPipeline", js _Pipeline_RenderPipeline) |> ignore
+    member x.SetBindGroup(GroupIndex : int, Group : BindGroup, DynamicOffsets : uint32[]) : unit = 
+        let _GroupIndex_int = uint32 (GroupIndex)
+        let _Group_BindGroup = (if isNull Group then null else Group.Handle)
+        let _DynamicOffsets_uint32Arr = if isNull DynamicOffsets then null else Uint32Array.op_Implicit(Span(DynamicOffsets))
+        let _DynamicOffsets_uint32ArrCount = if isNull DynamicOffsets then 0 else DynamicOffsets.Length
+        x.Handle.Reference.Invoke("setBindGroup", js _GroupIndex_int, js _Group_BindGroup, js _DynamicOffsets_uint32Arr) |> ignore
+    member x.Draw(VertexCount : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int) |> ignore
+    member x.Draw(VertexCount : int, InstanceCount : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int) |> ignore
+    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstVertex_int = uint32 (FirstVertex)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int) |> ignore
+    member x.Draw(VertexCount : int, InstanceCount : int, FirstVertex : int, FirstInstance : int) : unit = 
+        let _VertexCount_int = uint32 (VertexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstVertex_int = uint32 (FirstVertex)
+        let _FirstInstance_int = uint32 (FirstInstance)
+        x.Handle.Reference.Invoke("draw", js _VertexCount_int, js _InstanceCount_int, js _FirstVertex_int, js _FirstInstance_int) |> ignore
+    member x.DrawIndexed(IndexCount : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstIndex_int = uint32 (FirstIndex)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstIndex_int = uint32 (FirstIndex)
+        let _BaseVertex_int32 = int32 (BaseVertex)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32) |> ignore
+    member x.DrawIndexed(IndexCount : int, InstanceCount : int, FirstIndex : int, BaseVertex : int32, FirstInstance : int) : unit = 
+        let _IndexCount_int = uint32 (IndexCount)
+        let _InstanceCount_int = uint32 (InstanceCount)
+        let _FirstIndex_int = uint32 (FirstIndex)
+        let _BaseVertex_int32 = int32 (BaseVertex)
+        let _FirstInstance_int = uint32 (FirstInstance)
+        x.Handle.Reference.Invoke("drawIndexed", js _IndexCount_int, js _InstanceCount_int, js _FirstIndex_int, js _BaseVertex_int32, js _FirstInstance_int) |> ignore
+    member x.DrawIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
+        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
+        let _IndirectOffset_uint64 = float (IndirectOffset)
+        x.Handle.Reference.Invoke("drawIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
+    member x.DrawIndexedIndirect(IndirectBuffer : Buffer, IndirectOffset : uint64) : unit = 
+        let _IndirectBuffer_Buffer = (if isNull IndirectBuffer then null else IndirectBuffer.Handle)
+        let _IndirectOffset_uint64 = float (IndirectOffset)
+        x.Handle.Reference.Invoke("drawIndexedIndirect", js _IndirectBuffer_Buffer, js _IndirectOffset_uint64) |> ignore
+    member x.ExecuteBundles(Bundles : array<RenderBundle>) : unit = 
+        let _Bundles_RenderBundleArrCount = Bundles.Length
+        let _Bundles_RenderBundleArrArray = newArray _Bundles_RenderBundleArrCount
+        for i in 0 .. _Bundles_RenderBundleArrCount-1 do
+            if isNull Bundles.[i] then _Bundles_RenderBundleArrArray.[i] <- null
+            else _Bundles_RenderBundleArrArray.[i] <- Bundles.[i].Handle
+        let _Bundles_RenderBundleArr = _Bundles_RenderBundleArrArray.Reference
+        x.Handle.Reference.Invoke("executeBundles", js _Bundles_RenderBundleArr) |> ignore
+    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
+        let _MarkerLabel_string = MarkerLabel
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
+    member x.PopDebugGroup() : unit = 
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
+    member x.PushDebugGroup(GroupLabel : string) : unit = 
+        let _GroupLabel_string = GroupLabel
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
+    member x.SetStencilReference(Reference : int) : unit = 
+        let _Reference_int = uint32 (Reference)
+        x.Handle.Reference.Invoke("setStencilReference", js _Reference_int) |> ignore
+    member x.SetBlendConstant(Color : Color) : unit = 
+        let _R_float = (Color.R)
+        let _G_float = (Color.G)
+        let _B_float = (Color.B)
+        let _A_float = (Color.A)
+        let _Color_Color = new DawnRaw.WGPUColor()
+        _Color_Color.R <- _R_float
+        _Color_Color.G <- _G_float
+        _Color_Color.B <- _B_float
+        _Color_Color.A <- _A_float
+        let _Color_Color = _Color_Color
+        x.Handle.Reference.Invoke("setBlendConstant", js _Color_Color) |> ignore
+    member x.SetViewport(X : float32, Y : float32, Width : float32, Height : float32, MinDepth : float32, MaxDepth : float32) : unit = 
+        let _X_float32 = (X)
+        let _Y_float32 = (Y)
+        let _Width_float32 = (Width)
+        let _Height_float32 = (Height)
+        let _MinDepth_float32 = (MinDepth)
+        let _MaxDepth_float32 = (MaxDepth)
+        x.Handle.Reference.Invoke("setViewport", js _X_float32, js _Y_float32, js _Width_float32, js _Height_float32, js _MinDepth_float32, js _MaxDepth_float32) |> ignore
+    member x.SetScissorRect(X : int, Y : int, Width : int, Height : int) : unit = 
+        let _X_int = uint32 (X)
+        let _Y_int = uint32 (Y)
+        let _Width_int = uint32 (Width)
+        let _Height_int = uint32 (Height)
+        x.Handle.Reference.Invoke("setScissorRect", js _X_int, js _Y_int, js _Width_int, js _Height_int) |> ignore
+    member x.SetVertexBuffer(Slot : int, Buffer : Buffer) : unit = 
+        let _Slot_int = uint32 (Slot)
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer) |> ignore
+    member x.SetVertexBuffer(Slot : int, Buffer : Buffer, Offset : uint64, Size : uint64) : unit = 
+        let _Slot_int = uint32 (Slot)
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        let _Offset_uint64 = float (Offset)
+        let _Size_uint64 = float (Size)
+        x.Handle.Reference.Invoke("setVertexBuffer", js _Slot_int, js _Buffer_Buffer, js _Offset_uint64, js _Size_uint64) |> ignore
+    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat) : unit = 
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        let _Format_IndexFormat = Format.GetValue()
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat) |> ignore
+    member x.SetIndexBuffer(Buffer : Buffer, Format : IndexFormat, Offset : uint64, Size : uint64) : unit = 
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        let _Format_IndexFormat = Format.GetValue()
+        let _Offset_uint64 = float (Offset)
+        let _Size_uint64 = float (Size)
+        x.Handle.Reference.Invoke("setIndexBuffer", js _Buffer_Buffer, js _Format_IndexFormat, js _Offset_uint64, js _Size_uint64) |> ignore
+    member x.BeginOcclusionQuery(QueryIndex : int) : unit = 
+        let _QueryIndex_int = uint32 (QueryIndex)
+        x.Handle.Reference.Invoke("beginOcclusionQuery", js _QueryIndex_int) |> ignore
+    member x.BeginPipelineStatisticsQuery(QuerySet : QuerySet, QueryIndex : int) : unit = 
+        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
+        let _QueryIndex_int = uint32 (QueryIndex)
+        x.Handle.Reference.Invoke("beginPipelineStatisticsQuery", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
+    member x.EndOcclusionQuery() : unit = 
+        x.Handle.Reference.Invoke("endOcclusionQuery") |> ignore
+    member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
+        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
+        let _QueryIndex_int = uint32 (QueryIndex)
+        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
+    member x.EndPass() : unit = 
+        x.Handle.Reference.Invoke("endPass") |> ignore
+    member x.EndPipelineStatisticsQuery() : unit = 
+        x.Handle.Reference.Invoke("endPipelineStatisticsQuery") |> ignore
+[<AllowNullLiteral>]
+type CommandEncoder(device : Device, handle : CommandEncoderHandle, descriptor : CommandEncoderDescriptor, refCount : ref<int>) = 
+    let mutable isDisposed = false
+    member x.Device = device
+    member x.Descriptor = descriptor
+    member x.ReferenceCount = !refCount
+    member x.Handle : CommandEncoderHandle = handle
+    member x.IsDisposed = isDisposed
+    member private x.Dispose(disposing : bool) =
+        if not isDisposed then 
+            let r = Interlocked.Decrement(&refCount.contents)
+            isDisposed <- true
+    member x.Dispose() = x.Dispose(true)
+    member x.Clone() = 
+        let mutable o = refCount.contents
+        if o = 0 then raise <| System.ObjectDisposedException("CommandEncoder")
+        let mutable n = Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        while o <> n do
+            o <- n
+            if o = 0 then raise <| System.ObjectDisposedException("CommandEncoder")
+            n <- Interlocked.CompareExchange(&refCount.contents, o + 1, o)
+        new CommandEncoder(device, handle, descriptor, refCount)
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+    new(device : Device, handle : CommandEncoderHandle, descriptor : CommandEncoderDescriptor) = new CommandEncoder(device, handle, descriptor, ref 1)
+    member x.Finish() : CommandBuffer = 
+        new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish")), CommandBufferDescriptor.Default)
+    member x.Finish(Descriptor : CommandBufferDescriptor) : CommandBuffer = 
+        let _Label_string = Descriptor.Label
+        let _Descriptor_CommandBufferDescriptor = new DawnRaw.WGPUCommandBufferDescriptor()
+        _Descriptor_CommandBufferDescriptor.Label <- _Label_string
+        let _Descriptor_CommandBufferDescriptor = _Descriptor_CommandBufferDescriptor
+        new CommandBuffer(x.Device, convert(x.Handle.Reference.Invoke("finish", js _Descriptor_CommandBufferDescriptor)), Descriptor)
+    member x.BeginComputePass() : ComputePassEncoder = 
+        new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass")), ComputePassDescriptor.Default)
+    member x.BeginComputePass(Descriptor : ComputePassDescriptor) : ComputePassEncoder = 
+        let _Label_string = Descriptor.Label
+        let _Descriptor_ComputePassDescriptor = new DawnRaw.WGPUComputePassDescriptor()
+        _Descriptor_ComputePassDescriptor.Label <- _Label_string
+        let _Descriptor_ComputePassDescriptor = _Descriptor_ComputePassDescriptor
+        new ComputePassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginComputePass", js _Descriptor_ComputePassDescriptor)), Descriptor)
+    member x.BeginRenderPass(Descriptor : RenderPassDescriptor) : RenderPassEncoder = 
+        let _Label_string = Descriptor.Label
+        let _ColorAttachments_RenderPassColorAttachmentArrCount = if isNull Descriptor.ColorAttachments then 0 else Descriptor.ColorAttachments.Length
+        let rec _ColorAttachments_RenderPassColorAttachmentArrCont (_ColorAttachments_RenderPassColorAttachmentArrinputs : array<RenderPassColorAttachment>) (_ColorAttachments_RenderPassColorAttachmentArroutputs : JsArray) (_ColorAttachments_RenderPassColorAttachmentArri : int) =
+            if _ColorAttachments_RenderPassColorAttachmentArri >= _ColorAttachments_RenderPassColorAttachmentArrCount then
+                let _ColorAttachments_RenderPassColorAttachmentArr = _ColorAttachments_RenderPassColorAttachmentArroutputs.Reference
+                let inline _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt = 
+                    let _OcclusionQuerySet_QuerySet = (if isNull Descriptor.OcclusionQuerySet then null else Descriptor.OcclusionQuerySet.Handle)
+                    let _Descriptor_RenderPassDescriptor = new DawnRaw.WGPURenderPassDescriptor()
+                    _Descriptor_RenderPassDescriptor.Label <- _Label_string
+                    _Descriptor_RenderPassDescriptor.ColorAttachments <- _ColorAttachments_RenderPassColorAttachmentArr
+                    _Descriptor_RenderPassDescriptor.DepthStencilAttachment <- _DepthStencilAttachment_RenderPassDepthStencilAttachmentOpt
+                    _Descriptor_RenderPassDescriptor.OcclusionQuerySet <- _OcclusionQuerySet_QuerySet
+                    let _Descriptor_RenderPassDescriptor = _Descriptor_RenderPassDescriptor
+                    new RenderPassEncoder(x.Device, convert(x.Handle.Reference.Invoke("beginRenderPass", js _Descriptor_RenderPassDescriptor)), Descriptor)
+                match Descriptor.DepthStencilAttachment with
+                | Some v ->
+                    let _View_TextureView = (if isNull v.View then null else v.View.Handle)
+                    let _DepthLoadOp_LoadOp = v.DepthLoadOp.GetValue()
+                    let _DepthStoreOp_StoreOp = v.DepthStoreOp.GetValue()
+                    let _ClearDepth_float32 = (v.ClearDepth)
+                    let _DepthReadOnly_bool = v.DepthReadOnly
+                    let _StencilLoadOp_LoadOp = v.StencilLoadOp.GetValue()
+                    let _StencilStoreOp_StoreOp = v.StencilStoreOp.GetValue()
+                    let _ClearStencil_int = uint32 (v.ClearStencil)
+                    let _StencilReadOnly_bool = v.StencilReadOnly
+                    let _n = new DawnRaw.WGPURenderPassDepthStencilAttachment()
+                    _n.View <- _View_TextureView
+                    _n.DepthLoadOp <- _DepthLoadOp_LoadOp
+                    _n.DepthStoreOp <- _DepthStoreOp_StoreOp
+                    _n.ClearDepth <- _ClearDepth_float32
+                    _n.DepthReadOnly <- _DepthReadOnly_bool
+                    _n.StencilLoadOp <- _StencilLoadOp_LoadOp
+                    _n.StencilStoreOp <- _StencilStoreOp_StoreOp
+                    _n.ClearStencil <- _ClearStencil_int
+                    _n.StencilReadOnly <- _StencilReadOnly_bool
+                    let _n = _n
+                    _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont _n
+                | None -> _DepthStencilAttachment_RenderPassDepthStencilAttachmentOptCont null
+            else
+                let _View_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].View.Handle)
+                let _ResolveTarget_TextureView = (if isNull _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget then null else _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].ResolveTarget.Handle)
+                let _LoadOp_LoadOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].LoadOp.GetValue()
+                let _StoreOp_StoreOp = _ColorAttachments_RenderPassColorAttachmentArrinputs.[_ColorAttachments_RenderPassColorAttachmentArri].StoreOp.GetValue()
+                let _n = new DawnRaw.WGPURenderPassColorAttachment()
+                _n.View <- _View_TextureView
+                _n.ResolveTarget <- _ResolveTarget_TextureView
+                _n.LoadOp <- _LoadOp_LoadOp
+                _n.StoreOp <- _StoreOp_StoreOp
+                let _n = _n
+                _ColorAttachments_RenderPassColorAttachmentArroutputs.[_ColorAttachments_RenderPassColorAttachmentArri] <- js _n
+                _ColorAttachments_RenderPassColorAttachmentArrCont _ColorAttachments_RenderPassColorAttachmentArrinputs _ColorAttachments_RenderPassColorAttachmentArroutputs (_ColorAttachments_RenderPassColorAttachmentArri + 1)
+        _ColorAttachments_RenderPassColorAttachmentArrCont Descriptor.ColorAttachments (if _ColorAttachments_RenderPassColorAttachmentArrCount > 0 then newArray _ColorAttachments_RenderPassColorAttachmentArrCount else null) 0
+    member x.CopyBufferToBuffer(Source : Buffer, SourceOffset : uint64, Destination : Buffer, DestinationOffset : uint64, Size : uint64) : unit = 
+        let _Source_Buffer = (if isNull Source then null else Source.Handle)
+        let _SourceOffset_uint64 = float (SourceOffset)
+        let _Destination_Buffer = (if isNull Destination then null else Destination.Handle)
+        let _DestinationOffset_uint64 = float (DestinationOffset)
+        let _Size_uint64 = float (Size)
+        x.Handle.Reference.Invoke("copyBufferToBuffer", js _Source_Buffer, js _SourceOffset_uint64, js _Destination_Buffer, js _DestinationOffset_uint64, js _Size_uint64) |> ignore
+    member x.CopyBufferToTexture(Source : ImageCopyBuffer, Destination : ImageCopyTexture, CopySize : Extent3D) : unit = 
+        let _Offset_uint64 = float (Source.Offset)
+        let _BytesPerRow_int = uint32 (Source.BytesPerRow)
+        let _RowsPerImage_int = uint32 (Source.RowsPerImage)
+        let _Buffer_Buffer = (if isNull Source.Buffer then null else Source.Buffer.Handle)
+        let _Source_ImageCopyBuffer = new DawnRaw.WGPUImageCopyBuffer()
+        _Source_ImageCopyBuffer.Offset <- _Offset_uint64
+        _Source_ImageCopyBuffer.BytesPerRow <- _BytesPerRow_int
+        _Source_ImageCopyBuffer.RowsPerImage <- _RowsPerImage_int
+        _Source_ImageCopyBuffer.Buffer <- _Buffer_Buffer
+        let _Source_ImageCopyBuffer = _Source_ImageCopyBuffer
+        let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
+        let _MipLevel_int = uint32 (Destination.MipLevel)
+        let _X_int = uint32 (Destination.Origin.X)
+        let _Y_int = uint32 (Destination.Origin.Y)
+        let _Z_int = uint32 (Destination.Origin.Z)
+        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
+        _Origin_Origin3D.X <- _X_int
+        _Origin_Origin3D.Y <- _Y_int
+        _Origin_Origin3D.Z <- _Z_int
+        let _Origin_Origin3D = _Origin_Origin3D
+        let _Aspect_TextureAspect = Destination.Aspect.GetValue()
+        let _Destination_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
+        _Destination_ImageCopyTexture.Texture <- _Texture_Texture
+        _Destination_ImageCopyTexture.MipLevel <- _MipLevel_int
+        _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
+        _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
+        let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
+        let _Width_int = uint32 (CopySize.Width)
+        let _Height_int = uint32 (CopySize.Height)
+        let _DepthOrArrayLayers_int = uint32 (CopySize.DepthOrArrayLayers)
+        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
+        _CopySize_Extent3D.Width <- _Width_int
+        _CopySize_Extent3D.Height <- _Height_int
+        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
+        let _CopySize_Extent3D = _CopySize_Extent3D
+        x.Handle.Reference.Invoke("copyBufferToTexture", js _Source_ImageCopyBuffer, js _Destination_ImageCopyTexture, js _CopySize_Extent3D) |> ignore
+    member x.CopyTextureToBuffer(Source : ImageCopyTexture, Destination : ImageCopyBuffer, CopySize : Extent3D) : unit = 
+        let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
+        let _MipLevel_int = uint32 (Source.MipLevel)
+        let _X_int = uint32 (Source.Origin.X)
+        let _Y_int = uint32 (Source.Origin.Y)
+        let _Z_int = uint32 (Source.Origin.Z)
+        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
+        _Origin_Origin3D.X <- _X_int
+        _Origin_Origin3D.Y <- _Y_int
+        _Origin_Origin3D.Z <- _Z_int
+        let _Origin_Origin3D = _Origin_Origin3D
+        let _Aspect_TextureAspect = Source.Aspect.GetValue()
+        let _Source_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
+        _Source_ImageCopyTexture.Texture <- _Texture_Texture
+        _Source_ImageCopyTexture.MipLevel <- _MipLevel_int
+        _Source_ImageCopyTexture.Origin <- _Origin_Origin3D
+        _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
+        let _Source_ImageCopyTexture = _Source_ImageCopyTexture
+        let _Offset_uint64 = float (Destination.Offset)
+        let _BytesPerRow_int = uint32 (Destination.BytesPerRow)
+        let _RowsPerImage_int = uint32 (Destination.RowsPerImage)
+        let _Buffer_Buffer = (if isNull Destination.Buffer then null else Destination.Buffer.Handle)
+        let _Destination_ImageCopyBuffer = new DawnRaw.WGPUImageCopyBuffer()
+        _Destination_ImageCopyBuffer.Offset <- _Offset_uint64
+        _Destination_ImageCopyBuffer.BytesPerRow <- _BytesPerRow_int
+        _Destination_ImageCopyBuffer.RowsPerImage <- _RowsPerImage_int
+        _Destination_ImageCopyBuffer.Buffer <- _Buffer_Buffer
+        let _Destination_ImageCopyBuffer = _Destination_ImageCopyBuffer
+        let _Width_int = uint32 (CopySize.Width)
+        let _Height_int = uint32 (CopySize.Height)
+        let _DepthOrArrayLayers_int = uint32 (CopySize.DepthOrArrayLayers)
+        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
+        _CopySize_Extent3D.Width <- _Width_int
+        _CopySize_Extent3D.Height <- _Height_int
+        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
+        let _CopySize_Extent3D = _CopySize_Extent3D
+        x.Handle.Reference.Invoke("copyTextureToBuffer", js _Source_ImageCopyTexture, js _Destination_ImageCopyBuffer, js _CopySize_Extent3D) |> ignore
+    member x.CopyTextureToTexture(Source : ImageCopyTexture, Destination : ImageCopyTexture, CopySize : Extent3D) : unit = 
+        let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
+        let _MipLevel_int = uint32 (Source.MipLevel)
+        let _X_int = uint32 (Source.Origin.X)
+        let _Y_int = uint32 (Source.Origin.Y)
+        let _Z_int = uint32 (Source.Origin.Z)
+        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
+        _Origin_Origin3D.X <- _X_int
+        _Origin_Origin3D.Y <- _Y_int
+        _Origin_Origin3D.Z <- _Z_int
+        let _Origin_Origin3D = _Origin_Origin3D
+        let _Aspect_TextureAspect = Source.Aspect.GetValue()
+        let _Source_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
+        _Source_ImageCopyTexture.Texture <- _Texture_Texture
+        _Source_ImageCopyTexture.MipLevel <- _MipLevel_int
+        _Source_ImageCopyTexture.Origin <- _Origin_Origin3D
+        _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
+        let _Source_ImageCopyTexture = _Source_ImageCopyTexture
+        let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
+        let _MipLevel_int = uint32 (Destination.MipLevel)
+        let _X_int = uint32 (Destination.Origin.X)
+        let _Y_int = uint32 (Destination.Origin.Y)
+        let _Z_int = uint32 (Destination.Origin.Z)
+        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
+        _Origin_Origin3D.X <- _X_int
+        _Origin_Origin3D.Y <- _Y_int
+        _Origin_Origin3D.Z <- _Z_int
+        let _Origin_Origin3D = _Origin_Origin3D
+        let _Aspect_TextureAspect = Destination.Aspect.GetValue()
+        let _Destination_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
+        _Destination_ImageCopyTexture.Texture <- _Texture_Texture
+        _Destination_ImageCopyTexture.MipLevel <- _MipLevel_int
+        _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
+        _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
+        let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
+        let _Width_int = uint32 (CopySize.Width)
+        let _Height_int = uint32 (CopySize.Height)
+        let _DepthOrArrayLayers_int = uint32 (CopySize.DepthOrArrayLayers)
+        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
+        _CopySize_Extent3D.Width <- _Width_int
+        _CopySize_Extent3D.Height <- _Height_int
+        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
+        let _CopySize_Extent3D = _CopySize_Extent3D
+        x.Handle.Reference.Invoke("copyTextureToTexture", js _Source_ImageCopyTexture, js _Destination_ImageCopyTexture, js _CopySize_Extent3D) |> ignore
+    member x.CopyTextureToTextureInternal(Source : ImageCopyTexture, Destination : ImageCopyTexture, CopySize : Extent3D) : unit = 
+        let _Texture_Texture = (if isNull Source.Texture then null else Source.Texture.Handle)
+        let _MipLevel_int = uint32 (Source.MipLevel)
+        let _X_int = uint32 (Source.Origin.X)
+        let _Y_int = uint32 (Source.Origin.Y)
+        let _Z_int = uint32 (Source.Origin.Z)
+        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
+        _Origin_Origin3D.X <- _X_int
+        _Origin_Origin3D.Y <- _Y_int
+        _Origin_Origin3D.Z <- _Z_int
+        let _Origin_Origin3D = _Origin_Origin3D
+        let _Aspect_TextureAspect = Source.Aspect.GetValue()
+        let _Source_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
+        _Source_ImageCopyTexture.Texture <- _Texture_Texture
+        _Source_ImageCopyTexture.MipLevel <- _MipLevel_int
+        _Source_ImageCopyTexture.Origin <- _Origin_Origin3D
+        _Source_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
+        let _Source_ImageCopyTexture = _Source_ImageCopyTexture
+        let _Texture_Texture = (if isNull Destination.Texture then null else Destination.Texture.Handle)
+        let _MipLevel_int = uint32 (Destination.MipLevel)
+        let _X_int = uint32 (Destination.Origin.X)
+        let _Y_int = uint32 (Destination.Origin.Y)
+        let _Z_int = uint32 (Destination.Origin.Z)
+        let _Origin_Origin3D = new DawnRaw.WGPUOrigin3D()
+        _Origin_Origin3D.X <- _X_int
+        _Origin_Origin3D.Y <- _Y_int
+        _Origin_Origin3D.Z <- _Z_int
+        let _Origin_Origin3D = _Origin_Origin3D
+        let _Aspect_TextureAspect = Destination.Aspect.GetValue()
+        let _Destination_ImageCopyTexture = new DawnRaw.WGPUImageCopyTexture()
+        _Destination_ImageCopyTexture.Texture <- _Texture_Texture
+        _Destination_ImageCopyTexture.MipLevel <- _MipLevel_int
+        _Destination_ImageCopyTexture.Origin <- _Origin_Origin3D
+        _Destination_ImageCopyTexture.Aspect <- _Aspect_TextureAspect
+        let _Destination_ImageCopyTexture = _Destination_ImageCopyTexture
+        let _Width_int = uint32 (CopySize.Width)
+        let _Height_int = uint32 (CopySize.Height)
+        let _DepthOrArrayLayers_int = uint32 (CopySize.DepthOrArrayLayers)
+        let _CopySize_Extent3D = new DawnRaw.WGPUExtent3D()
+        _CopySize_Extent3D.Width <- _Width_int
+        _CopySize_Extent3D.Height <- _Height_int
+        _CopySize_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
+        let _CopySize_Extent3D = _CopySize_Extent3D
+        x.Handle.Reference.Invoke("copyTextureToTextureInternal", js _Source_ImageCopyTexture, js _Destination_ImageCopyTexture, js _CopySize_Extent3D) |> ignore
+    member x.InjectValidationError(Message : string) : unit = 
+        let _Message_string = Message
+        x.Handle.Reference.Invoke("injectValidationError", js _Message_string) |> ignore
+    member x.InsertDebugMarker(MarkerLabel : string) : unit = 
+        let _MarkerLabel_string = MarkerLabel
+        x.Handle.Reference.Invoke("insertDebugMarker", js _MarkerLabel_string) |> ignore
+    member x.PopDebugGroup() : unit = 
+        x.Handle.Reference.Invoke("popDebugGroup") |> ignore
+    member x.PushDebugGroup(GroupLabel : string) : unit = 
+        let _GroupLabel_string = GroupLabel
+        x.Handle.Reference.Invoke("pushDebugGroup", js _GroupLabel_string) |> ignore
+    member x.ResolveQuerySet(QuerySet : QuerySet, FirstQuery : int, QueryCount : int, Destination : Buffer, DestinationOffset : uint64) : unit = 
+        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
+        let _FirstQuery_int = uint32 (FirstQuery)
+        let _QueryCount_int = uint32 (QueryCount)
+        let _Destination_Buffer = (if isNull Destination then null else Destination.Handle)
+        let _DestinationOffset_uint64 = float (DestinationOffset)
+        x.Handle.Reference.Invoke("resolveQuerySet", js _QuerySet_QuerySet, js _FirstQuery_int, js _QueryCount_int, js _Destination_Buffer, js _DestinationOffset_uint64) |> ignore
+    member x.WriteBuffer(Buffer : Buffer, BufferOffset : uint64, Data : string, Size : uint64) : unit = 
+        let _Buffer_Buffer = (if isNull Buffer then null else Buffer.Handle)
+        let _BufferOffset_uint64 = float (BufferOffset)
+        let _Data_string = Data
+        let _Size_uint64 = float (Size)
+        x.Handle.Reference.Invoke("writeBuffer", js _Buffer_Buffer, js _BufferOffset_uint64, js _Data_string, js _Size_uint64) |> ignore
+    member x.WriteTimestamp(QuerySet : QuerySet, QueryIndex : int) : unit = 
+        let _QuerySet_QuerySet = (if isNull QuerySet then null else QuerySet.Handle)
+        let _QueryIndex_int = uint32 (QueryIndex)
+        x.Handle.Reference.Invoke("writeTimestamp", js _QuerySet_QuerySet, js _QueryIndex_int) |> ignore
 [<AllowNullLiteral>]
 type Device(handle : DeviceHandle, refCount : ref<int>) = 
     let mutable isDisposed = false
@@ -6560,12 +6576,12 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _Descriptor_BindGroupDescriptor.Layout <- _Layout_BindGroupLayout
                 _Descriptor_BindGroupDescriptor.Entries <- _Entries_BindGroupEntryArr
                 let _Descriptor_BindGroupDescriptor = _Descriptor_BindGroupDescriptor
-                new BindGroup(x, convert(x.Handle.Reference.Invoke("createBindGroup", js _Descriptor_BindGroupDescriptor)))
+                new BindGroup(x, convert(x.Handle.Reference.Invoke("createBindGroup", js _Descriptor_BindGroupDescriptor)), Descriptor)
             else
-                let _Binding_int = int (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Binding)
+                let _Binding_int = uint32 (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Binding)
                 let _Buffer_Buffer = (if isNull _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Buffer then null else _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Buffer.Handle)
-                let _Offset_uint64 = int (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Offset)
-                let _Size_uint64 = int (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Size)
+                let _Offset_uint64 = float (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Offset)
+                let _Size_uint64 = float (_Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Size)
                 let _Sampler_Sampler = (if isNull _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Sampler then null else _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].Sampler.Handle)
                 let _TextureView_TextureView = (if isNull _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].TextureView then null else _Entries_BindGroupEntryArrinputs.[_Entries_BindGroupEntryArri].TextureView.Handle)
                 let _n = new DawnRaw.WGPUBindGroupEntry()
@@ -6591,51 +6607,71 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 let _Descriptor_BindGroupLayoutDescriptor = _Descriptor_BindGroupLayoutDescriptor
                 new BindGroupLayout(x, convert(x.Handle.Reference.Invoke("createBindGroupLayout", js _Descriptor_BindGroupLayoutDescriptor)))
             else
-                let _Binding_int = int (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Binding)
+                let _Binding_int = uint32 (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Binding)
                 let _Visibility_ShaderStage = int (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Visibility)
-                let _Type_BufferBindingType = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer.Type.GetValue()
-                let _HasDynamicOffset_bool = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer.HasDynamicOffset
-                let _MinBindingSize_uint64 = int (_Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer.MinBindingSize)
-                let _Buffer_BufferBindingLayout = new DawnRaw.WGPUBufferBindingLayout()
-                _Buffer_BufferBindingLayout.Type <- _Type_BufferBindingType
-                _Buffer_BufferBindingLayout.HasDynamicOffset <- _HasDynamicOffset_bool
-                _Buffer_BufferBindingLayout.MinBindingSize <- _MinBindingSize_uint64
-                let _Buffer_BufferBindingLayout = _Buffer_BufferBindingLayout
-                let _Type_SamplerBindingType = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Sampler.Type.GetValue()
-                let _Sampler_SamplerBindingLayout = new DawnRaw.WGPUSamplerBindingLayout()
-                _Sampler_SamplerBindingLayout.Type <- _Type_SamplerBindingType
-                let _Sampler_SamplerBindingLayout = _Sampler_SamplerBindingLayout
-                let _SampleType_TextureSampleType = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture.SampleType.GetValue()
-                let _ViewDimension_TextureViewDimension = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture.ViewDimension.GetValue()
-                let _Multisampled_bool = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture.Multisampled
-                let _Texture_TextureBindingLayout = new DawnRaw.WGPUTextureBindingLayout()
-                _Texture_TextureBindingLayout.SampleType <- _SampleType_TextureSampleType
-                _Texture_TextureBindingLayout.ViewDimension <- _ViewDimension_TextureViewDimension
-                _Texture_TextureBindingLayout.Multisampled <- _Multisampled_bool
-                let _Texture_TextureBindingLayout = _Texture_TextureBindingLayout
-                let _Access_StorageTextureAccess = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture.Access.GetValue()
-                let _Format_TextureFormat = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture.Format.GetValue()
-                let _ViewDimension_TextureViewDimension = _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture.ViewDimension.GetValue()
-                let _StorageTexture_StorageTextureBindingLayout = new DawnRaw.WGPUStorageTextureBindingLayout()
-                _StorageTexture_StorageTextureBindingLayout.Access <- _Access_StorageTextureAccess
-                _StorageTexture_StorageTextureBindingLayout.Format <- _Format_TextureFormat
-                _StorageTexture_StorageTextureBindingLayout.ViewDimension <- _ViewDimension_TextureViewDimension
-                let _StorageTexture_StorageTextureBindingLayout = _StorageTexture_StorageTextureBindingLayout
-                let _n = new DawnRaw.WGPUBindGroupLayoutEntry()
-                _n.Binding <- _Binding_int
-                _n.Visibility <- _Visibility_ShaderStage
-                _n.Buffer <- _Buffer_BufferBindingLayout
-                _n.Sampler <- _Sampler_SamplerBindingLayout
-                _n.Texture <- _Texture_TextureBindingLayout
-                _n.StorageTexture <- _StorageTexture_StorageTextureBindingLayout
-                let _n = _n
-                _Entries_BindGroupLayoutEntryArroutputs.[_Entries_BindGroupLayoutEntryArri] <- js _n
-                _Entries_BindGroupLayoutEntryArrCont _Entries_BindGroupLayoutEntryArrinputs _Entries_BindGroupLayoutEntryArroutputs (_Entries_BindGroupLayoutEntryArri + 1)
+                let inline _Buffer_BufferBindingLayoutOptCont _Buffer_BufferBindingLayoutOpt = 
+                    let inline _Sampler_SamplerBindingLayoutOptCont _Sampler_SamplerBindingLayoutOpt = 
+                        let inline _Texture_TextureBindingLayoutOptCont _Texture_TextureBindingLayoutOpt = 
+                            let inline _StorageTexture_StorageTextureBindingLayoutOptCont _StorageTexture_StorageTextureBindingLayoutOpt = 
+                                let _n = new DawnRaw.WGPUBindGroupLayoutEntry()
+                                _n.Binding <- _Binding_int
+                                _n.Visibility <- _Visibility_ShaderStage
+                                _n.Buffer <- _Buffer_BufferBindingLayoutOpt
+                                _n.Sampler <- _Sampler_SamplerBindingLayoutOpt
+                                _n.Texture <- _Texture_TextureBindingLayoutOpt
+                                _n.StorageTexture <- _StorageTexture_StorageTextureBindingLayoutOpt
+                                let _n = _n
+                                _Entries_BindGroupLayoutEntryArroutputs.[_Entries_BindGroupLayoutEntryArri] <- js _n
+                                _Entries_BindGroupLayoutEntryArrCont _Entries_BindGroupLayoutEntryArrinputs _Entries_BindGroupLayoutEntryArroutputs (_Entries_BindGroupLayoutEntryArri + 1)
+                            match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].StorageTexture with
+                            | Some v ->
+                                let _Access_StorageTextureAccess = v.Access.GetValue()
+                                let _Format_TextureFormat = v.Format.GetValue()
+                                let _ViewDimension_TextureViewDimension = v.ViewDimension.GetValue()
+                                let _n = new DawnRaw.WGPUStorageTextureBindingLayout()
+                                _n.Access <- _Access_StorageTextureAccess
+                                _n.Format <- _Format_TextureFormat
+                                _n.ViewDimension <- _ViewDimension_TextureViewDimension
+                                let _n = _n
+                                _StorageTexture_StorageTextureBindingLayoutOptCont _n
+                            | None -> _StorageTexture_StorageTextureBindingLayoutOptCont null
+                        match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Texture with
+                        | Some v ->
+                            let _SampleType_TextureSampleType = v.SampleType.GetValue()
+                            let _ViewDimension_TextureViewDimension = v.ViewDimension.GetValue()
+                            let _Multisampled_bool = v.Multisampled
+                            let _n = new DawnRaw.WGPUTextureBindingLayout()
+                            _n.SampleType <- _SampleType_TextureSampleType
+                            _n.ViewDimension <- _ViewDimension_TextureViewDimension
+                            _n.Multisampled <- _Multisampled_bool
+                            let _n = _n
+                            _Texture_TextureBindingLayoutOptCont _n
+                        | None -> _Texture_TextureBindingLayoutOptCont null
+                    match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Sampler with
+                    | Some v ->
+                        let _Type_SamplerBindingType = v.Type.GetValue()
+                        let _n = new DawnRaw.WGPUSamplerBindingLayout()
+                        _n.Type <- _Type_SamplerBindingType
+                        let _n = _n
+                        _Sampler_SamplerBindingLayoutOptCont _n
+                    | None -> _Sampler_SamplerBindingLayoutOptCont null
+                match _Entries_BindGroupLayoutEntryArrinputs.[_Entries_BindGroupLayoutEntryArri].Buffer with
+                | Some v ->
+                    let _Type_BufferBindingType = v.Type.GetValue()
+                    let _HasDynamicOffset_bool = v.HasDynamicOffset
+                    let _MinBindingSize_uint64 = float (v.MinBindingSize)
+                    let _n = new DawnRaw.WGPUBufferBindingLayout()
+                    _n.Type <- _Type_BufferBindingType
+                    _n.HasDynamicOffset <- _HasDynamicOffset_bool
+                    _n.MinBindingSize <- _MinBindingSize_uint64
+                    let _n = _n
+                    _Buffer_BufferBindingLayoutOptCont _n
+                | None -> _Buffer_BufferBindingLayoutOptCont null
         _Entries_BindGroupLayoutEntryArrCont Descriptor.Entries (if _Entries_BindGroupLayoutEntryArrCount > 0 then newArray _Entries_BindGroupLayoutEntryArrCount else null) 0
     member x.CreateBuffer(Descriptor : BufferDescriptor) : Buffer = 
         let _Label_string = Descriptor.Label
         let _Usage_BufferUsage = int (Descriptor.Usage)
-        let _Size_uint64 = int (Descriptor.Size)
+        let _Size_uint64 = float (Descriptor.Size)
         let _MappedAtCreation_bool = Descriptor.MappedAtCreation
         let _Descriptor_BufferDescriptor = new DawnRaw.WGPUBufferDescriptor()
         _Descriptor_BufferDescriptor.Label <- _Label_string
@@ -6647,13 +6683,13 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
     member x.CreateErrorBuffer() : Buffer = 
         new Buffer(x, convert(x.Handle.Reference.Invoke("createErrorBuffer")))
     member x.CreateCommandEncoder() : CommandEncoder = 
-        new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder")))
+        new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder")), CommandEncoderDescriptor.Default)
     member x.CreateCommandEncoder(Descriptor : CommandEncoderDescriptor) : CommandEncoder = 
         let _Label_string = Descriptor.Label
         let _Descriptor_CommandEncoderDescriptor = new DawnRaw.WGPUCommandEncoderDescriptor()
         _Descriptor_CommandEncoderDescriptor.Label <- _Label_string
         let _Descriptor_CommandEncoderDescriptor = _Descriptor_CommandEncoderDescriptor
-        new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder", js _Descriptor_CommandEncoderDescriptor)))
+        new CommandEncoder(x, convert(x.Handle.Reference.Invoke("createCommandEncoder", js _Descriptor_CommandEncoderDescriptor)), Descriptor)
     member x.CreateComputePipeline(Descriptor : ComputePipelineDescriptor) : ComputePipeline = 
         let _Label_string = Descriptor.Label
         let _Layout_PipelineLayout = (if isNull Descriptor.Layout then null else Descriptor.Layout.Handle)
@@ -6673,7 +6709,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _Descriptor_ComputePipelineDescriptor.Layout <- _Layout_PipelineLayout
                 _Descriptor_ComputePipelineDescriptor.Compute <- _Compute_ProgrammableStageDescriptor
                 let _Descriptor_ComputePipelineDescriptor = _Descriptor_ComputePipelineDescriptor
-                new ComputePipeline(x, convert(x.Handle.Reference.Invoke("createComputePipeline", js _Descriptor_ComputePipelineDescriptor)))
+                new ComputePipeline(x, convert(x.Handle.Reference.Invoke("createComputePipeline", js _Descriptor_ComputePipelineDescriptor)), Descriptor)
             else
                 let _Key_string = _Constants_ConstantEntryArrinputs.[_Constants_ConstantEntryArri].Key
                 let _Value_float = (_Constants_ConstantEntryArrinputs.[_Constants_ConstantEntryArri].Value)
@@ -6704,13 +6740,13 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _Descriptor_ComputePipelineDescriptor.Compute <- _Compute_ProgrammableStageDescriptor
                 let _Descriptor_ComputePipelineDescriptor = _Descriptor_ComputePipelineDescriptor
                 let mutable _Callback_CreateComputePipelineAsyncCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-                let _Callback_CreateComputePipelineAsyncCallbackFunction (Status : obj) (Pipeline : ComputePipelineHandle) (Message : string) (Userdata : int) = 
+                let _Callback_CreateComputePipelineAsyncCallbackFunction (Status : obj) (Pipeline : ComputePipelineHandle) (Message : string) (Userdata : float) = 
                     let _Status_CreatePipelineAsyncStatus = Status |> System.Convert.ToInt32 |> unbox<CreatePipelineAsyncStatus>
                     let _Pipeline_ComputePipeline = Pipeline
                     let _Message_string = Message
                     let _Userdata_nativeint = Userdata
                     if _Callback_CreateComputePipelineAsyncCallbackGC.IsAllocated then _Callback_CreateComputePipelineAsyncCallbackGC.Free()
-                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new ComputePipeline(x, _Pipeline_ComputePipeline), _Message_string, nativeint _Userdata_nativeint)
+                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new ComputePipeline(x, _Pipeline_ComputePipeline, Unchecked.defaultof<_>), _Message_string, nativeint _Userdata_nativeint)
                 let _Callback_CreateComputePipelineAsyncCallbackDel = WGPUCreateComputePipelineAsyncCallback(_Callback_CreateComputePipelineAsyncCallbackFunction)
                 _Callback_CreateComputePipelineAsyncCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_CreateComputePipelineAsyncCallbackDel)
                 let _Callback_CreateComputePipelineAsyncCallback = _Callback_CreateComputePipelineAsyncCallbackDel
@@ -6745,17 +6781,17 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _Descriptor_ComputePipelineDescriptor.Compute <- _Compute_ProgrammableStageDescriptor
                 let _Descriptor_ComputePipelineDescriptor = _Descriptor_ComputePipelineDescriptor
                 let mutable _Callback_CreateComputePipelineAsyncCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-                let _Callback_CreateComputePipelineAsyncCallbackFunction (Status : obj) (Pipeline : ComputePipelineHandle) (Message : string) (Userdata : int) = 
+                let _Callback_CreateComputePipelineAsyncCallbackFunction (Status : obj) (Pipeline : ComputePipelineHandle) (Message : string) (Userdata : float) = 
                     let _Status_CreatePipelineAsyncStatus = Status |> System.Convert.ToInt32 |> unbox<CreatePipelineAsyncStatus>
                     let _Pipeline_ComputePipeline = Pipeline
                     let _Message_string = Message
                     let _Userdata_nativeint = Userdata
                     if _Callback_CreateComputePipelineAsyncCallbackGC.IsAllocated then _Callback_CreateComputePipelineAsyncCallbackGC.Free()
-                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new ComputePipeline(x, _Pipeline_ComputePipeline), _Message_string, nativeint _Userdata_nativeint)
+                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new ComputePipeline(x, _Pipeline_ComputePipeline, Unchecked.defaultof<_>), _Message_string, nativeint _Userdata_nativeint)
                 let _Callback_CreateComputePipelineAsyncCallbackDel = WGPUCreateComputePipelineAsyncCallback(_Callback_CreateComputePipelineAsyncCallbackFunction)
                 _Callback_CreateComputePipelineAsyncCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_CreateComputePipelineAsyncCallbackDel)
                 let _Callback_CreateComputePipelineAsyncCallback = _Callback_CreateComputePipelineAsyncCallbackDel
-                let _Userdata_nativeint = int (Userdata)
+                let _Userdata_nativeint = float (Userdata)
                 x.Handle.Reference.Invoke("createComputePipelineAsync", js _Descriptor_ComputePipelineDescriptor, js _Callback_CreateComputePipelineAsyncCallback, js _Userdata_nativeint) |> ignore
             else
                 let _Key_string = _Constants_ConstantEntryArrinputs.[_Constants_ConstantEntryArri].Key
@@ -6776,7 +6812,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _ExternalTextureDescriptor_ExternalTextureDescriptor.Plane0 <- _Plane0_TextureView
         _ExternalTextureDescriptor_ExternalTextureDescriptor.Format <- _Format_TextureFormat
         let _ExternalTextureDescriptor_ExternalTextureDescriptor = _ExternalTextureDescriptor_ExternalTextureDescriptor
-        new ExternalTexture(x, convert(x.Handle.Reference.Invoke("createExternalTexture", js _ExternalTextureDescriptor_ExternalTextureDescriptor)))
+        new ExternalTexture(x, convert(x.Handle.Reference.Invoke("createExternalTexture", js _ExternalTextureDescriptor_ExternalTextureDescriptor)), ExternalTextureDescriptor)
     member x.CreatePipelineLayout(Descriptor : PipelineLayoutDescriptor) : PipelineLayout = 
         let _Label_string = Descriptor.Label
         let _BindGroupLayouts_BindGroupLayoutArrCount = Descriptor.BindGroupLayouts.Length
@@ -6789,13 +6825,13 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor_PipelineLayoutDescriptor.Label <- _Label_string
         _Descriptor_PipelineLayoutDescriptor.BindGroupLayouts <- _BindGroupLayouts_BindGroupLayoutArr
         let _Descriptor_PipelineLayoutDescriptor = _Descriptor_PipelineLayoutDescriptor
-        new PipelineLayout(x, convert(x.Handle.Reference.Invoke("createPipelineLayout", js _Descriptor_PipelineLayoutDescriptor)))
+        new PipelineLayout(x, convert(x.Handle.Reference.Invoke("createPipelineLayout", js _Descriptor_PipelineLayoutDescriptor)), Descriptor)
     member x.CreateQuerySet(Descriptor : QuerySetDescriptor) : QuerySet = 
         let _Label_string = Descriptor.Label
         let _Type_QueryType = Descriptor.Type.GetValue()
-        let _Count_int = int (Descriptor.Count)
+        let _Count_int = uint32 (Descriptor.Count)
         let inline _PipelineStatistics_PipelineStatisticNameOptCont _PipelineStatistics_PipelineStatisticNameOpt =
-            let _PipelineStatisticsCount_int = int (Descriptor.PipelineStatisticsCount)
+            let _PipelineStatisticsCount_int = uint32 (Descriptor.PipelineStatisticsCount)
             let _Descriptor_QuerySetDescriptor = new DawnRaw.WGPUQuerySetDescriptor()
             _Descriptor_QuerySetDescriptor.Label <- _Label_string
             _Descriptor_QuerySetDescriptor.Type <- _Type_QueryType
@@ -6803,7 +6839,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
             _Descriptor_QuerySetDescriptor.PipelineStatistics <- _PipelineStatistics_PipelineStatisticNameOpt
             _Descriptor_QuerySetDescriptor.PipelineStatisticsCount <- _PipelineStatisticsCount_int
             let _Descriptor_QuerySetDescriptor = _Descriptor_QuerySetDescriptor
-            new QuerySet(x, convert(x.Handle.Reference.Invoke("createQuerySet", js _Descriptor_QuerySetDescriptor)))
+            new QuerySet(x, convert(x.Handle.Reference.Invoke("createQuerySet", js _Descriptor_QuerySetDescriptor)), Descriptor)
         match Descriptor.PipelineStatistics with
         | Some o ->
             _PipelineStatistics_PipelineStatisticNameOptCont(o.GetValue())
@@ -6839,8 +6875,8 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                         _Primitive_PrimitiveState.CullMode <- _CullMode_CullMode
                         let _Primitive_PrimitiveState = _Primitive_PrimitiveState
                         let inline _DepthStencil_DepthStencilStateOptCont _DepthStencil_DepthStencilStateOpt = 
-                            let _Count_int = int (Descriptor.Multisample.Count)
-                            let _Mask_int = int (Descriptor.Multisample.Mask)
+                            let _Count_int = uint32 (Descriptor.Multisample.Count)
+                            let _Mask_int = uint32 (Descriptor.Multisample.Mask)
                             let _AlphaToCoverageEnabled_bool = Descriptor.Multisample.AlphaToCoverageEnabled
                             let _Multisample_MultisampleState = new DawnRaw.WGPUMultisampleState()
                             _Multisample_MultisampleState.Count <- _Count_int
@@ -6858,13 +6894,13 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _Descriptor_RenderPipelineDescriptor.Fragment <- _Fragment_FragmentStateOpt
                                 let _Descriptor_RenderPipelineDescriptor = _Descriptor_RenderPipelineDescriptor
                                 let mutable _Callback_CreateRenderPipelineAsyncCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-                                let _Callback_CreateRenderPipelineAsyncCallbackFunction (Status : obj) (Pipeline : RenderPipelineHandle) (Message : string) (Userdata : int) = 
+                                let _Callback_CreateRenderPipelineAsyncCallbackFunction (Status : obj) (Pipeline : RenderPipelineHandle) (Message : string) (Userdata : float) = 
                                     let _Status_CreatePipelineAsyncStatus = Status |> System.Convert.ToInt32 |> unbox<CreatePipelineAsyncStatus>
                                     let _Pipeline_RenderPipeline = Pipeline
                                     let _Message_string = Message
                                     let _Userdata_nativeint = Userdata
                                     if _Callback_CreateRenderPipelineAsyncCallbackGC.IsAllocated then _Callback_CreateRenderPipelineAsyncCallbackGC.Free()
-                                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new RenderPipeline(x, _Pipeline_RenderPipeline), _Message_string, nativeint _Userdata_nativeint)
+                                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new RenderPipeline(x, _Pipeline_RenderPipeline, Unchecked.defaultof<_>), _Message_string, nativeint _Userdata_nativeint)
                                 let _Callback_CreateRenderPipelineAsyncCallbackDel = WGPUCreateRenderPipelineAsyncCallback(_Callback_CreateRenderPipelineAsyncCallbackFunction)
                                 _Callback_CreateRenderPipelineAsyncCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_CreateRenderPipelineAsyncCallbackDel)
                                 let _Callback_CreateRenderPipelineAsyncCallback = _Callback_CreateRenderPipelineAsyncCallbackDel
@@ -6960,9 +6996,9 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                             _StencilBack_StencilFaceState.DepthFailOp <- _DepthFailOp_StencilOperation
                             _StencilBack_StencilFaceState.PassOp <- _PassOp_StencilOperation
                             let _StencilBack_StencilFaceState = _StencilBack_StencilFaceState
-                            let _StencilReadMask_int = int (v.StencilReadMask)
-                            let _StencilWriteMask_int = int (v.StencilWriteMask)
-                            let _DepthBias_int32 = int (v.DepthBias)
+                            let _StencilReadMask_int = uint32 (v.StencilReadMask)
+                            let _StencilWriteMask_int = uint32 (v.StencilWriteMask)
+                            let _DepthBias_int32 = int32 (v.DepthBias)
                             let _DepthBiasSlopeScale_float32 = (v.DepthBiasSlopeScale)
                             let _DepthBiasClamp_float32 = (v.DepthBiasClamp)
                             let _n = new DawnRaw.WGPUDepthStencilState()
@@ -6980,7 +7016,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                             _DepthStencil_DepthStencilStateOptCont _n
                         | None -> _DepthStencil_DepthStencilStateOptCont null
                     else
-                        let _ArrayStride_uint64 = int (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
+                        let _ArrayStride_uint64 = float (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
                         let _StepMode_VertexStepMode = _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].StepMode.GetValue()
                         let _Attributes_VertexAttributeArrCount = if isNull _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes then 0 else _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes.Length
                         let rec _Attributes_VertexAttributeArrCont (_Attributes_VertexAttributeArrinputs : array<VertexAttribute>) (_Attributes_VertexAttributeArroutputs : JsArray) (_Attributes_VertexAttributeArri : int) =
@@ -6995,8 +7031,8 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _Buffers_VertexBufferLayoutArrCont _Buffers_VertexBufferLayoutArrinputs _Buffers_VertexBufferLayoutArroutputs (_Buffers_VertexBufferLayoutArri + 1)
                             else
                                 let _Format_VertexFormat = _Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Format.GetValue()
-                                let _Offset_uint64 = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
-                                let _ShaderLocation_int = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
+                                let _Offset_uint64 = float (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
+                                let _ShaderLocation_int = uint32 (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
                                 let _n = new DawnRaw.WGPUVertexAttribute()
                                 _n.Format <- _Format_VertexFormat
                                 _n.Offset <- _Offset_uint64
@@ -7046,8 +7082,8 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                         _Primitive_PrimitiveState.CullMode <- _CullMode_CullMode
                         let _Primitive_PrimitiveState = _Primitive_PrimitiveState
                         let inline _DepthStencil_DepthStencilStateOptCont _DepthStencil_DepthStencilStateOpt = 
-                            let _Count_int = int (Descriptor.Multisample.Count)
-                            let _Mask_int = int (Descriptor.Multisample.Mask)
+                            let _Count_int = uint32 (Descriptor.Multisample.Count)
+                            let _Mask_int = uint32 (Descriptor.Multisample.Mask)
                             let _AlphaToCoverageEnabled_bool = Descriptor.Multisample.AlphaToCoverageEnabled
                             let _Multisample_MultisampleState = new DawnRaw.WGPUMultisampleState()
                             _Multisample_MultisampleState.Count <- _Count_int
@@ -7065,17 +7101,17 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _Descriptor_RenderPipelineDescriptor.Fragment <- _Fragment_FragmentStateOpt
                                 let _Descriptor_RenderPipelineDescriptor = _Descriptor_RenderPipelineDescriptor
                                 let mutable _Callback_CreateRenderPipelineAsyncCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-                                let _Callback_CreateRenderPipelineAsyncCallbackFunction (Status : obj) (Pipeline : RenderPipelineHandle) (Message : string) (Userdata : int) = 
+                                let _Callback_CreateRenderPipelineAsyncCallbackFunction (Status : obj) (Pipeline : RenderPipelineHandle) (Message : string) (Userdata : float) = 
                                     let _Status_CreatePipelineAsyncStatus = Status |> System.Convert.ToInt32 |> unbox<CreatePipelineAsyncStatus>
                                     let _Pipeline_RenderPipeline = Pipeline
                                     let _Message_string = Message
                                     let _Userdata_nativeint = Userdata
                                     if _Callback_CreateRenderPipelineAsyncCallbackGC.IsAllocated then _Callback_CreateRenderPipelineAsyncCallbackGC.Free()
-                                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new RenderPipeline(x, _Pipeline_RenderPipeline), _Message_string, nativeint _Userdata_nativeint)
+                                    Callback.Invoke(CreatePipelineAsyncStatus.Parse(_Status_CreatePipelineAsyncStatus), new RenderPipeline(x, _Pipeline_RenderPipeline, Unchecked.defaultof<_>), _Message_string, nativeint _Userdata_nativeint)
                                 let _Callback_CreateRenderPipelineAsyncCallbackDel = WGPUCreateRenderPipelineAsyncCallback(_Callback_CreateRenderPipelineAsyncCallbackFunction)
                                 _Callback_CreateRenderPipelineAsyncCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_CreateRenderPipelineAsyncCallbackDel)
                                 let _Callback_CreateRenderPipelineAsyncCallback = _Callback_CreateRenderPipelineAsyncCallbackDel
-                                let _Userdata_nativeint = int (Userdata)
+                                let _Userdata_nativeint = float (Userdata)
                                 x.Handle.Reference.Invoke("createRenderPipelineAsync", js _Descriptor_RenderPipelineDescriptor, js _Callback_CreateRenderPipelineAsyncCallback, js _Userdata_nativeint) |> ignore
                             match Descriptor.Fragment with
                             | Some v ->
@@ -7168,9 +7204,9 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                             _StencilBack_StencilFaceState.DepthFailOp <- _DepthFailOp_StencilOperation
                             _StencilBack_StencilFaceState.PassOp <- _PassOp_StencilOperation
                             let _StencilBack_StencilFaceState = _StencilBack_StencilFaceState
-                            let _StencilReadMask_int = int (v.StencilReadMask)
-                            let _StencilWriteMask_int = int (v.StencilWriteMask)
-                            let _DepthBias_int32 = int (v.DepthBias)
+                            let _StencilReadMask_int = uint32 (v.StencilReadMask)
+                            let _StencilWriteMask_int = uint32 (v.StencilWriteMask)
+                            let _DepthBias_int32 = int32 (v.DepthBias)
                             let _DepthBiasSlopeScale_float32 = (v.DepthBiasSlopeScale)
                             let _DepthBiasClamp_float32 = (v.DepthBiasClamp)
                             let _n = new DawnRaw.WGPUDepthStencilState()
@@ -7188,7 +7224,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                             _DepthStencil_DepthStencilStateOptCont _n
                         | None -> _DepthStencil_DepthStencilStateOptCont null
                     else
-                        let _ArrayStride_uint64 = int (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
+                        let _ArrayStride_uint64 = float (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
                         let _StepMode_VertexStepMode = _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].StepMode.GetValue()
                         let _Attributes_VertexAttributeArrCount = if isNull _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes then 0 else _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes.Length
                         let rec _Attributes_VertexAttributeArrCont (_Attributes_VertexAttributeArrinputs : array<VertexAttribute>) (_Attributes_VertexAttributeArroutputs : JsArray) (_Attributes_VertexAttributeArri : int) =
@@ -7203,8 +7239,8 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _Buffers_VertexBufferLayoutArrCont _Buffers_VertexBufferLayoutArrinputs _Buffers_VertexBufferLayoutArroutputs (_Buffers_VertexBufferLayoutArri + 1)
                             else
                                 let _Format_VertexFormat = _Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Format.GetValue()
-                                let _Offset_uint64 = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
-                                let _ShaderLocation_int = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
+                                let _Offset_uint64 = float (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
+                                let _ShaderLocation_int = uint32 (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
                                 let _n = new DawnRaw.WGPUVertexAttribute()
                                 _n.Format <- _Format_VertexFormat
                                 _n.Offset <- _Offset_uint64
@@ -7232,14 +7268,14 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
             _ColorFormats_TextureFormatArrArray.[i] <- Descriptor.ColorFormats.[i].GetValue()
         let _ColorFormats_TextureFormatArr = _ColorFormats_TextureFormatArrArray.Reference
         let _DepthStencilFormat_TextureFormat = Descriptor.DepthStencilFormat.GetValue()
-        let _SampleCount_int = int (Descriptor.SampleCount)
+        let _SampleCount_int = uint32 (Descriptor.SampleCount)
         let _Descriptor_RenderBundleEncoderDescriptor = new DawnRaw.WGPURenderBundleEncoderDescriptor()
         _Descriptor_RenderBundleEncoderDescriptor.Label <- _Label_string
         _Descriptor_RenderBundleEncoderDescriptor.ColorFormats <- _ColorFormats_TextureFormatArr
         _Descriptor_RenderBundleEncoderDescriptor.DepthStencilFormat <- _DepthStencilFormat_TextureFormat
         _Descriptor_RenderBundleEncoderDescriptor.SampleCount <- _SampleCount_int
         let _Descriptor_RenderBundleEncoderDescriptor = _Descriptor_RenderBundleEncoderDescriptor
-        new RenderBundleEncoder(x, convert(x.Handle.Reference.Invoke("createRenderBundleEncoder", js _Descriptor_RenderBundleEncoderDescriptor)))
+        new RenderBundleEncoder(x, convert(x.Handle.Reference.Invoke("createRenderBundleEncoder", js _Descriptor_RenderBundleEncoderDescriptor)), Descriptor)
     member x.CreateRenderPipeline(Descriptor : RenderPipelineDescriptor) : RenderPipeline = 
         let _Label_string = Descriptor.Label
         let _Layout_PipelineLayout = (if isNull Descriptor.Layout then null else Descriptor.Layout.Handle)
@@ -7270,8 +7306,8 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                         _Primitive_PrimitiveState.CullMode <- _CullMode_CullMode
                         let _Primitive_PrimitiveState = _Primitive_PrimitiveState
                         let inline _DepthStencil_DepthStencilStateOptCont _DepthStencil_DepthStencilStateOpt = 
-                            let _Count_int = int (Descriptor.Multisample.Count)
-                            let _Mask_int = int (Descriptor.Multisample.Mask)
+                            let _Count_int = uint32 (Descriptor.Multisample.Count)
+                            let _Mask_int = uint32 (Descriptor.Multisample.Mask)
                             let _AlphaToCoverageEnabled_bool = Descriptor.Multisample.AlphaToCoverageEnabled
                             let _Multisample_MultisampleState = new DawnRaw.WGPUMultisampleState()
                             _Multisample_MultisampleState.Count <- _Count_int
@@ -7288,7 +7324,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _Descriptor_RenderPipelineDescriptor.Multisample <- _Multisample_MultisampleState
                                 _Descriptor_RenderPipelineDescriptor.Fragment <- _Fragment_FragmentStateOpt
                                 let _Descriptor_RenderPipelineDescriptor = _Descriptor_RenderPipelineDescriptor
-                                new RenderPipeline(x, convert(x.Handle.Reference.Invoke("createRenderPipeline", js _Descriptor_RenderPipelineDescriptor)))
+                                new RenderPipeline(x, convert(x.Handle.Reference.Invoke("createRenderPipeline", js _Descriptor_RenderPipelineDescriptor)), Descriptor)
                             match Descriptor.Fragment with
                             | Some v ->
                                 let _Module_ShaderModule = (if isNull v.Module then null else v.Module.Handle)
@@ -7380,9 +7416,9 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                             _StencilBack_StencilFaceState.DepthFailOp <- _DepthFailOp_StencilOperation
                             _StencilBack_StencilFaceState.PassOp <- _PassOp_StencilOperation
                             let _StencilBack_StencilFaceState = _StencilBack_StencilFaceState
-                            let _StencilReadMask_int = int (v.StencilReadMask)
-                            let _StencilWriteMask_int = int (v.StencilWriteMask)
-                            let _DepthBias_int32 = int (v.DepthBias)
+                            let _StencilReadMask_int = uint32 (v.StencilReadMask)
+                            let _StencilWriteMask_int = uint32 (v.StencilWriteMask)
+                            let _DepthBias_int32 = int32 (v.DepthBias)
                             let _DepthBiasSlopeScale_float32 = (v.DepthBiasSlopeScale)
                             let _DepthBiasClamp_float32 = (v.DepthBiasClamp)
                             let _n = new DawnRaw.WGPUDepthStencilState()
@@ -7400,7 +7436,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                             _DepthStencil_DepthStencilStateOptCont _n
                         | None -> _DepthStencil_DepthStencilStateOptCont null
                     else
-                        let _ArrayStride_uint64 = int (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
+                        let _ArrayStride_uint64 = float (_Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].ArrayStride)
                         let _StepMode_VertexStepMode = _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].StepMode.GetValue()
                         let _Attributes_VertexAttributeArrCount = if isNull _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes then 0 else _Buffers_VertexBufferLayoutArrinputs.[_Buffers_VertexBufferLayoutArri].Attributes.Length
                         let rec _Attributes_VertexAttributeArrCont (_Attributes_VertexAttributeArrinputs : array<VertexAttribute>) (_Attributes_VertexAttributeArroutputs : JsArray) (_Attributes_VertexAttributeArri : int) =
@@ -7415,8 +7451,8 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                                 _Buffers_VertexBufferLayoutArrCont _Buffers_VertexBufferLayoutArrinputs _Buffers_VertexBufferLayoutArroutputs (_Buffers_VertexBufferLayoutArri + 1)
                             else
                                 let _Format_VertexFormat = _Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Format.GetValue()
-                                let _Offset_uint64 = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
-                                let _ShaderLocation_int = int (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
+                                let _Offset_uint64 = float (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].Offset)
+                                let _ShaderLocation_int = uint32 (_Attributes_VertexAttributeArrinputs.[_Attributes_VertexAttributeArri].ShaderLocation)
                                 let _n = new DawnRaw.WGPUVertexAttribute()
                                 _n.Format <- _Format_VertexFormat
                                 _n.Offset <- _Offset_uint64
@@ -7437,7 +7473,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
                 _Constants_ConstantEntryArrCont _Constants_ConstantEntryArrinputs _Constants_ConstantEntryArroutputs (_Constants_ConstantEntryArri + 1)
         _Constants_ConstantEntryArrCont Descriptor.Vertex.Constants (if _Constants_ConstantEntryArrCount > 0 then newArray _Constants_ConstantEntryArrCount else null) 0
     member x.CreateSampler() : Sampler = 
-        new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler")))
+        new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler")), SamplerDescriptor.Default)
     member x.CreateSampler(Descriptor : SamplerDescriptor) : Sampler = 
         let _Label_string = Descriptor.Label
         let _AddressModeU_AddressMode = Descriptor.AddressModeU.GetValue()
@@ -7449,7 +7485,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _LodMinClamp_float32 = (Descriptor.LodMinClamp)
         let _LodMaxClamp_float32 = (Descriptor.LodMaxClamp)
         let _Compare_CompareFunction = Descriptor.Compare.GetValue()
-        let _MaxAnisotropy_uint16 = int (Descriptor.MaxAnisotropy)
+        let _MaxAnisotropy_uint16 = uint16 (Descriptor.MaxAnisotropy)
         let _Descriptor_SamplerDescriptor = new DawnRaw.WGPUSamplerDescriptor()
         _Descriptor_SamplerDescriptor.Label <- _Label_string
         _Descriptor_SamplerDescriptor.AddressModeU <- _AddressModeU_AddressMode
@@ -7463,24 +7499,24 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor_SamplerDescriptor.Compare <- _Compare_CompareFunction
         _Descriptor_SamplerDescriptor.MaxAnisotropy <- _MaxAnisotropy_uint16
         let _Descriptor_SamplerDescriptor = _Descriptor_SamplerDescriptor
-        new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler", js _Descriptor_SamplerDescriptor)))
+        new Sampler(x, convert(x.Handle.Reference.Invoke("createSampler", js _Descriptor_SamplerDescriptor)), Descriptor)
     member x.CreateShaderModule() : ShaderModule = 
-        new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule")))
+        new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule")), ShaderModuleDescriptor.Default)
     member x.CreateShaderModule(Descriptor : ShaderModuleDescriptor) : ShaderModule = 
         let _Label_string = Descriptor.Label
         let _Descriptor_ShaderModuleDescriptor = new DawnRaw.WGPUShaderModuleDescriptor()
         _Descriptor_ShaderModuleDescriptor.Label <- _Label_string
         let _Descriptor_ShaderModuleDescriptor = _Descriptor_ShaderModuleDescriptor
-        new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule", js _Descriptor_ShaderModuleDescriptor)))
+        new ShaderModule(x, convert(x.Handle.Reference.Invoke("createShaderModule", js _Descriptor_ShaderModuleDescriptor)), Descriptor)
     member x.CreateSwapChain(Surface : Surface, Descriptor : SwapChainDescriptor) : SwapChain = 
         let _Surface_Surface = (if isNull Surface then null else Surface.Handle)
         let _Label_string = Descriptor.Label
         let _Usage_TextureUsage = int (Descriptor.Usage)
         let _Format_TextureFormat = Descriptor.Format.GetValue()
-        let _Width_int = int (Descriptor.Width)
-        let _Height_int = int (Descriptor.Height)
+        let _Width_int = uint32 (Descriptor.Width)
+        let _Height_int = uint32 (Descriptor.Height)
         let _PresentMode_PresentMode = Descriptor.PresentMode.GetValue()
-        let _Implementation_uint64 = int (Descriptor.Implementation)
+        let _Implementation_uint64 = float (Descriptor.Implementation)
         let _Descriptor_SwapChainDescriptor = new DawnRaw.WGPUSwapChainDescriptor()
         _Descriptor_SwapChainDescriptor.Label <- _Label_string
         _Descriptor_SwapChainDescriptor.Usage <- _Usage_TextureUsage
@@ -7495,17 +7531,17 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Label_string = Descriptor.Label
         let _Usage_TextureUsage = int (Descriptor.Usage)
         let _Dimension_TextureDimension = Descriptor.Dimension.GetValue()
-        let _Width_int = int (Descriptor.Size.Width)
-        let _Height_int = int (Descriptor.Size.Height)
-        let _DepthOrArrayLayers_int = int (Descriptor.Size.DepthOrArrayLayers)
+        let _Width_int = uint32 (Descriptor.Size.Width)
+        let _Height_int = uint32 (Descriptor.Size.Height)
+        let _DepthOrArrayLayers_int = uint32 (Descriptor.Size.DepthOrArrayLayers)
         let _Size_Extent3D = new DawnRaw.WGPUExtent3D()
         _Size_Extent3D.Width <- _Width_int
         _Size_Extent3D.Height <- _Height_int
         _Size_Extent3D.DepthOrArrayLayers <- _DepthOrArrayLayers_int
         let _Size_Extent3D = _Size_Extent3D
         let _Format_TextureFormat = Descriptor.Format.GetValue()
-        let _MipLevelCount_int = int (Descriptor.MipLevelCount)
-        let _SampleCount_int = int (Descriptor.SampleCount)
+        let _MipLevelCount_int = uint32 (Descriptor.MipLevelCount)
+        let _SampleCount_int = uint32 (Descriptor.SampleCount)
         let _Descriptor_TextureDescriptor = new DawnRaw.WGPUTextureDescriptor()
         _Descriptor_TextureDescriptor.Label <- _Label_string
         _Descriptor_TextureDescriptor.Usage <- _Usage_TextureUsage
@@ -7515,36 +7551,36 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         _Descriptor_TextureDescriptor.MipLevelCount <- _MipLevelCount_int
         _Descriptor_TextureDescriptor.SampleCount <- _SampleCount_int
         let _Descriptor_TextureDescriptor = _Descriptor_TextureDescriptor
-        new Texture(x, convert(x.Handle.Reference.Invoke("createTexture", js _Descriptor_TextureDescriptor)))
+        new Texture(x, convert(x.Handle.Reference.Invoke("createTexture", js _Descriptor_TextureDescriptor)), Descriptor)
     member x.Destroy() : unit = 
         x.Handle.Reference.Invoke("destroy") |> ignore
     member x.GetLimits(Limits : SupportedLimits) : bool = 
-        let _MaxTextureDimension1D_int = int (Limits.Limits.MaxTextureDimension1D)
-        let _MaxTextureDimension2D_int = int (Limits.Limits.MaxTextureDimension2D)
-        let _MaxTextureDimension3D_int = int (Limits.Limits.MaxTextureDimension3D)
-        let _MaxTextureArrayLayers_int = int (Limits.Limits.MaxTextureArrayLayers)
-        let _MaxBindGroups_int = int (Limits.Limits.MaxBindGroups)
-        let _MaxDynamicUniformBuffersPerPipelineLayout_int = int (Limits.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
-        let _MaxDynamicStorageBuffersPerPipelineLayout_int = int (Limits.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
-        let _MaxSampledTexturesPerShaderStage_int = int (Limits.Limits.MaxSampledTexturesPerShaderStage)
-        let _MaxSamplersPerShaderStage_int = int (Limits.Limits.MaxSamplersPerShaderStage)
-        let _MaxStorageBuffersPerShaderStage_int = int (Limits.Limits.MaxStorageBuffersPerShaderStage)
-        let _MaxStorageTexturesPerShaderStage_int = int (Limits.Limits.MaxStorageTexturesPerShaderStage)
-        let _MaxUniformBuffersPerShaderStage_int = int (Limits.Limits.MaxUniformBuffersPerShaderStage)
-        let _MaxUniformBufferBindingSize_uint64 = int (Limits.Limits.MaxUniformBufferBindingSize)
-        let _MaxStorageBufferBindingSize_uint64 = int (Limits.Limits.MaxStorageBufferBindingSize)
-        let _MinUniformBufferOffsetAlignment_int = int (Limits.Limits.MinUniformBufferOffsetAlignment)
-        let _MinStorageBufferOffsetAlignment_int = int (Limits.Limits.MinStorageBufferOffsetAlignment)
-        let _MaxVertexBuffers_int = int (Limits.Limits.MaxVertexBuffers)
-        let _MaxVertexAttributes_int = int (Limits.Limits.MaxVertexAttributes)
-        let _MaxVertexBufferArrayStride_int = int (Limits.Limits.MaxVertexBufferArrayStride)
-        let _MaxInterStageShaderComponents_int = int (Limits.Limits.MaxInterStageShaderComponents)
-        let _MaxComputeWorkgroupStorageSize_int = int (Limits.Limits.MaxComputeWorkgroupStorageSize)
-        let _MaxComputeInvocationsPerWorkgroup_int = int (Limits.Limits.MaxComputeInvocationsPerWorkgroup)
-        let _MaxComputeWorkgroupSizeX_int = int (Limits.Limits.MaxComputeWorkgroupSizeX)
-        let _MaxComputeWorkgroupSizeY_int = int (Limits.Limits.MaxComputeWorkgroupSizeY)
-        let _MaxComputeWorkgroupSizeZ_int = int (Limits.Limits.MaxComputeWorkgroupSizeZ)
-        let _MaxComputeWorkgroupsPerDimension_int = int (Limits.Limits.MaxComputeWorkgroupsPerDimension)
+        let _MaxTextureDimension1D_int = uint32 (Limits.Limits.MaxTextureDimension1D)
+        let _MaxTextureDimension2D_int = uint32 (Limits.Limits.MaxTextureDimension2D)
+        let _MaxTextureDimension3D_int = uint32 (Limits.Limits.MaxTextureDimension3D)
+        let _MaxTextureArrayLayers_int = uint32 (Limits.Limits.MaxTextureArrayLayers)
+        let _MaxBindGroups_int = uint32 (Limits.Limits.MaxBindGroups)
+        let _MaxDynamicUniformBuffersPerPipelineLayout_int = uint32 (Limits.Limits.MaxDynamicUniformBuffersPerPipelineLayout)
+        let _MaxDynamicStorageBuffersPerPipelineLayout_int = uint32 (Limits.Limits.MaxDynamicStorageBuffersPerPipelineLayout)
+        let _MaxSampledTexturesPerShaderStage_int = uint32 (Limits.Limits.MaxSampledTexturesPerShaderStage)
+        let _MaxSamplersPerShaderStage_int = uint32 (Limits.Limits.MaxSamplersPerShaderStage)
+        let _MaxStorageBuffersPerShaderStage_int = uint32 (Limits.Limits.MaxStorageBuffersPerShaderStage)
+        let _MaxStorageTexturesPerShaderStage_int = uint32 (Limits.Limits.MaxStorageTexturesPerShaderStage)
+        let _MaxUniformBuffersPerShaderStage_int = uint32 (Limits.Limits.MaxUniformBuffersPerShaderStage)
+        let _MaxUniformBufferBindingSize_uint64 = float (Limits.Limits.MaxUniformBufferBindingSize)
+        let _MaxStorageBufferBindingSize_uint64 = float (Limits.Limits.MaxStorageBufferBindingSize)
+        let _MinUniformBufferOffsetAlignment_int = uint32 (Limits.Limits.MinUniformBufferOffsetAlignment)
+        let _MinStorageBufferOffsetAlignment_int = uint32 (Limits.Limits.MinStorageBufferOffsetAlignment)
+        let _MaxVertexBuffers_int = uint32 (Limits.Limits.MaxVertexBuffers)
+        let _MaxVertexAttributes_int = uint32 (Limits.Limits.MaxVertexAttributes)
+        let _MaxVertexBufferArrayStride_int = uint32 (Limits.Limits.MaxVertexBufferArrayStride)
+        let _MaxInterStageShaderComponents_int = uint32 (Limits.Limits.MaxInterStageShaderComponents)
+        let _MaxComputeWorkgroupStorageSize_int = uint32 (Limits.Limits.MaxComputeWorkgroupStorageSize)
+        let _MaxComputeInvocationsPerWorkgroup_int = uint32 (Limits.Limits.MaxComputeInvocationsPerWorkgroup)
+        let _MaxComputeWorkgroupSizeX_int = uint32 (Limits.Limits.MaxComputeWorkgroupSizeX)
+        let _MaxComputeWorkgroupSizeY_int = uint32 (Limits.Limits.MaxComputeWorkgroupSizeY)
+        let _MaxComputeWorkgroupSizeZ_int = uint32 (Limits.Limits.MaxComputeWorkgroupSizeZ)
+        let _MaxComputeWorkgroupsPerDimension_int = uint32 (Limits.Limits.MaxComputeWorkgroupsPerDimension)
         let _Limits_Limits = new DawnRaw.WGPULimits()
         _Limits_Limits.MaxTextureDimension1D <- _MaxTextureDimension1D_int
         _Limits_Limits.MaxTextureDimension2D <- _MaxTextureDimension2D_int
@@ -7578,7 +7614,8 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Limits_SupportedLimits = _Limits_SupportedLimits
         x.Handle.Reference.Invoke("getLimits", js _Limits_SupportedLimits) |> convert
     member x.GetQueue() : Queue = 
-        new Queue(x, convert(x.Handle.Reference.Invoke("getQueue")))
+        let handle = x.Handle.Reference.GetObjectProperty("queue") |> convert<QueueHandle>
+        new Queue(x, handle)
     member x.InjectError(Type : ErrorType, Message : string) : unit = 
         let _Type_ErrorType = Type.GetValue()
         let _Message_string = Message
@@ -7588,7 +7625,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
     member x.Tick() : unit = 
         x.Handle.Reference.Invoke("tick") |> ignore
     member x.SetUncapturedErrorCallback(Callback : ErrorCallback) : unit = 
-        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
+        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : float) = 
             let _Type_ErrorType = Type |> System.Convert.ToInt32 |> unbox<ErrorType>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7598,7 +7635,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Callback_ErrorCallback = _Callback_ErrorCallbackDel
         x.Handle.Reference.Invoke("setUncapturedErrorCallback", js _Callback_ErrorCallback) |> ignore
     member x.SetUncapturedErrorCallback(Callback : ErrorCallback, Userdata : nativeint) : unit = 
-        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
+        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : float) = 
             let _Type_ErrorType = Type |> System.Convert.ToInt32 |> unbox<ErrorType>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7606,10 +7643,10 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Callback_ErrorCallbackDel = WGPUErrorCallback(_Callback_ErrorCallbackFunction)
         let _Callback_ErrorCallbackGC = System.Runtime.InteropServices.GCHandle.Alloc(_Callback_ErrorCallbackDel)
         let _Callback_ErrorCallback = _Callback_ErrorCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("setUncapturedErrorCallback", js _Callback_ErrorCallback, js _Userdata_nativeint) |> ignore
     member x.SetLoggingCallback(Callback : LoggingCallback) : unit = 
-        let _Callback_LoggingCallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
+        let _Callback_LoggingCallbackFunction (Type : obj) (Message : string) (Userdata : float) = 
             let _Type_LoggingType = Type |> System.Convert.ToInt32 |> unbox<LoggingType>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7619,7 +7656,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Callback_LoggingCallback = _Callback_LoggingCallbackDel
         x.Handle.Reference.Invoke("setLoggingCallback", js _Callback_LoggingCallback) |> ignore
     member x.SetLoggingCallback(Callback : LoggingCallback, Userdata : nativeint) : unit = 
-        let _Callback_LoggingCallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
+        let _Callback_LoggingCallbackFunction (Type : obj) (Message : string) (Userdata : float) = 
             let _Type_LoggingType = Type |> System.Convert.ToInt32 |> unbox<LoggingType>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7627,10 +7664,10 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Callback_LoggingCallbackDel = WGPULoggingCallback(_Callback_LoggingCallbackFunction)
         let _Callback_LoggingCallbackGC = System.Runtime.InteropServices.GCHandle.Alloc(_Callback_LoggingCallbackDel)
         let _Callback_LoggingCallback = _Callback_LoggingCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("setLoggingCallback", js _Callback_LoggingCallback, js _Userdata_nativeint) |> ignore
     member x.SetDeviceLostCallback(Callback : DeviceLostCallback) : unit = 
-        let _Callback_DeviceLostCallbackFunction (Reason : obj) (Message : string) (Userdata : int) = 
+        let _Callback_DeviceLostCallbackFunction (Reason : obj) (Message : string) (Userdata : float) = 
             let _Reason_DeviceLostReason = Reason |> System.Convert.ToInt32 |> unbox<DeviceLostReason>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7640,7 +7677,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Callback_DeviceLostCallback = _Callback_DeviceLostCallbackDel
         x.Handle.Reference.Invoke("setDeviceLostCallback", js _Callback_DeviceLostCallback) |> ignore
     member x.SetDeviceLostCallback(Callback : DeviceLostCallback, Userdata : nativeint) : unit = 
-        let _Callback_DeviceLostCallbackFunction (Reason : obj) (Message : string) (Userdata : int) = 
+        let _Callback_DeviceLostCallbackFunction (Reason : obj) (Message : string) (Userdata : float) = 
             let _Reason_DeviceLostReason = Reason |> System.Convert.ToInt32 |> unbox<DeviceLostReason>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7648,14 +7685,14 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Callback_DeviceLostCallbackDel = WGPUDeviceLostCallback(_Callback_DeviceLostCallbackFunction)
         let _Callback_DeviceLostCallbackGC = System.Runtime.InteropServices.GCHandle.Alloc(_Callback_DeviceLostCallbackDel)
         let _Callback_DeviceLostCallback = _Callback_DeviceLostCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("setDeviceLostCallback", js _Callback_DeviceLostCallback, js _Userdata_nativeint) |> ignore
     member x.PushErrorScope(Filter : ErrorFilter) : unit = 
         let _Filter_ErrorFilter = Filter.GetValue()
         x.Handle.Reference.Invoke("pushErrorScope", js _Filter_ErrorFilter) |> ignore
     member x.PopErrorScope(Callback : ErrorCallback) : bool = 
         let mutable _Callback_ErrorCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
+        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : float) = 
             let _Type_ErrorType = Type |> System.Convert.ToInt32 |> unbox<ErrorType>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7667,7 +7704,7 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         x.Handle.Reference.Invoke("popErrorScope", js _Callback_ErrorCallback) |> convert
     member x.PopErrorScope(Callback : ErrorCallback, Userdata : nativeint) : bool = 
         let mutable _Callback_ErrorCallbackGC = Unchecked.defaultof<System.Runtime.InteropServices.GCHandle>
-        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : int) = 
+        let _Callback_ErrorCallbackFunction (Type : obj) (Message : string) (Userdata : float) = 
             let _Type_ErrorType = Type |> System.Convert.ToInt32 |> unbox<ErrorType>
             let _Message_string = Message
             let _Userdata_nativeint = Userdata
@@ -7676,5 +7713,5 @@ type Device(handle : DeviceHandle, refCount : ref<int>) =
         let _Callback_ErrorCallbackDel = WGPUErrorCallback(_Callback_ErrorCallbackFunction)
         _Callback_ErrorCallbackGC <- System.Runtime.InteropServices.GCHandle.Alloc(_Callback_ErrorCallbackDel)
         let _Callback_ErrorCallback = _Callback_ErrorCallbackDel
-        let _Userdata_nativeint = int (Userdata)
+        let _Userdata_nativeint = float (Userdata)
         x.Handle.Reference.Invoke("popErrorScope", js _Callback_ErrorCallback, js _Userdata_nativeint) |> convert
